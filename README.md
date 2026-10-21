@@ -1,0 +1,227 @@
+# Prototipo: Asistente Inteligente UNEMI
+
+Prototipo de validación técnica. Objetivo de esta fase: confirmar que el
+flujo completo (conexión a Moodle + SGA -> base de datos unificada ->
+respuesta a preguntas) funciona de punta a punta, ANTES de invertir tiempo
+en la capa de LLM/RAG y en el marco teórico completo.
+
+**IMPORTANTE - Seguridad:** Este proyecto corre 100% en tu computadora.
+La app web usa **autenticación por token**: nunca pide ni guarda
+contraseñas. Los tokens de sesión que pegas en el login se guardan
+cifrados y se descartan al cerrar sesión o al vencer (8 horas). El archivo
+`.env` y el archivo `.session_key` están en `.gitignore`: nunca los subas
+a GitHub ni los compartas con nadie.
+
+## Requisitos previos
+
+- Python 3.10 o superior instalado.
+- Tus credenciales del SGA y de Aulas Virtuales (las mismas de siempre).
+
+## Pasos para ejecutar
+
+### 1. Instalar dependencias
+
+```bash
+cd unemi-assistant
+python -m venv venv
+source venv/bin/activate      # En Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Configurar credenciales
+
+```bash
+cp .env.example .env
+```
+
+Abre `.env` con un editor de texto y completa:
+- `MOODLE_USERNAME` y `MOODLE_PASSWORD` (se usan automáticamente, Moodle no tiene detección de bots).
+- Para el SGA, el login SÍ tiene protección anti-bot, así que hay que
+  obtener el token manualmente la primera vez:
+  1. Entra a `https://sgaestudiante.unemi.edu.ec` en Chrome/Firefox.
+  2. Abre DevTools (F12) -> pestaña Network.
+  3. Inicia sesión normalmente.
+  4. Busca la petición `login.json`, pestaña Response.
+  5. Copia el valor de `"access"` y pégalo en `SGA_ACCESS_TOKEN` en tu `.env`.
+  6. Copia el valor de `"refresh"` y pégalo en `SGA_REFRESH_TOKEN`.
+  7. Copia el ID de alumno que aparece en la URL cuando consultas notas
+     (ej. `.../notas/ESTE_ID/`) y pégalo en `SGA_ALUMNO_ID`.
+
+### 3. Inicializar la base de datos
+
+```bash
+python db/setup.py
+```
+
+Esto crea el archivo `unemi_assistant.db` con las tablas definidas en
+`db/schema.sql`.
+
+### 4. Probar el conector de Moodle (el más simple, empieza por aquí)
+
+```bash
+python moodle/client.py
+```
+
+Si todo funciona, deberías ver tu nombre, tus cursos y tus próximos eventos
+impresos en la consola. **Este es el primer punto de validación real.**
+
+### 5. Probar el conector del SGA
+
+```bash
+python sga/client.py
+```
+
+**Nota:** el endpoint de refresh del token (`refresh_access_token` en
+`sga/client.py`) todavía no está confirmado — hay que inspeccionarlo en
+DevTools la primera vez que el access_token expire. Si el script falla
+con error 401, ese es el próximo paso a investigar juntos.
+
+### 6. Sincronizar datos a la base unificada (Moodle + SGA)
+
+```bash
+python core/sync_all.py
+```
+
+Esto trae tus cursos, tareas, eventos y calificaciones detalladas de Moodle,
+y tu nota final + asistencia oficial del SGA, y lo guarda todo en la base
+de datos local unificada. (El script anterior, `sync_moodle.py`, se deja
+como referencia del primer paso de validación, pero para uso real conviene
+correr `sync_all.py`).
+
+### 7. Probar el motor de consultas (modo chat, basado en reglas - sin IA todavía)
+
+```bash
+python core/query_engine.py
+```
+
+Preguntas soportadas en esta versión (sin LLM):
+- "¿qué tareas tengo pendientes?" / "¿qué tareas tengo de [materia]?"
+- "¿cómo voy en [materia]?" (nota y asistencia)
+- "dame el detalle de mis componentes en [materia]"
+- "¿en qué materia voy peor/mejor?"
+- "¿qué necesito para aprobar [materia]?"
+- "¿cuáles son mis próximos eventos?"
+- "¿qué tengo esta semana?" (resumen combinado)
+
+Esta versión usa reglas simples (detecta palabras clave) — es intencional,
+para validar que los datos y la lógica de consulta funcionan antes de sumar
+la complejidad de IA generativa encima.
+
+### 8. Probar el asistente con IA real (LLM + tool-calling)
+
+Necesitas una API key de Anthropic (gratis para probar, en
+https://console.anthropic.com) pegada en `ANTHROPIC_API_KEY` dentro de tu `.env`.
+
+```bash
+python core/assistant.py
+```
+
+Aquí ya no hay palabras clave fijas — puedes preguntar de forma más natural
+y libre (ej. "oye, ¿cuánto me falta para pasar redes?", "resúmeme cómo ando
+esta semana") y el modelo decide por sí mismo qué función de consulta usar,
+basándose únicamente en los datos reales que esa función devuelve (nunca
+inventa notas ni fechas — así se evita el problema de "alucinación" típico
+de los chatbots con IA generativa).
+
+### 9. Interfaz web (chat visual)
+
+```bash
+python web/app.py
+```
+
+Abre **http://localhost:5000** en tu navegador. Es una interfaz de chat
+simple donde puedes escribir tus preguntas y ver las respuestas del
+asistente — esta es la parte que se muestra en la sustentación de tesis,
+en vez de la consola de texto.
+
+El servidor usa Waitress (apto para producción). Para desarrollo, con
+recarga automática al editar código, arranca con `FLASK_DEBUG=1`
+(PowerShell: `$env:FLASK_DEBUG=1; python web/app.py`).
+
+**Cómo iniciar sesión en la web (2 pasos, sin contraseñas):**
+
+1. *Token de Moodle.* Con tu sesión abierta en el aula virtual, presiona F12 →
+   pestaña Network → marca "Preserve log". En otra pestaña abre
+   `https://aulagradoa.unemi.edu.ec/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`.
+   Aparecerá una fila `token=...` (marcada *canceled*, es normal). Clic
+   derecho → Copy → Copy URL, y pega ese texto en el Paso 1 del login.
+2. *Token del ERP.* Igual que en el paso 2 de este README: copia `"access"`
+   (y opcionalmente `"refresh"`) de la petición `login.json`.
+
+Si un token vence, la app lo avisa: genera uno nuevo y vuelve a entrar.
+
+Para ver las tablas de la base de datos: `python ver_bd.py`.
+
+### Modelo de datos (3FN)
+
+12 tablas, definidas en `db/schema.sql`: `estudiante`, `materia`, `docente`,
+`materia_docente`, `prerrequisito`, `matricula`, `componente_nota`, `tarea`,
+`entrega`, `evento`, `horario`, `practica`, `sesion_extraccion` y `sesion_web`
+(más `schema_version` para las migraciones). El diagrama entidad-relación está
+en `docs/academia_der.dbml` (pégalo en https://dbdiagram.io/d).
+
+Si abres una base creada con el esquema anterior, `init_db()` la detecta, la
+recrea con el esquema normalizado y hay que volver a sincronizar (los datos
+son una copia de Moodle/ERP, no se capturan a mano). Finanzas y carné quedaron
+fuera, como indica el alcance de la propuesta.
+
+Usa exactamente la misma lógica de `core/assistant.py` por debajo (mismo
+LLM, mismas herramientas, mismos datos reales) — es solo una capa visual
+encima de lo que ya está probado y funcionando.
+
+## Qué sigue después de validar esto
+
+1. Confirmar/completar el endpoint de refresh del SGA.
+2. Cargar la malla curricular y prerrequisitos (funcionalidad 6 del alcance:
+   "¿qué materias me faltan para graduarme?") — estos datos probablemente
+   están en otra sección del SGA que aún no se ha inspeccionado con DevTools.
+3. Investigar si existe un endpoint de horario de clases (no confirmado
+   todavía - la tabla `horario` en la base de datos existe pero no se llena
+   automáticamente aún).
+4. Extraer el valor real de "nota mínima para aprobar" desde la API en vez
+   de asumir 70 por defecto en `nota_necesaria()` (varía según el modelo
+   evaluativo de cada materia, como se descubrió durante las pruebas).
+5. Evaluar precisión, tiempo de respuesta y usabilidad del asistente con IA
+   real (paso 8) frente al de reglas (paso 7) — esta comparación es
+   justamente el tipo de evidencia que se documenta en el capítulo de
+   evaluación de la tesis.
+
+## Estructura del proyecto
+
+```
+unemi-assistant/
+├── .env.example        # Plantilla de configuración (copiar a .env)
+├── sga/client.py        # Conector API del SGA (notas, asistencia)
+├── moodle/client.py     # Conector API de Moodle (cursos, tareas, eventos, calificaciones)
+├── web/panel.py         # Datos reales del tablero (conexiones, materias, bitácora)
+├── db/schema.sql        # Modelo de datos relacional
+├── db/setup.py          # Inicializa la base de datos SQLite
+├── core/sync_moodle.py  # Sincroniza solo Moodle (primer paso de validación)
+├── core/sync_all.py     # Sincroniza Moodle + SGA (uso real)
+├── core/query_engine.py # Motor de consultas v1: reglas simples (sin IA)
+├── core/assistant.py    # Asistente v2: LLM real con tool-calling (RAG)
+├── web/app.py            # Servidor Flask (interfaz web)
+├── web/sessions_store.py # Sesiones web persistentes y cifradas (SQLite)
+├── web/templates/        # login.html (2 pasos por token) e index.html
+├── ver_bd.py             # Muestra las tablas de la base de datos
+└── requirements.txt
+```
+
+
+## Espacio de estudio (`/estudio`)
+
+Practica por materia, videos y un tutor de conceptos. Código en `core/estudio.py`; rutas `/api/estudio/*` en `web/app.py`.
+
+- **Práctica:** el modelo genera preguntas nuevas de opción múltiple (nunca copiadas de tus tareas o exámenes; se le pasan los nombres de tus evaluaciones activas para que las evite). La respuesta correcta se queda en el servidor hasta que el estudiante responde, y las opciones se mezclan. Solo se guarda el resultado en la tabla `practica` (cuántas acertó), no las preguntas ni las respuestas.
+- **Videos:** se recomiendan como búsquedas de YouTube con enfoque educativo, no como enlaces inventados. Se descartan las búsquedas que piden exámenes resueltos, respuestas o trucos.
+- **Tutor:** explica conceptos con ejemplos propios. No da respuestas de tests, tareas ni exámenes. Tiene dos capas: un filtro en código (determinista, no llama al modelo cuando detecta el pedido) y reglas en el prompt del modelo.
+- Modelo configurable con `ESTUDIO_MODEL` en `.env` (por defecto `claude-sonnet-4-6`).
+
+
+## Despliegue, protección y escalabilidad
+
+- Guía paso a paso (Cloudflare Tunnel para pruebas, Render para dejarla siempre activa): `docs/DESPLIEGUE.md`.
+- Protecciones: límites de uso por ventana, tope diario de consultas a la IA, cupos con sala de espera para lo lento, cabeceras de seguridad (`web/limites.py`, `web/app.py`).
+- Base de datos SQLite en modo WAL con una conexión por hilo del servidor (no por sesión).
+- Pruebas de carga reproducibles: `pruebas/` (ver `pruebas/README.md`). Línea base y método de medición para el capítulo de resultados.
+- Limitación conocida: corre como un solo proceso; para varias réplicas hay que pasar el estado de conversación a Redis y la base a PostgreSQL.

@@ -1,0 +1,3 @@
+# Solo para las pruebas de carga (el servidor real no las necesita)
+requests>=2.31
+psutil>=5.9   # opcional: permite medir memoria y CPU del servidor durante la prueba

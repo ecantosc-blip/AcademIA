@@ -1,0 +1,248 @@
+"""
+Asistente inteligente - version 2 (con LLM real, patron RAG/tool-calling).
+
+En vez del router de reglas simples de query_engine.py (deteccion de
+palabras clave), aqui un modelo de lenguaje (Claude) decide que funcion
+llamar segun la pregunta, y luego redacta la respuesta final en base a
+los datos reales que devuelve esa funcion. Esto es lo que evita que el
+modelo "invente" notas o fechas: solo puede hablar de lo que la funcion
+realmente devolvio.
+
+Requiere una API key de Anthropic (console.anthropic.com) en el .env:
+    ANTHROPIC_API_KEY=sk-ant-...
+"""
+import os
+import sys
+import json
+import threading
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from core.query_engine import QueryEngine
+
+import anthropic
+
+
+# Definicion de las "herramientas" que el modelo puede invocar. Cada una
+# corresponde 1 a 1 con un metodo de QueryEngine.
+TOOLS = [
+    {
+        "name": "tareas_pendientes",
+        "description": "Obtiene todas las tareas pendientes del estudiante, de todas las materias.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "tareas_por_materia",
+        "description": "Obtiene las tareas pendientes de una materia especifica.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"nombre_materia": {"type": "string", "description": "Nombre de la materia"}},
+            "required": ["nombre_materia"],
+        },
+    },
+    {
+        "name": "calificacion_materia",
+        "description": "Obtiene la nota final y asistencia de una materia especifica.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"nombre_materia": {"type": "string"}},
+            "required": ["nombre_materia"],
+        },
+    },
+    {
+        "name": "calificaciones_detalladas",
+        "description": "Obtiene el detalle de calificaciones por componente (parciales, tareas, etc.) de una materia.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"nombre_materia": {"type": "string"}},
+            "required": ["nombre_materia"],
+        },
+    },
+    {
+        "name": "comparar_materias",
+        "description": "Compara las notas entre todas las materias para saber en cual va mejor o peor.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"peor": {"type": "boolean", "description": "true para la nota mas baja, false para la mas alta"}},
+        },
+    },
+    {
+        "name": "nota_necesaria",
+        "description": "Calcula cuantos puntos le faltan al estudiante para aprobar una materia.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"nombre_materia": {"type": "string"}},
+            "required": ["nombre_materia"],
+        },
+    },
+    {
+        "name": "proximos_eventos",
+        "description": "Obtiene los proximos eventos y examenes del calendario academico.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "horario_materia",
+        "description": "Obtiene el horario de clases, opcionalmente filtrado por materia.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"nombre_materia": {"type": "string"}},
+        },
+    },
+    {
+        "name": "profesor_materia",
+        "description": "Obtiene el nombre y correo del profesor de una materia especifica.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"nombre_materia": {"type": "string"}},
+            "required": ["nombre_materia"],
+        },
+    },
+    {
+        "name": "rendimiento_materia",
+        "description": "Muestra el desglose de calificaciones por componente (N1, N2, N3, N4, EXP1, EXP2, examen) de una materia, con el puntaje ponderado obtenido hasta ahora sobre 100.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"nombre_materia": {"type": "string"}},
+            "required": ["nombre_materia"],
+        },
+    },
+    {
+        "name": "materias_por_semestre",
+        "description": "Lista todas las materias de la malla curricular que corresponden a un semestre/nivel especifico (ej. 'materias del 5to semestre').",
+        "input_schema": {
+            "type": "object",
+            "properties": {"semestre": {"type": "integer", "description": "Numero de semestre, ej. 5"}},
+            "required": ["semestre"],
+        },
+    },
+    {
+        "name": "notas_por_semestre",
+        "description": "Muestra las notas (y estado aprobada/reprobada) que el estudiante sacó en las materias de un semestre/nivel de la malla, ej. 'con qué notas pasé el primer semestre' -> semestre=1. Úsala para preguntas sobre las notas de un semestre concreto.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"semestre": {"type": "integer", "description": "Numero de semestre, ej. 1"}},
+            "required": ["semestre"],
+        },
+    },
+    {
+        "name": "materias_faltantes",
+        "description": "Lista las materias que el estudiante aun no ha aprobado segun su malla curricular (lo que le falta para graduarse).",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "materias_aprobadas",
+        "description": "Lista todas las materias que el estudiante ha aprobado en cualquier semestre (historial completo, no solo el actual).",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "record_academico",
+        "description": "Muestra el registro academico completo del estudiante: todas las materias cursadas en todos los semestres, con su estado (aprobada/reprobada/pendiente) y nota.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "materias_actuales",
+        "description": "Lista todas las materias en las que el estudiante esta matriculado actualmente, con su nota si esta disponible.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "resumen_semana",
+        "description": "Genera un resumen general de la semana: tareas pendientes + proximos eventos combinados.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+]
+
+SYSTEM_PROMPT = """Eres AcademIA, un asistente academico para estudiantes universitarios.
+Respondes preguntas sobre tareas, notas, calificaciones, eventos y horario,
+usando UNICAMENTE los datos que obtienes de las herramientas disponibles.
+
+Reglas importantes:
+- NUNCA inventes una nota, fecha o dato que no venga de una herramienta.
+- Si una herramienta indica que no hay datos sincronizados, dilo claramente
+  al estudiante en vez de inventar una respuesta.
+- Responde de forma breve, clara y en tono cercano (eres un asistente
+  universitario, no un reporte formal).
+- Si la pregunta no tiene relacion con tareas/notas/eventos/horario
+  academico, indica amablemente que solo puedes ayudar con esos temas.
+"""
+
+
+class AssistantLLM:
+    def __init__(self, estudiante_id: int = 1, model: str = "claude-sonnet-4-6"):
+        self.client = anthropic.Anthropic()  # usa ANTHROPIC_API_KEY del entorno
+        self.model = model
+        self.engine = QueryEngine(estudiante_id=estudiante_id)
+        self.historial = []
+        self.herramientas_usadas = []   # herramientas que uso en la ultima pregunta
+        self.lock = threading.Lock()    # dos preguntas a la vez de la misma sesion no mezclan el historial
+
+    def _ejecutar_herramienta(self, nombre: str, args: dict) -> str:
+        metodo = getattr(self.engine, nombre, None)
+        if not metodo:
+            return f"Error: herramienta '{nombre}' no existe."
+        try:
+            return metodo(**args)
+        except Exception as e:
+            import traceback
+            print(f"\n[ERROR interno en herramienta '{nombre}' con args {args}]")
+            traceback.print_exc()
+            print()
+            return f"Error ejecutando {nombre}: {e}"
+
+    def preguntar(self, pregunta: str) -> str:
+        self.herramientas_usadas = []
+        self.historial.append({"role": "user", "content": pregunta})
+
+        while True:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=1024,
+                system=SYSTEM_PROMPT,
+                tools=TOOLS,
+                messages=self.historial,
+            )
+
+            self.historial.append({"role": "assistant", "content": response.content})
+
+            if response.stop_reason != "tool_use":
+                # El modelo ya tiene lo que necesita para responder en texto
+                texto = "".join(b.text for b in response.content if b.type == "text")
+                return texto
+
+            # El modelo pidio usar una o mas herramientas
+            tool_results = []
+            for block in response.content:
+                if block.type == "tool_use":
+                    if block.name not in self.herramientas_usadas:
+                        self.herramientas_usadas.append(block.name)
+                    resultado = self._ejecutar_herramienta(block.name, block.input)
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": str(resultado),
+                    })
+
+            self.historial.append({"role": "user", "content": tool_results})
+
+    def close(self):
+        self.engine.close()
+
+
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        print("Falta ANTHROPIC_API_KEY en .env - consiguela en console.anthropic.com")
+        sys.exit(1)
+
+    asistente = AssistantLLM()
+    print("=== AcademIA (con IA real) ===")
+    print("Escribe tu pregunta (o 'salir' para terminar)\n")
+
+    while True:
+        pregunta = input("Tú: ")
+        if pregunta.lower() in ("salir", "exit", "quit"):
+            break
+        respuesta = asistente.preguntar(pregunta)
+        print(f"Asistente: {respuesta}\n")
+
+    asistente.close()

@@ -1,0 +1,10 @@
+.env
+*.db
+venv/
+__pycache__/
+*.pyc
+.session_key
+.venv/
+*.db-wal
+*.db-shm
+pruebas/resultados_*/

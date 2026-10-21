@@ -1,0 +1,122 @@
+// DER FINAL de AcademIA (3FN). Pegar en https://dbdiagram.io/d
+Project AcademIA { database_type: 'SQLite' }
+
+Table componente_nota {
+  id integer [pk, increment]
+  matricula_id integer [not null, ref: > matricula.id]
+  nombre_item text [not null]
+  calificacion text
+  porcentaje text
+}
+
+Table docente {
+  id integer [pk, increment]
+  nombre text [not null]
+  email text
+  indexes {
+    (nombre, email) [unique]
+  }
+}
+
+Table entrega {
+  tarea_id integer [pk, ref: > tarea.id]
+  estudiante_id integer [pk, ref: > estudiante.id]
+  entregada integer [not null]
+}
+
+Table estudiante {
+  id integer [pk]
+  nombre text [not null]
+  sga_alumno_id text
+  moodle_user_id integer
+  fecha_sincronizacion text
+}
+
+Table evento {
+  id integer [pk, increment]
+  estudiante_id integer [ref: > estudiante.id]
+  materia_id integer [ref: > materia.id]
+  nombre text [not null]
+  tipo text
+  fecha text [not null]
+}
+
+Table horario {
+  id integer [pk, increment]
+  materia_id integer [not null, ref: > materia.id]
+  dia text
+  hora_inicio text
+  hora_fin text
+  aula text
+}
+
+Table materia {
+  id integer [pk]
+  nombre text [not null]
+  moodle_course_id integer [unique]
+  semestre integer
+  creditos integer
+}
+
+Table materia_docente {
+  materia_id integer [pk, ref: > materia.id]
+  docente_id integer [pk, ref: > docente.id]
+}
+
+Table matricula {
+  id integer [pk, increment]
+  estudiante_id integer [not null, ref: > estudiante.id]
+  materia_id integer [not null, ref: > materia.id]
+  periodo text
+  estado text
+  nota_final real
+  asistencia real
+  indexes {
+    (estudiante_id, materia_id, periodo) [unique]
+  }
+}
+
+Table prerrequisito {
+  materia_id integer [pk, ref: > materia.id]
+  materia_requisito_id integer [pk, ref: > materia.id]
+}
+
+Table sesion_extraccion {
+  id integer [pk, increment]
+  estudiante_id integer [not null, ref: > estudiante.id]
+  plataforma text
+  fecha text [not null]
+  estado text
+  detalle text
+}
+
+Table sesion_web {
+  sid_hash text [pk]
+  estudiante_id integer [ref: > estudiante.id]
+  datos_cifrados blob [not null]
+  creada real [not null]
+  expira real [not null]
+}
+
+Table tarea {
+  id integer [pk, increment]
+  materia_id integer [not null, ref: > materia.id]
+  moodle_assign_id integer
+  nombre text [not null]
+  fecha_entrega text
+  indexes {
+    (materia_id, moodle_assign_id) [unique]
+  }
+}
+
+
+Table practica {
+  id integer [pk, increment]
+  estudiante_id integer [not null, ref: > estudiante.id]
+  materia_id integer [not null, ref: > materia.id]
+  tema text
+  fecha text [not null]
+  total integer [not null]
+  aciertos integer [not null]
+  indexes { (estudiante_id, materia_id) }
+}

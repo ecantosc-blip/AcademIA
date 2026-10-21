@@ -1,0 +1,29 @@
+# Despliegue en Render (https://render.com): "New > Blueprint" y apuntar a este repositorio.
+# Necesita un plan de pago (disco persistente para la base de datos).
+services:
+  - type: web
+    name: academia
+    runtime: docker
+    plan: starter
+    healthCheckPath: /salud
+    disk:
+      name: datos
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false            # se escribe a mano en el panel de Render; nunca en el repositorio
+      - key: SESSION_ENC_KEY
+        generateValue: true    # Render genera un secreto; la app deriva de el la llave de cifrado
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DB_PATH
+        value: /data/unemi_assistant.db
+      - key: HOST
+        value: 0.0.0.0
+      - key: THREADS
+        value: "48"
+      - key: LIMITE_DIARIO_IA
+        value: "500"

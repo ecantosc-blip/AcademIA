@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi panel — AcademIA</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%2314213D%27/%3E%3Cpath d=%27M9 23 16 8l7 15M12 19h8%27 stroke=%27%23fff%27 stroke-width=%273%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#EEF1F5; --surface:#FFFFFF; --ink:#14213D; --muted:#566074; --line:#D5DBE3;
+    --accent:#2447D6; --accent-ink:#FFFFFF; --accent-bg:#E6EBFB;
+    --ok:#1B7F4B; --ok-bg:#E3F3EA; --warn:#8F5600; --warn-bg:#FCEFD6; --bad:#B3261E; --bad-bg:#FBE4E2;
+    --stub:#14213D; --stub-ink:#E8ECF5; --stub-muted:#A9B4CB;
+  }
+  :root[data-theme="dark"]{
+    --canvas:#16191F; --surface:#1E2229; --ink:#E3E5E9; --muted:#9097A3; --line:#303641;
+    --accent:#8EA3D8; --accent-ink:#14171C; --accent-bg:#262D3D;
+    --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
+    --stub:#101318; --stub-ink:#E3E5E9; --stub-muted:#9097A3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --canvas:#16191F; --surface:#1E2229; --ink:#E3E5E9; --muted:#9097A3; --line:#303641;
+      --accent:#8EA3D8; --accent-ink:#14171C; --accent-bg:#262D3D;
+      --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
+      --stub:#101318; --stub-ink:#E3E5E9; --stub-muted:#9097A3;
+    }
+  }
+
+  .icono{display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; padding:0; flex:none; position:relative;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; cursor:pointer}
+  .icono:hover{border-color:var(--accent)}
+  .icono svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+  .icono[data-tip]::after{content:attr(data-tip); position:absolute; top:calc(100% + 8px); right:0; white-space:nowrap;
+    background:var(--ink); color:var(--canvas); font-size:.78rem; padding:5px 9px; border-radius:6px; opacity:0; pointer-events:none;
+    transition:opacity .12s; z-index:20}
+  .icono:hover::after,.icono:focus-visible::after{opacity:1}
+  .enlace{color:var(--ink); text-decoration:none; font-size:.92rem; font-weight:500; padding:7px 12px; border:1px solid var(--line); border-radius:10px; background:var(--surface); margin-right:10px}
+  .enlace:hover{border-color:var(--accent)}
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0; background:var(--canvas); color:var(--ink); font-family:'Public Sans',system-ui,sans-serif; font-size:16px; line-height:1.5}
+  :focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  .num{font-variant-numeric:tabular-nums}
+  button{font:inherit; cursor:pointer}
+
+  /* ---- Barra superior ---- */
+  .bar{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px clamp(16px,3vw,40px)}
+  .brand{font-weight:700; font-size:1.2rem; letter-spacing:-.01em; margin:0}
+  .bar .quien{color:var(--muted); font-size:.92rem; margin-right:12px; text-align:right}
+  .btn-sec{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.85rem}
+
+  .wrap{padding:0 clamp(16px,3vw,40px) 48px; max-width:1680px; margin:0 auto}
+
+  /* ---- Aviso ---- */
+  .aviso{background:var(--warn-bg); color:var(--warn); border:1px solid var(--warn); border-radius:12px; padding:12px 16px; margin-bottom:16px; display:flex; gap:12px; justify-content:space-between; align-items:flex-start}
+  .aviso button{background:none; border:0; color:inherit; font-weight:600; padding:0 4px}
+  .aviso.bad{background:var(--bad-bg); color:var(--bad); border-color:var(--bad)}
+
+  /* ---- Pase de acceso ---- */
+  .pase{
+    display:grid; grid-template-columns:minmax(200px,1fr) minmax(0,2fr) minmax(0,2fr) auto;
+    background:var(--surface); border:1px solid var(--line); border-radius:20px; overflow:hidden; margin-bottom:20px;
+  }
+  .pase > *{padding:20px 22px}
+  .stub{background:var(--stub); color:var(--stub-ink); display:flex; flex-direction:column; justify-content:space-between; gap:18px}
+  .stub h2{margin:0; font-size:1.1rem; letter-spacing:-.01em}
+  .stub ul{list-style:none; margin:0; padding:0; display:grid; gap:4px; color:var(--stub-muted); font-size:.88rem}
+  .conn{border-left:2px dashed var(--line); display:flex; flex-direction:column; gap:10px; min-width:0}
+  .conn h3{margin:0; font-size:1rem; display:flex; align-items:center; gap:8px}
+  .punto{width:10px; height:10px; border-radius:50%; background:var(--muted); flex:none}
+  .punto.ok{background:var(--ok)} .punto.warn{background:var(--warn)} .punto.bad{background:var(--bad)}
+  .conn .linea{color:var(--muted); font-size:.9rem; margin:0}
+  .cuenta{font-size:1.5rem; font-weight:500; letter-spacing:-.02em}
+  .cuenta.ok{color:var(--ok)} .cuenta.warn{color:var(--warn)} .cuenta.bad{color:var(--bad)}
+  .riel{height:6px; border-radius:99px; background:var(--line); overflow:hidden}
+  .riel i{display:block; height:100%; background:var(--ok); width:0; transition:width .6s}
+  .riel i.warn{background:var(--warn)} .riel i.bad{background:var(--bad)}
+  .acciones{border-left:2px dashed var(--line); display:flex; flex-direction:column; gap:10px; justify-content:center}
+  .btn-p{background:var(--accent); color:var(--accent-ink); border:0; border-radius:10px; padding:11px 16px; font-weight:600; white-space:nowrap}
+  .btn-p:disabled{opacity:.6; cursor:wait}
+  .btn-o{background:transparent; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:10px 16px; font-weight:500; white-space:nowrap; width:100%}
+
+  /* ---- Rejilla ---- */
+  .rejilla{display:grid; grid-template-columns:290px minmax(0,1fr) minmax(340px,430px); gap:20px; align-items:start;
+    grid-template-areas:"rail main chat"}
+  .col-rail{grid-area:rail} .col-main{grid-area:main} .chat{grid-area:chat}
+  .rail-card h2{font-size:1rem}
+  .permisos{list-style:none; margin:0 0 4px; padding:0; display:grid; gap:7px; font-size:.9rem}
+  .permisos li{display:flex; gap:9px; align-items:flex-start}
+  .permisos svg{width:16px; height:16px; flex:none; margin-top:3px; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+  .permisos .si svg{stroke:var(--ok)} .permisos .no svg{stroke:var(--bad)}
+  .sub-t{margin:14px 0 8px; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .nota-token{margin:14px 0 0; padding-top:12px; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem}
+  .lect{list-style:none; margin:0; padding:0; display:grid; gap:10px}
+  .lect li{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; font-size:.86rem}
+  .lect .punto{margin-top:6px}
+  .lect b{font-weight:600} .lect small{grid-column:2; color:var(--muted); overflow-wrap:anywhere}
+  .barras{display:grid; gap:9px}
+  .barra{display:grid; grid-template-columns:2.2rem 1fr 2.8rem; gap:10px; align-items:center; font-size:.85rem}
+  .barra .pista{height:10px; background:var(--accent-bg); border-radius:99px; overflow:hidden}
+  .barra .pista i{display:block; height:100%; background:var(--accent); border-radius:99px}
+  .barra b{text-align:right; font-weight:600}
+  .barra span{color:var(--muted)}
+  .pie-nota{margin:12px 0 0; color:var(--muted); font-size:.8rem}
+  .hola{margin:0; font-size:1.35rem; font-weight:700; letter-spacing:-.01em; line-height:1.2}
+  .stub p.sub{margin:0; color:var(--stub-muted); font-size:.88rem}
+  .col{display:grid; gap:20px; min-width:0}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px 22px}
+  .card h2{margin:0 0 14px; font-size:1.05rem; letter-spacing:-.01em; display:flex; justify-content:space-between; align-items:baseline; gap:12px}
+  .card h2 small{font-weight:400; color:var(--muted); font-size:.85rem}
+  .vacio{color:var(--muted); margin:0}
+  .vacio button{background:none; border:0; color:var(--accent); font-weight:600; padding:0; text-decoration:underline}
+
+  /* materias */
+  .materia{display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:6px 24px; padding:14px 0; border-top:1px solid var(--line); align-items:start}
+  .materia:first-of-type{border-top:0; padding-top:0}
+  .materia .nombre{font-weight:600}
+  .cifra{text-align:right}
+  .cifra b{display:block; font-size:1.35rem; line-height:1.1; font-weight:600}
+  .cifra span{color:var(--muted); font-size:.78rem}
+  .totales{grid-column:1 / -1; display:flex; gap:6px; flex-wrap:wrap}
+  .total{background:var(--accent-bg); color:var(--ink); border-radius:8px; padding:2px 10px; font-size:.85rem}
+  .total b{font-weight:600}
+  .malla{margin-top:16px; padding-top:16px; border-top:1px solid var(--line)}
+  .malla p{margin:0 0 8px; color:var(--muted); font-size:.92rem}
+  .malla p b{color:var(--ink)}
+
+  /* fechas */
+  .fecha{display:grid; grid-template-columns:5.2rem minmax(0,1fr); gap:14px; padding:10px 0; border-top:1px solid var(--line)}
+  .fecha:first-of-type{border-top:0; padding-top:0}
+  .fecha .cuando{font-size:.82rem; line-height:1.3}
+  .fecha .cuando b{display:block; font-size:.95rem}
+  .fecha .que{font-weight:500; overflow-wrap:anywhere}
+  .fecha .de{color:var(--muted); font-size:.85rem}
+  .etq{display:inline-block; font-size:.75rem; padding:0 7px; border-radius:6px; margin-right:6px; background:var(--accent-bg); font-weight:500}
+
+  /* horario */
+  .dias{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .dia{border:1px solid var(--line); border-radius:10px; padding:10px 12px}
+  .dia h3{margin:0 0 8px; font-size:.92rem}
+  .clase{font-size:.85rem; margin-bottom:8px}
+  .clase:last-child{margin-bottom:0}
+  .clase .hora{color:var(--muted); font-size:.78rem; display:block}
+
+  /* bitacora */
+  details.bit summary{cursor:pointer; font-weight:600; font-size:1.05rem; list-style:none; display:flex; justify-content:space-between}
+  details.bit summary::-webkit-details-marker{display:none}
+  details.bit summary small{color:var(--muted); font-weight:400}
+  .tabla{width:100%; border-collapse:collapse; margin-top:14px; font-size:.88rem}
+  .tabla th{text-align:left; color:var(--muted); font-weight:500; padding:6px 10px 6px 0; border-bottom:1px solid var(--line)}
+  .tabla td{padding:8px 10px 8px 0; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere}
+  .res{font-weight:600}
+  .res.ok{color:var(--ok)} .res.bad{color:var(--bad)}
+  .scroll{overflow-x:auto}
+
+  /* ---- Chat ---- */
+  .chat{position:sticky; top:16px; display:flex; flex-direction:column; height:min(78vh,760px); padding:0; overflow:hidden}
+  .chat header{padding:16px 20px; border-bottom:1px solid var(--line)}
+  .chat-cab{display:flex; align-items:flex-start; justify-content:space-between; gap:12px}
+  #limpiar[hidden]{display:none}
+  .chat header h2{margin:0 0 2px}
+  .chat header p{margin:0; color:var(--muted); font-size:.85rem}
+  .log{flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:14px}
+  .msg{max-width:92%}
+  .msg.yo{align-self:flex-end; background:var(--accent); color:var(--accent-ink); padding:9px 13px; border-radius:14px 14px 4px 14px}
+  .msg.ia{align-self:flex-start}
+  .burbuja{background:var(--canvas); border:1px solid var(--line); padding:10px 14px; border-radius:14px 14px 14px 4px; overflow-wrap:anywhere}
+  .burbuja p{margin:0 0 8px} .burbuja p:last-child{margin-bottom:0}
+  .burbuja ul{margin:4px 0 8px; padding-left:1.1rem}
+  .burbuja.err{background:var(--bad-bg); border-color:var(--bad); color:var(--bad)}
+  .fuentes{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap}
+  .fuente{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:1px 7px}
+  .sugerencias{display:flex; flex-wrap:wrap; gap:8px; padding:0 20px 12px}
+  .sugerencias[hidden]{display:none}
+  .sug{background:var(--surface); border:1px solid var(--line); color:var(--ink); border-radius:99px; padding:6px 12px; font-size:.84rem}
+  .sug:hover{border-color:var(--accent)}
+  .pregunta{display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--line)}
+  .pregunta input{flex:1; min-width:0; padding:11px 14px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font:inherit}
+  .pregunta input:focus{border-color:var(--accent)}
+  .esc{display:inline-flex; gap:4px; padding:4px 2px}
+  .esc i{width:7px; height:7px; border-radius:50%; background:var(--muted); animation:salta 1s infinite}
+  .esc i:nth-child(2){animation-delay:.15s} .esc i:nth-child(3){animation-delay:.3s}
+  @keyframes salta{0%,80%,100%{opacity:.3} 40%{opacity:1}}
+  @media (prefers-reduced-motion: reduce){ .esc i{animation:none; opacity:.7} .riel i{transition:none} }
+
+  @media (max-width: 1320px){
+    .rejilla{grid-template-columns:minmax(0,1fr) minmax(340px,420px); grid-template-areas:"main chat" "rail rail"}
+    .col-rail{grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); align-items:start}
+  }
+  @media (max-width: 1080px){
+    .pase{grid-template-columns:1fr 1fr}
+    .stub{grid-column:1 / -1}
+    .conn{border-left:0; border-top:2px dashed var(--line)}
+    .acciones{grid-column:1 / -1; border-left:0; border-top:2px dashed var(--line); flex-direction:row; flex-wrap:wrap}
+    .acciones form{flex:1}
+    .rejilla{grid-template-columns:1fr; grid-template-areas:"main" "chat" "rail"}
+    .chat{position:static; height:70vh}
+  }
+  @media (max-width: 560px){
+    .pase{grid-template-columns:1fr}
+    .bar .quien{display:none}
+    .materia{grid-template-columns:1fr auto}
+    .materia .cifra.asis{display:none}
+  }
+</style>
+<script>
+  try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
+</script>
+</head>
+<body>
+
+<div class="bar">
+  <p class="brand">AcademIA</p>
+  <div style="display:flex; align-items:center">
+    <a class="enlace" href="/estudio">Espacio de estudio</a>
+    <span class="quien">{{ nombre }}</span>
+    <button class="icono" type="button" id="tema" aria-label="Cambiar tema"></button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div id="avisos">
+    {% if aviso %}
+    <div class="aviso bad" role="alert"><span>{{ aviso }}</span><button type="button" onclick="this.parentElement.remove()" aria-label="Cerrar aviso">Cerrar</button></div>
+    {% endif %}
+  </div>
+
+  <!-- El pase de acceso: que esta conectado, hasta cuando y como cerrarlo -->
+  <section class="pase" aria-label="Estado del acceso">
+    <div class="stub">
+      <p class="hola">Hola{% if nombre %}, {{ nombre.split()[0]|capitalize }}{% endif %}</p>
+      <p class="sub">Tu acceso es de solo lectura y no guarda tu contraseña.</p>
+    </div>
+    <div class="conn" id="c-moodle">
+      <h3><span class="punto" id="p-moodle"></span>Moodle</h3>
+      <p class="cuenta mono" id="t-moodle">Activo</p>
+      <p class="linea" id="l-moodle">Cargando…</p>
+    </div>
+    <div class="conn" id="c-erp">
+      <h3><span class="punto" id="p-erp"></span>ERP académico</h3>
+      <p class="cuenta mono num" id="t-erp">--:--:--</p>
+      <div class="riel" aria-hidden="true"><i id="r-erp"></i></div>
+      <p class="linea" id="l-erp">Cargando…</p>
+    </div>
+    <div class="acciones">
+      <button class="btn-p" type="button" id="btn-sync">Actualizar datos</button>
+      <form method="POST" action="/logout"><button class="btn-o" type="submit">Cerrar acceso</button></form>
+    </div>
+  </section>
+
+  <div class="rejilla">
+    <aside class="col col-rail" aria-label="Permisos y lecturas">
+      <section class="card rail-card" aria-labelledby="h-perm">
+        <h2 id="h-perm">Qué puede ver el asistente</h2>
+        <p class="sub-t" style="margin-top:0">Puede leer</p>
+        <ul class="permisos">
+          <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tus notas y asistencia</li>
+          <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tareas y fechas de Moodle</li>
+          <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu horario de clases</li>
+          <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu historial y malla</li>
+        </ul>
+        <p class="sub-t">No puede</p>
+        <ul class="permisos">
+          <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cambiar ni enviar nada por ti</li>
+          <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Ver finanzas ni carné</li>
+          <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Guardar tu contraseña</li>
+        </ul>
+        <p class="nota-token">El acceso se cierra solo cuando vence el token del ERP. Tú también puedes cerrarlo cuando quieras.</p>
+      </section>
+
+      <section class="card rail-card" id="card-sem" aria-labelledby="h-sem" hidden>
+        <h2 id="h-sem">Tu promedio por semestre</h2>
+        <div class="barras" id="semestres"></div>
+        <p class="pie-nota">Solo materias aprobadas, según tu historial.</p>
+      </section>
+
+      <section class="card rail-card" aria-labelledby="h-lec">
+        <h2 id="h-lec">Últimas lecturas</h2>
+        <ul class="lect" id="lecturas"><li><small>Cargando…</small></li></ul>
+      </section>
+    </aside>
+
+    <div class="col col-main">
+      <section class="card" aria-labelledby="h-mat">
+        <h2 id="h-mat">Lo que cursas ahora</h2>
+        <div id="materias"><p class="vacio">Cargando…</p></div>
+        <div class="malla" id="malla" hidden></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-fec">
+        <h2 id="h-fec">Lo que viene</h2>
+        <div id="fechas"><p class="vacio">Cargando…</p></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-hor">
+        <h2 id="h-hor">Tu semana</h2>
+        <div id="horario"><p class="vacio">Cargando…</p></div>
+      </section>
+
+    </div>
+
+    <section class="card chat" aria-label="Asistente">
+      <header class="chat-cab">
+        <div>
+          <h2>Pregúntame lo que quieras</h2>
+          <p>Te respondo con lo que leí de Moodle y del ERP.</p>
+        </div>
+        <button class="icono" type="button" id="limpiar" data-tip="Limpiar chat" aria-label="Limpiar chat" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/></svg></button>
+      </header>
+      <div class="log" id="log" role="log" aria-live="polite">
+        <div class="msg ia"><div class="burbuja"><p>¡Hola! Puedo revisar tus notas, tareas, horario e historial. ¿Qué quieres saber?</p></div></div>
+      </div>
+      <div class="sugerencias" id="sugerencias">
+        <button class="sug" type="button">¿Qué tareas tengo pendientes?</button>
+        <button class="sug" type="button">¿Qué nota tengo en cada materia?</button>
+        <button class="sug" type="button">¿Con qué notas pasé el primer semestre?</button>
+        <button class="sug" type="button">¿Qué clases tengo esta semana?</button>
+      </div>
+      <form class="pregunta" id="form-chat">
+        <input type="text" id="entrada" placeholder="Escribe tu pregunta" autocomplete="off" aria-label="Tu pregunta">
+        <button class="btn-p" type="submit" id="enviar">Enviar</button>
+      </form>
+    </section>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  // Crea elementos con texto seguro (nada de lo que llega de Moodle/ERP se interpreta como HTML).
+  function el(tag, props, ...hijos){
+    const e = document.createElement(tag);
+    if(props) for(const [k,v] of Object.entries(props)){
+      if(k === 'class') e.className = v; else if(k === 'text') e.textContent = v; else e.setAttribute(k, v);
+    }
+    for(const h of hijos) if(h != null) e.append(h);
+    return e;
+  }
+
+  // ---- Tema ----
+  function esOscuro(){
+    const t = document.documentElement.getAttribute('data-theme');
+    return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  const SVG_LUNA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>', SVG_SOL = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  function rotuloTema(){
+    const b = $('tema'), osc = esOscuro();
+    b.innerHTML = osc ? SVG_SOL : SVG_LUNA;
+    b.dataset.tip = osc ? 'Modo claro' : 'Modo oscuro';
+    b.setAttribute('aria-label', 'Cambiar a ' + b.dataset.tip.toLowerCase());
+  }
+  $('tema').addEventListener('click', () => {
+    const nuevo = esOscuro() ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nuevo);
+    try{ localStorage.setItem('tema', nuevo); }catch(e){}
+    rotuloTema();
+  });
+  rotuloTema();
+
+  // ---- Formatos ----
+  const hhmm = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit',hour12:false}); };
+  const num = n => n == null ? '—' : (Math.round(n*10)/10).toString().replace('.',',');
+  function cuando(iso){
+    const d = new Date(iso); if(isNaN(d)) return ['',''];
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const dias = Math.round((new Date(d).setHours(0,0,0,0) - hoy) / 864e5);
+    const rel = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : 'En ' + dias + ' días';
+    return [rel, d.toLocaleDateString('es-EC',{day:'numeric',month:'short'}) + ', ' + hhmm(iso)];
+  }
+
+  // ---- Pase de acceso ----
+  let vence = null, desfase = 0, renovable = false, ultimoRenovar = 0;
+  const VIDA_TOKEN = 7200;   // los tokens del ERP duran 2 h desde que se generan
+
+  function pintarCuenta(){
+    const t = $('t-erp'), p = $('p-erp'), r = $('r-erp'), l = $('l-erp');
+    if(vence == null){ t.textContent = 'Sin fecha'; t.className = 'cuenta mono'; l.textContent = 'No se pudo leer cuándo vence el token.'; return; }
+    const resto = vence - (Date.now() + desfase) / 1000;
+    if(resto <= 0){
+      t.textContent = 'Venció'; t.className = 'cuenta mono bad'; p.className = 'punto bad'; r.className = 'bad'; r.style.width = '0';
+      l.textContent = renovable ? 'No se pudo renovar solo. Cierra el acceso y entra con un token nuevo del ERP.' : 'Cierra el acceso y vuelve a entrar con un token nuevo del ERP.';
+      return;
+    }
+    const h = Math.floor(resto/3600), m = Math.floor(resto%3600/60), s = Math.floor(resto%60);
+    t.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    // Con token de renovacion el contador se reinicia solo: no hay por que alarmar.
+    const nivel = renovable ? 'ok' : resto < 900 ? 'bad' : resto < 1800 ? 'warn' : 'ok';
+    t.className = 'cuenta mono num ' + nivel; p.className = 'punto ' + nivel; r.className = nivel;
+    r.style.width = Math.min(100, resto / VIDA_TOKEN * 100) + '%';
+    l.textContent = (renovable ? 'Se renueva solo' : nivel === 'ok' ? 'Conectado' : 'Vence pronto') + (l.dataset.ult ? ' · ' + l.dataset.ult : '');
+  }
+  setInterval(pintarCuenta, 1000);
+  // Cuando faltan menos de 5 min, se pide el panel: el servidor renueva el token y el contador se reinicia.
+  setInterval(() => {
+    if(renovable && vence != null && vence - (Date.now() + desfase) / 1000 < 300 && Date.now() - ultimoRenovar > 240000){
+      ultimoRenovar = Date.now(); cargarPanel();
+    }
+  }, 20000);
+
+  // ---- Panel ----
+  const sinNota = m => m.nota_final == null || Number(m.nota_final) === 0;
+  function pintarMaterias(d){
+    const cont = $('materias'); cont.replaceChildren();
+    if(!d.materias.length){
+      cont.append(el('p', {class:'vacio'}, 'Aún no hay materias leídas. ', el('button', {type:'button', text:'Actualizar datos', onclick:'sincronizar()'})));
+    }
+    for(const m of d.materias){
+      const fila = el('div', {class:'materia'},
+        el('div', {class:'nombre', text:m.nombre}),
+        el('div', {class:'cifra', title: sinNota(m) ? 'El ERP aún no consolida la nota de este periodo' : ''},
+          el('b', {class:'num', text: sinNota(m) ? '—' : num(m.nota_final)}), el('span', {text: sinNota(m) ? 'sin consolidar' : 'nota ERP'})),
+        el('div', {class:'cifra asis'}, el('b', {class:'num', text: m.asistencia == null ? '—' : num(m.asistencia) + '%'}), el('span', {text:'asistencia'})));
+      if(m.totales.length){
+        const t = el('div', {class:'totales'});
+        for(const c of m.totales) t.append(el('span', {class:'total'}, c.nombre + ' ', el('b', {class:'num', text:c.valor})));
+        fila.append(t);
+      }
+      cont.append(fila);
+    }
+    const mb = $('malla');
+    if(d.malla.total){
+      const pct = Math.round(d.malla.aprobadas / d.malla.total * 100);
+      mb.hidden = false; mb.replaceChildren(
+        el('p', {}, el('b', {class:'num', text: d.malla.aprobadas + ' de ' + d.malla.total}), ' materias de la malla aprobadas (' + pct + '%)'),
+        el('div', {class:'riel', 'aria-hidden':'true'}, el('i')));
+      mb.querySelector('i').style.width = pct + '%';
+    } else { mb.hidden = true; }
+  }
+
+  function pintarFechas(d){
+    const cont = $('fechas'); cont.replaceChildren();
+    if(!d.fechas.length){ cont.append(el('p', {class:'vacio', text:'Nada pendiente por ahora.'})); return; }
+    for(const f of d.fechas){
+      const [rel, abs] = cuando(f.fecha);
+      cont.append(el('div', {class:'fecha'},
+        el('div', {class:'cuando'}, el('b', {text:rel}), abs),
+        el('div', {}, el('div', {class:'que'}, el('span', {class:'etq', text:f.tipo}), f.nombre), f.materia ? el('div', {class:'de', text:f.materia}) : null)));
+    }
+  }
+
+  function pintarHorario(d){
+    const cont = $('horario'); cont.replaceChildren();
+    if(!d.horario.length){ cont.append(el('p', {class:'vacio', text:'Sin horario leído todavía.'})); return; }
+    const rej = el('div', {class:'dias'});
+    for(const dia of d.horario){
+      const caja = el('div', {class:'dia'}, el('h3', {text:dia.dia}));
+      for(const c of dia.clases){
+        caja.append(el('div', {class:'clase'}, c.materia, el('span', {class:'hora mono', text: (c.inicio||'') + '–' + (c.fin||'') + (c.aula ? ' · ' + c.aula : '')})));
+      }
+      rej.append(caja);
+    }
+    cont.append(rej);
+  }
+
+  function pintarBitacora(d){
+    const ul = $('lecturas'); ul.replaceChildren();
+    if(!d.bitacora.length){ ul.append(el('li', {}, el('small', {text:'Todavía no se ha leído nada.'}))); return; }
+    for(const b of d.bitacora.slice(0, 6)){
+      const ok = b.estado === 'exitosa';
+      ul.append(el('li', {},
+        el('span', {class:'punto ' + (ok ? 'ok' : 'bad')}),
+        el('span', {}, el('b', {text:b.plataforma}), ' · ' + hhmm(b.fecha) + ' · ' + (ok ? 'correcta' : 'falló')),
+        b.detalle ? el('small', {text:b.detalle}) : null));
+    }
+  }
+
+  function pintarSemestres(d){
+    const card = $('card-sem'), cont = $('semestres'); cont.replaceChildren();
+    const s = (d.semestres || []).filter(x => x.promedio != null);
+    card.hidden = !s.length; if(!s.length) return;
+    const max = Math.max(...s.map(x => x.promedio));
+    const escala = max <= 10 ? 10 : max <= 100 ? 100 : max;
+    for(const x of s){
+      const f = el('div', {class:'barra', title: x.materias + ' materias aprobadas'},
+        el('span', {text:'S' + x.semestre}),
+        el('div', {class:'pista'}, el('i')),
+        el('b', {class:'num', text:num(x.promedio)}));
+      f.querySelector('i').style.width = Math.max(4, x.promedio / escala * 100) + '%';
+      cont.append(f);
+    }
+  }
+
+  function pintarConexiones(d){
+    desfase = d.ahora * 1000 - Date.now();
+    vence = d.conexiones.erp.vence; renovable = !!d.conexiones.erp.renovable;
+    const um = d.conexiones.moodle.ultima, ue = d.conexiones.erp.ultima;
+    $('p-moodle').className = 'punto ' + (um ? 'ok' : 'warn');
+    $('l-moodle').textContent = um ? 'Última lectura: ' + hhmm(um) : 'Aún sin lectura correcta';
+    $('l-erp').dataset.ult = ue ? 'Última lectura: ' + hhmm(ue) : 'Aún sin lectura correcta';
+    pintarCuenta();
+  }
+
+  async function cargarPanel(){
+    const r = await fetch('/api/panel');
+    if(r.status === 401){ location = '/login'; return; }
+    const d = await r.json();
+    pintarConexiones(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d);
+  }
+
+  function mostrarAviso(texto, mala){
+    const a = el('div', {class:'aviso' + (mala ? ' bad' : ''), role: mala ? 'alert' : 'status'},
+      el('span', {text:texto}),
+      el('button', {type:'button', 'aria-label':'Cerrar aviso', text:'Cerrar', onclick:'this.parentElement.remove()'}));
+    $('avisos').prepend(a);
+  }
+
+  async function sincronizar(){
+    const b = $('btn-sync'); b.disabled = true; b.textContent = 'Leyendo…';
+    try{
+      const r = await fetch('/sync', {method:'POST'});
+      if(r.status === 401){ location = '/login'; return; }
+      let d = {};
+      try{ d = await r.json(); }
+      catch(_){ d = {error: 'El servidor respondió con un error (' + r.status + '). Revisa la consola donde corre la app; si el token del ERP venció, cierra el acceso y entra con uno nuevo.'}; }
+      if(d.error) mostrarAviso(d.error, true);
+      else if(d.avisos && d.avisos.length) d.avisos.forEach(a => mostrarAviso(a, true));
+      await cargarPanel();
+    }catch(e){ mostrarAviso('No se pudo actualizar: ' + e.message, true); }
+    b.disabled = false; b.textContent = 'Actualizar datos';
+  }
+  $('btn-sync').addEventListener('click', sincronizar);
+
+  // ---- Chat ----
+  function textoRico(texto){
+    // Formato minimo y seguro: **negrita**, listas con "- " y saltos de linea.
+    const cont = document.createDocumentFragment();
+    let lista = null;
+    for(const linea of String(texto).split('\n')){
+      const item = linea.match(/^\s*[-•]\s+(.*)$/);
+      if(item){
+        if(!lista){ lista = el('ul'); cont.append(lista); }
+        lista.append(conNegrita(el('li'), item[1]));
+      } else {
+        lista = null;
+        if(linea.trim()) cont.append(conNegrita(el('p'), linea));
+      }
+    }
+    return cont;
+  }
+  function conNegrita(nodo, texto){
+    texto.split(/(\*\*[^*]+\*\*)/).forEach(parte => {
+      if(/^\*\*[^*]+\*\*$/.test(parte)) nodo.append(el('b', {text:parte.slice(2,-2)}));
+      else if(parte) nodo.append(document.createTextNode(parte));
+    });
+    return nodo;
+  }
+  function agregar(clase, contenido, fuentes){
+    const m = el('div', {class:'msg ' + clase});
+    m.append(contenido);
+    if(fuentes && fuentes.length){
+      const f = el('div', {class:'fuentes'});
+      for(const x of fuentes) f.append(el('span', {class:'fuente', title:'De dónde salió este dato', text: x.fuente + (x.hora ? ' · leído a las ' + x.hora : '')}));
+      m.append(f);
+    }
+    $('log').append(m); $('log').scrollTop = $('log').scrollHeight;
+    return m;
+  }
+
+  async function preguntar(texto){
+    texto = texto.trim(); if(!texto) return;
+    $('sugerencias').hidden = true; $('limpiar').hidden = false;
+    agregar('yo', document.createTextNode(texto));
+    const esc = agregar('ia', el('div', {class:'burbuja'}, el('span', {class:'esc', 'aria-label':'Escribiendo'}, el('i'), el('i'), el('i'))));
+    $('enviar').disabled = true;
+    try{
+      const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({pregunta:texto})});
+      if(r.status === 401){ location = '/login'; return; }
+      const d = await r.json();
+      esc.remove();
+      if(d.error) agregar('ia', el('div', {class:'burbuja err', text:d.error}));
+      else agregar('ia', el('div', {class:'burbuja'}, textoRico(d.respuesta)), d.fuentes);
+    }catch(e){
+      esc.remove(); agregar('ia', el('div', {class:'burbuja err', text:'No se pudo contactar al servidor: ' + e.message}));
+    }
+    $('enviar').disabled = false; $('entrada').focus();
+  }
+  $('form-chat').addEventListener('submit', ev => { ev.preventDefault(); const t = $('entrada').value; $('entrada').value = ''; preguntar(t); });
+  // Enter envía la pregunta (el campo es de una línea, así que no hace falta Shift+Enter).
+  $('entrada').addEventListener('keydown', ev => {
+    if(ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing){
+      ev.preventDefault();
+      if(!$('enviar').disabled) $('form-chat').requestSubmit();
+    }
+  });
+  const BIENVENIDA = '<p>¡Hola! Puedo revisar tus notas, tareas, horario e historial. ¿Qué quieres saber?</p>';
+  $('limpiar').addEventListener('click', async () => {
+    $('limpiar').disabled = true;
+    try{ await fetch('/api/chat/limpiar', {method:'POST'}); }catch(_){}
+    $('log').innerHTML = '<div class="msg ia"><div class="burbuja">' + BIENVENIDA + '</div></div>';
+    $('sugerencias').hidden = false; $('limpiar').hidden = true;
+    $('entrada').value = ''; $('entrada').focus();
+    $('limpiar').disabled = false;
+  });
+  document.querySelectorAll('.sug').forEach(b => b.addEventListener('click', () => preguntar(b.textContent)));
+
+  cargarPanel();
+</script>
+</body>
+</html>
