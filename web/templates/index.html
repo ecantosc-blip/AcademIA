@@ -177,6 +177,7 @@
   .fuente{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:1px 7px}
   .sugerencias{display:flex; flex-wrap:wrap; gap:8px; padding:0 20px 12px}
   .sugerencias[hidden]{display:none}
+  .btn-carnet{margin-top:8px; padding:9px 14px}
   .sug{background:var(--surface); border:1px solid var(--line); color:var(--ink); border-radius:99px; padding:6px 12px; font-size:.84rem}
   .sug:hover{border-color:var(--accent)}
   .pregunta{display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--line)}
@@ -250,7 +251,6 @@
     </div>
     <div class="acciones">
       <button class="btn-p" type="button" id="btn-sync">Actualizar datos</button>
-      <button class="btn-o" type="button" id="btn-carnet">Descargar carné</button>
       <form method="POST" action="/logout"><button class="btn-o" type="submit">Cerrar acceso</button></form>
     </div>
   </section>
@@ -322,6 +322,7 @@
         <button class="sug" type="button">¿Qué nota tengo en cada materia?</button>
         <button class="sug" type="button">¿Con qué notas pasé el primer semestre?</button>
         <button class="sug" type="button">¿Qué clases tengo esta semana?</button>
+        <button class="sug" type="button">Quiero descargar mi carné</button>
       </div>
       <form class="pregunta" id="form-chat">
         <input type="text" id="entrada" placeholder="Escribe tu pregunta" autocomplete="off" aria-label="Tu pregunta">
@@ -527,8 +528,8 @@
   }
   $('btn-sync').addEventListener('click', sincronizar);
 
-  async function descargarCarnet(){
-    const b = $('btn-carnet'); b.disabled = true; b.textContent = 'Descargando…';
+  async function descargarCarnet(b){
+    b.disabled = true; b.textContent = 'Descargando…';
     try{
       const r = await fetch('/carnet');
       if(r.status === 401){ location = '/login'; return; }
@@ -546,7 +547,6 @@
     }catch(e){ mostrarAviso('No se pudo descargar el carné: ' + e.message, true); }
     b.disabled = false; b.textContent = 'Descargar carné';
   }
-  $('btn-carnet').addEventListener('click', descargarCarnet);
 
   // ---- Chat ----
   function textoRico(texto){
@@ -572,9 +572,12 @@
     });
     return nodo;
   }
-  function agregar(clase, contenido, fuentes){
+  function agregar(clase, contenido, fuentes, acciones){
     const m = el('div', {class:'msg ' + clase});
     m.append(contenido);
+    if(acciones && acciones.includes('carnet')){
+      m.append(el('button', {type:'button', class:'btn-p btn-carnet', text:'Descargar carné', onclick:'descargarCarnet(this)'}));
+    }
     if(fuentes && fuentes.length){
       const f = el('div', {class:'fuentes'});
       for(const x of fuentes) f.append(el('span', {class:'fuente', title:'De dónde salió este dato', text: x.fuente + (x.hora ? ' · leído a las ' + x.hora : '')}));
@@ -596,7 +599,7 @@
       const d = await r.json();
       esc.remove();
       if(d.error) agregar('ia', el('div', {class:'burbuja err', text:d.error}));
-      else agregar('ia', el('div', {class:'burbuja'}, textoRico(d.respuesta)), d.fuentes);
+      else agregar('ia', el('div', {class:'burbuja'}, textoRico(d.respuesta)), d.fuentes, d.acciones);
     }catch(e){
       esc.remove(); agregar('ia', el('div', {class:'burbuja err', text:'No se pudo contactar al servidor: ' + e.message}));
     }

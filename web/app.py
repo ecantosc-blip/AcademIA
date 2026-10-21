@@ -554,8 +554,10 @@ def chat():
         with limites.cupo_ia.tomar(5), asistente.lock:
             respuesta = asistente.preguntar(pregunta)
             usadas = list(asistente.herramientas_usadas)
+            acciones = list(asistente.acciones)
         return jsonify({
             "respuesta": respuesta,
+            "acciones": acciones,   # ej. ["carnet"]: la interfaz muestra el boton de descarga
             # De donde salieron los datos de esta respuesta (y cuando se sincronizaron).
             "fuentes": panel.fuentes_de(usadas, sesion["estudiante_id"]),
         })

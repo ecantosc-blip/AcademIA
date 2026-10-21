@@ -144,6 +144,11 @@ TOOLS = [
         "input_schema": {"type": "object", "properties": {}},
     },
     {
+        "name": "carnet_estudiantil",
+        "description": "Prepara la descarga del carne estudiantil (PDF). Usala cuando el estudiante pida, quiera o necesite su carne. No necesita parametros: la app muestra un boton de descarga debajo de tu respuesta.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
         "name": "resumen_semana",
         "description": "Genera un resumen general de la semana: tareas pendientes + proximos eventos combinados.",
         "input_schema": {"type": "object", "properties": {}},
@@ -160,7 +165,10 @@ Reglas importantes:
   al estudiante en vez de inventar una respuesta.
 - Responde de forma breve, clara y en tono cercano (eres un asistente
   universitario, no un reporte formal).
-- Si la pregunta no tiene relacion con tareas/notas/eventos/horario
+- Si el estudiante pide su carne, usa la herramienta carnet_estudiantil y dile
+  que pulse el boton "Descargar carne" que aparece debajo de tu mensaje. No
+  describas el contenido del carne ni inventes sus datos.
+- Si la pregunta no tiene relacion con tareas/notas/eventos/horario/carne
   academico, indica amablemente que solo puedes ayudar con esos temas.
 """
 
@@ -172,9 +180,15 @@ class AssistantLLM:
         self.engine = QueryEngine(estudiante_id=estudiante_id)
         self.historial = []
         self.herramientas_usadas = []   # herramientas que uso en la ultima pregunta
+        self.acciones = []              # botones que la interfaz debe mostrar (ej. "carnet")
         self.lock = threading.Lock()    # dos preguntas a la vez de la misma sesion no mezclan el historial
 
     def _ejecutar_herramienta(self, nombre: str, args: dict) -> str:
+        if nombre == "carnet_estudiantil":
+            if "carnet" not in self.acciones:
+                self.acciones.append("carnet")
+            return ("Listo: la interfaz mostrara un boton 'Descargar carne' debajo de tu mensaje. "
+                    "Dile al estudiante que lo pulse para bajar su carne en PDF.")
         metodo = getattr(self.engine, nombre, None)
         if not metodo:
             return f"Error: herramienta '{nombre}' no existe."
@@ -189,6 +203,7 @@ class AssistantLLM:
 
     def preguntar(self, pregunta: str) -> str:
         self.herramientas_usadas = []
+        self.acciones = []
         self.historial.append({"role": "user", "content": pregunta})
 
         while True:

@@ -164,7 +164,7 @@ Si abres una base creada con el esquema anterior, `init_db()` la detecta, la
 recrea con el esquema normalizado y hay que volver a sincronizar (los datos
 son una copia de Moodle/ERP, no se capturan a mano). Las finanzas quedaron
 fuera, como indica el alcance de la propuesta. El carné no se guarda en la base de
-datos: el botón "Descargar carné" (`/carnet`) lo pide al ERP con el token de la
+datos: al pedirlo en el chat ("quiero mi carné") aparece un botón que llama a `/carnet`, que lo pide al ERP con el token de la
 sesión y se lo entrega al navegador (módulo complementario).
 
 Usa exactamente la misma lógica de `core/assistant.py` por debajo (mismo
