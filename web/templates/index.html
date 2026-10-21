@@ -250,6 +250,7 @@
     </div>
     <div class="acciones">
       <button class="btn-p" type="button" id="btn-sync">Actualizar datos</button>
+      <button class="btn-o" type="button" id="btn-carnet">Descargar carné</button>
       <form method="POST" action="/logout"><button class="btn-o" type="submit">Cerrar acceso</button></form>
     </div>
   </section>
@@ -268,7 +269,7 @@
         <p class="sub-t">No puede</p>
         <ul class="permisos">
           <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cambiar ni enviar nada por ti</li>
-          <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Ver finanzas ni carné</li>
+          <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Ver finanzas</li>
           <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Guardar tu contraseña</li>
         </ul>
         <p class="nota-token">El acceso se cierra solo cuando vence el token del ERP. Tú también puedes cerrarlo cuando quieras.</p>
@@ -525,6 +526,27 @@
     b.disabled = false; b.textContent = 'Actualizar datos';
   }
   $('btn-sync').addEventListener('click', sincronizar);
+
+  async function descargarCarnet(){
+    const b = $('btn-carnet'); b.disabled = true; b.textContent = 'Descargando…';
+    try{
+      const r = await fetch('/carnet');
+      if(r.status === 401){ location = '/login'; return; }
+      if(!r.ok){
+        let d = {};
+        try{ d = await r.json(); }catch(_){}
+        mostrarAviso(d.error || ('No se pudo descargar el carné (' + r.status + ').'), true);
+      }else{
+        const blob = await r.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'carne-unemi.pdf';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      }
+    }catch(e){ mostrarAviso('No se pudo descargar el carné: ' + e.message, true); }
+    b.disabled = false; b.textContent = 'Descargar carné';
+  }
+  $('btn-carnet').addEventListener('click', descargarCarnet);
 
   // ---- Chat ----
   function textoRico(texto){

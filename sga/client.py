@@ -289,6 +289,27 @@ class SGAClient:
         """
         return self._get("/api/1.0/jwt/alumno/materias")
 
+    def get_carnet(self):
+        """
+        Informacion del carne estudiantil (incluye el enlace al PDF generado).
+        Endpoint confirmado: GET /api/1.0/jwt/alumno/carnet
+        """
+        return self._get("/api/1.0/jwt/alumno/carnet",
+                          params={"time": int(time.time() * 1000)},
+                          referer="https://sgaestudiante.unemi.edu.ec/alu_carnet")
+
+    def get_carnet_parseado(self):
+        """Solo lo necesario: enlace al PDF, imagen, QR y fechas de vigencia."""
+        carnet = (self.get_carnet().get("data", {}) or {}).get("eCarnet", {}) or {}
+        return {
+            "pdf_url": carnet.get("pdf"),
+            "imagen_url": carnet.get("png_anverso"),
+            "codigo_qr": carnet.get("codigo_qr"),
+            "fecha_emision": carnet.get("fecha_emision"),
+            "fecha_caducidad": carnet.get("fecha_caducidad"),
+            "activo": carnet.get("activo"),
+        }
+
     def get_malla(self):
         """
         Trae la malla curricular del alumno (plan de estudios, y

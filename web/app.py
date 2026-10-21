@@ -447,6 +447,51 @@ def api_panel():
     return jsonify(panel.construir_panel(sesion))
 
 
+@app.route("/carnet")
+def carnet():
+    """
+    Descarga el carne estudiantil en PDF. No se guarda nada: se pide al ERP con el
+    token de la sesion del estudiante y se le entrega al navegador.
+    """
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "No has iniciado sesión"}), 401
+    ok, espera = limites.revisar("carnet", sid)
+    if not ok:
+        return _demasiadas(espera)
+    renovar_token_erp(sid, sesion)
+    sga = SGAClient(
+        base_url=os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec"),
+        access_token=sesion.get("sga_access_token"),
+        refresh_token=sesion.get("sga_refresh_token"),
+    )
+    try:
+        with limites.cupo_sync.tomar(5):
+            try:
+                sga.cambiar_a_perfil_regular()
+            except Exception:
+                pass
+            info = sga.get_carnet_parseado()
+            sesion["sga_access_token"], sesion["sga_refresh_token"] = sga.access_token, sga.refresh_token
+            sessions_store.guardar(sid, sesion)
+            url = info.get("pdf_url") or ""
+            if url.startswith("/"):
+                url = os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec").rstrip("/") + url
+            partes = urlparse(url)
+            if not url:
+                return jsonify({"error": "No hay un carné generado para esta cuenta en el ERP."}), 404
+            if partes.scheme != "https" or (partes.hostname or "").lower() not in {"sga.unemi.edu.ec", "sgaestudiante.unemi.edu.ec"}:
+                return jsonify({"error": "El enlace del carné no es de un dominio permitido."}), 400
+            resp = requests.get(url, headers={"Authorization": f"Bearer {sga.access_token}"}, timeout=20)
+            resp.raise_for_status()
+            return Response(resp.content, mimetype=resp.headers.get("Content-Type", "application/pdf"),
+                            headers={"Content-Disposition": 'attachment; filename="carne-unemi.pdf"'})
+    except limites.Ocupado:
+        return jsonify({"error": "Hay muchas operaciones en curso. Inténtalo de nuevo en un momento."}), 503
+    except Exception as e:
+        return jsonify({"error": f"No se pudo obtener el carné: {e}"}), 502
+
+
 @app.route("/proxy-image")
 def proxy_image():
     """

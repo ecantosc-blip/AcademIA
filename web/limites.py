@@ -42,6 +42,7 @@ LIMITES = {
     "chat":    ("LIMITE_CHAT",    "20/60"),     # por sesion
     "estudio": ("LIMITE_ESTUDIO", "20/300"),    # practica, videos y tutor, por sesion
     "sync":    ("LIMITE_SYNC",    "4/300"),     # por sesion: 4 actualizaciones cada 5 min
+    "carnet":  ("LIMITE_CARNET",  "6/300"),     # por sesion: descargas del carne
     "general": ("LIMITE_GENERAL", "300/60"),    # por IP: tope a cualquier inundacion
 }
 

@@ -162,8 +162,10 @@ en `docs/academia_der.dbml` (pégalo en https://dbdiagram.io/d).
 
 Si abres una base creada con el esquema anterior, `init_db()` la detecta, la
 recrea con el esquema normalizado y hay que volver a sincronizar (los datos
-son una copia de Moodle/ERP, no se capturan a mano). Finanzas y carné quedaron
-fuera, como indica el alcance de la propuesta.
+son una copia de Moodle/ERP, no se capturan a mano). Las finanzas quedaron
+fuera, como indica el alcance de la propuesta. El carné no se guarda en la base de
+datos: el botón "Descargar carné" (`/carnet`) lo pide al ERP con el token de la
+sesión y se lo entrega al navegador (módulo complementario).
 
 Usa exactamente la misma lógica de `core/assistant.py` por debajo (mismo
 LLM, mismas herramientas, mismos datos reales) — es solo una capa visual
