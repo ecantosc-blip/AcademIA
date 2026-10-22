@@ -43,6 +43,7 @@ from db.setup import get_connection, init_db
 init_db()
 import sessions_store
 import panel
+import mis_datos
 import limites
 from core.estudio import Estudio
 
@@ -490,6 +491,48 @@ def carnet():
         return jsonify({"error": "Hay muchas operaciones en curso. Inténtalo de nuevo en un momento."}), 503
     except Exception as e:
         return jsonify({"error": f"No se pudo obtener el carné: {e}"}), 502
+
+
+# ---------------------------------------------------------------------------
+# Mis datos: ver, descargar y borrar lo que se guardo sobre el estudiante.
+# ---------------------------------------------------------------------------
+@app.route("/api/mis-datos")
+def api_mis_datos():
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "No has iniciado sesión"}), 401
+    return jsonify(mis_datos.resumen(sesion["estudiante_id"]))
+
+
+@app.route("/api/mis-datos/exportar")
+def api_mis_datos_exportar():
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "No has iniciado sesión"}), 401
+    ok, espera = limites.revisar("estudio", sid)
+    if not ok:
+        return _demasiadas(espera)
+    import json as _json
+    cuerpo = _json.dumps(mis_datos.exportar(sesion["estudiante_id"]), ensure_ascii=False, indent=2)
+    return Response(cuerpo, mimetype="application/json",
+                    headers={"Content-Disposition": 'attachment; filename="mis-datos-academia.json"'})
+
+
+@app.route("/api/mis-datos/borrar", methods=["POST"])
+def api_mis_datos_borrar():
+    """Borra todo lo guardado sobre el estudiante y cierra su sesion."""
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "No has iniciado sesión"}), 401
+    mis_datos.borrar(sesion["estudiante_id"])
+    sessions_store.eliminar(sid)
+    ESTUDIOS.pop(sid, None)
+    asistente = ASSISTANTS.pop(sid, None)
+    if asistente:
+        asistente.close()
+    resp = jsonify({"ok": True})
+    resp.delete_cookie(COOKIE_NAME)
+    return resp
 
 
 @app.route("/proxy-image")

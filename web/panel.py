@@ -6,7 +6,7 @@ cifras de ejemplo.
 """
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -164,6 +164,20 @@ def construir_panel(sesion: dict) -> dict:
             GROUP BY m.semestre ORDER BY m.semestre
         """, (est,))]
 
+        # ---- Resumen para la pantalla de Inicio ----
+        limite7 = (datetime.now() + timedelta(days=7)).isoformat(timespec="seconds")
+        vencen = conn.execute("""
+            SELECT COUNT(DISTINCT t.id) AS n FROM tarea t
+            JOIN matricula mat ON mat.materia_id = t.materia_id AND mat.estudiante_id = ?
+            LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
+            WHERE COALESCE(e.entregada, 0) = 0 AND t.fecha_entrega >= ? AND t.fecha_entrega <= ?
+        """, (est, ahora, limite7)).fetchone()["n"]
+        prom = conn.execute("""
+            SELECT ROUND(AVG(nota_final), 1) AS p FROM matricula
+            WHERE estudiante_id = ? AND estado = 'aprobada' AND nota_final IS NOT NULL
+        """, (est,)).fetchone()["p"]
+        inicio = {"vencen_7d": vencen, "promedio_general": prom}
+
         # ---- Bitacora ----
         bitacora = [{"plataforma": "ERP" if r["plataforma"] == "sga" else "Moodle",
                      "fecha": r["fecha"], "estado": r["estado"], "detalle": r["detalle"] or ""}
@@ -186,5 +200,6 @@ def construir_panel(sesion: dict) -> dict:
         "horario": horario,
         "malla": {"total": total, "aprobadas": aprobadas},
         "semestres": semestres,
+        "inicio": inicio,
         "bitacora": bitacora,
     }

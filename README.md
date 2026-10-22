@@ -227,3 +227,16 @@ Practica por materia, videos y un tutor de conceptos. Código en `core/estudio.p
 - Base de datos SQLite en modo WAL con una conexión por hilo del servidor (no por sesión).
 - Pruebas de carga reproducibles: `pruebas/` (ver `pruebas/README.md`). Línea base y método de medición para el capítulo de resultados.
 - Limitación conocida: corre como un solo proceso; para varias réplicas hay que pasar el estado de conversación a Redis y la base a PostgreSQL.
+
+
+## Interfaz (rediseño)
+
+Después de entrar, la aplicación se organiza con un menú lateral (en el celular, barra inferior):
+**Inicio** (cuatro datos grandes y lo próximo), **Materias**, **Agenda**, **Estudio** y **Mis datos**.
+El asistente es un botón flotante ("Pregunta") disponible en todas las secciones.
+
+**Mis datos** muestra qué guarda AcademIA del estudiante (solo cantidades), permite
+descargarlo (`/api/mis-datos/exportar`, JSON sin contraseñas ni tokens) y borrarlo
+(`/api/mis-datos/borrar`: elimina al estudiante y, en cascada, sus matrículas, notas,
+entregas, eventos, prácticas, lecturas y sesiones; el catálogo de materias y docentes se conserva).
+La lógica está en `web/mis_datos.py`.
