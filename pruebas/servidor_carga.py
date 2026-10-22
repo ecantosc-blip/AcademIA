@@ -133,6 +133,7 @@ class AsistenteSimulado(AssistantLLM):
         self.engine = QueryEngine(estudiante_id=estudiante_id)
         self.historial = []
         self.herramientas_usadas = []
+        self.acciones = []
         self.lock = threading.Lock()
 
     def preguntar(self, pregunta: str) -> str:
