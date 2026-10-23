@@ -265,3 +265,23 @@ ejemplo `python herramientas/diagnostico/debug_notas_moodle.py`.
   correos y números largos (cédulas).
 - Los volcados crudos se guardan en `diagnostico_local/` (ignorada por Git). No los
   compartas: contienen tus datos.
+
+## Estado de entrega de las tareas
+
+Moodle informa (o no) si una tarea ya se entregó. AcademIA nunca lo supone:
+
+| Estado | Significado |
+|---|---|
+| Pendiente | Moodle confirmó que no la has entregado (o la guardaste como borrador) |
+| Vencida sin entregar | Igual, pero la fecha ya pasó |
+| Entregada | Moodle confirmó la entrega |
+| **Sin verificar** | Moodle no informó el estado (o no se pudo consultar). No cuenta como pendiente ni como entregada |
+
+Un estado ya verificado no se pierde si una consulta posterior falla. Las incidencias quedan
+en la bitácora de lecturas (sin tokens). El límite de consultas por sincronización se ajusta
+con `MAX_CONSULTAS_ENTREGA` (60 por defecto).
+
+**Pendiente de verificar con una cuenta real** (ver `docs/VERIFICACION_MOODLE.md`): ejecuta
+`python herramientas/diagnostico/verificar_moodle.py` y revisa la salida antes de compartirla.
+Las fechas se manejan en `America/Guayaquil` (`core/tiempo.py`; en Windows hace falta el
+paquete `tzdata`, ya incluido en `requirements.txt`).
