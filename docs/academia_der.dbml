@@ -21,7 +21,8 @@ Table docente {
 Table entrega {
   tarea_id integer [pk, ref: > tarea.id]
   estudiante_id integer [pk, ref: > estudiante.id]
-  entregada integer [not null]
+  estado text [not null, note: 'entregada | borrador | sin_entregar. Sin fila = sin verificar']
+  verificada_en text
 }
 
 Table estudiante {

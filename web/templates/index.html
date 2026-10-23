@@ -113,6 +113,7 @@
   .fecha .cuando b{display:block; font-size:.95rem}
   .fecha .que{font-weight:500; overflow-wrap:anywhere}
   .fecha .de{color:var(--muted); font-size:.85rem}
+  .etq.sv{background:transparent; border:1px dashed var(--muted); color:var(--muted)}
   .etq{display:inline-block; font-size:.75rem; padding:0 7px; border-radius:6px; margin-right:6px; background:var(--accent-bg); font-weight:500}
 
   /* horario */
@@ -542,6 +543,13 @@
     } else { mb.hidden = true; }
   }
 
+  // "Sin verificar": Moodle no informo si la tarea ya se entrego; no se muestra como pendiente.
+  function etiquetaEstado(f){
+    if(f.estado === 'sin_verificar') return el('span', {class:'etq sv', title:'Moodle no informó si ya la entregaste', text:'Sin verificar'});
+    if(f.estado === 'borrador') return el('span', {class:'etq', title:'Guardada como borrador: falta enviarla', text:'Borrador'});
+    return '';
+  }
+
   function pintarFechas(d){
     const cont = $('fechas'); cont.replaceChildren();
     if(!d.fechas.length){ cont.append(el('p', {class:'vacio', text:'Nada pendiente por ahora.'})); return; }
@@ -549,7 +557,7 @@
       const [rel, abs] = cuando(f.fecha);
       cont.append(el('div', {class:'fecha'},
         el('div', {class:'cuando'}, el('b', {text:rel}), abs),
-        el('div', {}, el('div', {class:'que'}, el('span', {class:'etq', text:f.tipo}), f.nombre), f.materia ? el('div', {class:'de', text:f.materia}) : null)));
+        el('div', {}, el('div', {class:'que'}, el('span', {class:'etq', text:f.tipo}), etiquetaEstado(f), f.nombre), f.materia ? el('div', {class:'de', text:f.materia}) : null)));
     }
   }
 
@@ -622,10 +630,15 @@
   }
   function pintarInicio(d){
     const n = d.inicio ? d.inicio.vencen_7d : 0;
+    const sv = d.inicio ? (d.inicio.sin_verificar_7d || 0) : 0;
+    const vencidas = d.inicio ? (d.inicio.vencidas_sin_entregar || 0) : 0;
     $('k-vence-n').textContent = n;
-    $('k-vence').className = 'kpi ' + (n === 0 ? 'ok' : n >= 4 ? 'warn' : '');
-    const t = d.fechas.find(f => f.tipo === 'Tarea');
-    $('k-vence-d').textContent = n === 0 ? 'Nada por entregar. ¡Buen momento para adelantar!' : (t ? 'La próxima: ' + t.nombre : 'Revisa tu agenda');
+    $('k-vence').className = 'kpi ' + (n === 0 && sv === 0 && vencidas === 0 ? 'ok' : n >= 4 ? 'warn' : '');
+    const t = d.fechas.find(f => f.tipo === 'Tarea' && f.estado !== 'sin_verificar');
+    const extra = (sv ? ' · ' + sv + ' sin verificar' : '') + (vencidas ? ' · ' + vencidas + ' vencida(s) sin entregar' : '');
+    $('k-vence-d').textContent = n > 0 ? 'La próxima: ' + (t ? t.nombre : 'revisa tu agenda') + extra
+      : (sv || vencidas) ? extra.replace(/^ · /, '') + (sv ? ' (no sé si ya las entregaste)' : '')
+      : 'Nada por entregar. ¡Buen momento para adelantar!';
     const pc = proximaClase(d.horario);
     $('k-clase-n').textContent = pc ? pc.cuando + ', ' + (pc.clase.inicio || '') : 'Sin clases';
     $('k-clase-d').textContent = pc ? pc.clase.materia + (pc.clase.aula ? ' · ' + pc.clase.aula : '') : 'No hay clases próximas en tu horario.';
@@ -646,7 +659,7 @@
       const [rel, abs] = cuando(f.fecha);
       cont.append(el('div', {class:'fecha'},
         el('div', {class:'cuando'}, el('b', {text:rel}), abs),
-        el('div', {}, el('div', {class:'que'}, el('span', {class:'etq', text:f.tipo}), f.nombre), f.materia ? el('div', {class:'de', text:f.materia}) : null)));
+        el('div', {}, el('div', {class:'que'}, el('span', {class:'etq', text:f.tipo}), etiquetaEstado(f), f.nombre), f.materia ? el('div', {class:'de', text:f.materia}) : null)));
     }
   }
 

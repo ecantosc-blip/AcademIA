@@ -85,3 +85,24 @@ def app_web(bd_demo, monkeypatch):
     A.ESTUDIOS.clear()
     A.ASSISTANTS.clear()
     return A
+
+
+@pytest.fixture(autouse=True)
+def conexion_del_motor_limpia():
+    """QueryEngine guarda UNA conexion por hilo (a proposito, en produccion). En las
+    pruebas, cada una usa otra base: se descarta la conexion para no leer la de otra prueba."""
+    def limpiar():
+        try:
+            from core import query_engine
+        except Exception:
+            return
+        c = getattr(query_engine._hilo, "conn", None)
+        if c is not None:
+            try:
+                c.close()
+            except Exception:
+                pass
+            query_engine._hilo.conn = None
+    limpiar()
+    yield
+    limpiar()

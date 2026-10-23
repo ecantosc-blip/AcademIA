@@ -16,6 +16,7 @@ import unicodedata
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from db.setup import get_connection
+from core.tareas import clasificar_tareas
 from core.nombres import coincide
 
 
@@ -47,40 +48,46 @@ class QueryEngine:
 
     # --- Funcionalidad 1: tareas pendientes (todas las materias) ---
     def tareas_pendientes(self):
-        cur = self.conn.execute("""
-            SELECT t.nombre AS tarea, m.nombre AS materia, t.fecha_entrega
-            FROM tarea t
-            JOIN materia m ON m.id = t.materia_id
-            JOIN matricula mat ON mat.materia_id = m.id AND mat.estudiante_id = ?
-            LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
-            WHERE COALESCE(e.estado, '') <> 'entregada'
-            ORDER BY t.fecha_entrega ASC
-        """, (self.estudiante_id,))
-        rows = cur.fetchall()
-        if not rows:
-            return "No tienes tareas pendientes registradas."
-
-        lineas = [f"- {r['tarea']} ({r['materia']}) - vence: {r['fecha_entrega']}" for r in rows]
-        return "Tus tareas pendientes son:\n" + "\n".join(lineas)
+        return self._texto_tareas(clasificar_tareas(self.conn, self.estudiante_id))
 
     # --- Funcionalidad 2: tareas de una materia especifica ---
     def tareas_por_materia(self, nombre_materia: str):
         materia = self._buscar_materia(nombre_materia)
         if not materia:
             return f"No encontré ninguna materia que coincida con '{nombre_materia}'."
+        return self._texto_tareas(clasificar_tareas(self.conn, self.estudiante_id, materia_id=materia["id"]),
+                                  materia=materia["nombre"])
 
-        cur = self.conn.execute("""
-            SELECT t.nombre AS tarea, t.fecha_entrega
-            FROM tarea t
-            LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = ?
-            WHERE COALESCE(e.estado, '') <> 'entregada' AND t.materia_id = ?
-            ORDER BY t.fecha_entrega ASC
-        """, (self.estudiante_id, materia["id"]))
-        rows = cur.fetchall()
-        if not rows:
-            return f"No tienes tareas pendientes en {materia['nombre']}."
-        lineas = [f"- {r['tarea']} - vence: {r['fecha_entrega']}" for r in rows]
-        return f"Tareas pendientes de {materia['nombre']}:\n" + "\n".join(lineas)
+    @staticmethod
+    def _texto_tareas(g: dict, materia: str = None) -> str:
+        """Texto para el chat. Usa el criterio unico de core/tareas.py: lo que Moodle no
+        informo se presenta como 'sin verificar', nunca como pendiente ni como entregada."""
+        def linea(t):
+            donde = "" if materia else f" ({t['materia']})"
+            vence = t["fecha"] if t["fecha"] else "sin fecha"
+            extra = " [la guardaste como borrador, falta enviarla]" if t["estado"] == "borrador" else ""
+            return f"- {t['tarea']}{donde} - vence: {vence}{extra}"
+
+        futuras_sv = [t for t in g["sin_verificar"] if not t["vencida"]]
+        pasadas_sv = [t for t in g["sin_verificar"] if t["vencida"]]
+        partes = []
+        if g["pendientes"]:
+            titulo = f"Tareas pendientes de {materia}" if materia else "Tus tareas pendientes"
+            partes.append(f"{titulo} (Moodle confirma que no las has entregado):\n" + "\n".join(map(linea, g["pendientes"])))
+        if g["vencidas_sin_entregar"]:
+            partes.append("Vencidas sin entregar (Moodle confirma que no las entregaste):\n"
+                          + "\n".join(map(linea, g["vencidas_sin_entregar"])))
+        if g["sin_verificar"]:
+            bloque = ["SIN VERIFICAR: no pude confirmar si ya las entregaste porque Moodle no me informó "
+                      "su estado de entrega. No las cuento ni como pendientes ni como entregadas; revísalas en Moodle."]
+            bloque += [linea(t) for t in futuras_sv]
+            if pasadas_sv:
+                bloque.append(f"- Además, {len(pasadas_sv)} tarea(s) con fecha ya pasada de las que tampoco tengo el estado.")
+            partes.append("\n".join(bloque))
+        if not partes:
+            return (f"No tienes tareas pendientes registradas en {materia}." if materia
+                    else "No tienes tareas pendientes registradas.")
+        return "\n\n".join(partes)
 
     # --- Funcionalidad 4: proximos eventos ---
     def proximos_eventos(self, limite: int = 5):

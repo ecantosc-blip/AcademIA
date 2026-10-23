@@ -187,7 +187,8 @@ def test_una_tarea_que_vence_a_las_2359_sigue_pendiente_a_las_2330_y_ya_no_a_las
     c.execute("insert into estudiante(id,nombre) values (77,'X')")
     c.execute("insert into materia(id,nombre,moodle_course_id) values (1,'MATERIA UNO',1)")
     c.execute("insert into matricula(estudiante_id,materia_id,estado) values (77,1,'en_curso')")
-    c.execute("insert into tarea(materia_id,moodle_assign_id,nombre,fecha_entrega) values (1,5,'Entrega final','2026-10-24T23:59:00')")
+    c.execute("insert into tarea(id,materia_id,moodle_assign_id,nombre,fecha_entrega) values (1,1,5,'Entrega final','2026-10-24T23:59:00')")
+    c.execute("insert into entrega(tarea_id,estudiante_id,estado) values (1,77,'sin_entregar')")
     c.commit()
     c.close()
     antes = _panel(monkeypatch, 2026, 10, 25, 4, 30)     # 23:30 del 24 en Ecuador

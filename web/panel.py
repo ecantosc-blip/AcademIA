@@ -12,6 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core import tiempo
 from core.tiempo import ahora_iso
+from core.tareas import clasificar_tareas, en_ventana
 from db.setup import get_connection
 from sga.client import decodificar_jwt
 
@@ -110,21 +111,20 @@ def construir_panel(sesion: dict) -> dict:
                             for c in comps],
             })
 
-        # ---- Proximas fechas: tareas sin entregar + eventos ----
+        # ---- Proximas fechas: tareas (pendientes y sin verificar) + eventos ----
+        # Criterio unico en core/tareas.py. Las tareas "sin verificar" se listan, pero
+        # marcadas como tales: no se afirma que esten pendientes ni entregadas.
+        grupos = clasificar_tareas(conn, est, ahora=ahora)
         fechas = []
-        for r in conn.execute("""
-            SELECT t.nombre, m.nombre AS materia, t.fecha_entrega AS fecha
-            FROM tarea t
-            JOIN materia m ON m.id = t.materia_id
-            JOIN matricula mat ON mat.materia_id = m.id AND mat.estudiante_id = ?
-            LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
-            WHERE COALESCE(e.estado, '') <> 'entregada' AND t.fecha_entrega >= ?
-        """, (est, ahora)):
-            fechas.append({"tipo": "Tarea", "nombre": r["nombre"], "materia": r["materia"], "fecha": r["fecha"]})
+        for t in grupos["pendientes"] + [x for x in grupos["sin_verificar"] if not x["vencida"]]:
+            if t["fecha"] is None:
+                continue
+            fechas.append({"tipo": "Tarea", "nombre": t["tarea"], "materia": t["materia"], "fecha": t["fecha"],
+                           "estado": t["estado"] or "sin_verificar"})
         for r in conn.execute("""
             SELECT nombre, tipo, fecha FROM evento WHERE estudiante_id = ? AND fecha >= ?
         """, (est, ahora)):
-            fechas.append({"tipo": "Evento", "nombre": r["nombre"], "materia": "", "fecha": r["fecha"]})
+            fechas.append({"tipo": "Evento", "nombre": r["nombre"], "materia": "", "fecha": r["fecha"], "estado": None})
         fechas.sort(key=lambda x: x["fecha"])
         fechas = fechas[:8]
 
@@ -168,17 +168,14 @@ def construir_panel(sesion: dict) -> dict:
 
         # ---- Resumen para la pantalla de Inicio ----
         limite7 = ahora_iso("seconds", days=7)
-        vencen = conn.execute("""
-            SELECT COUNT(DISTINCT t.id) AS n FROM tarea t
-            JOIN matricula mat ON mat.materia_id = t.materia_id AND mat.estudiante_id = ?
-            LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
-            WHERE COALESCE(e.estado, '') <> 'entregada' AND t.fecha_entrega >= ? AND t.fecha_entrega <= ?
-        """, (est, ahora, limite7)).fetchone()["n"]
+        vencen = len(en_ventana(grupos["pendientes"], ahora, limite7))
+        sin_verificar_7d = len(en_ventana(grupos["sin_verificar"], ahora, limite7))
         prom = conn.execute("""
             SELECT ROUND(AVG(nota_final), 1) AS p FROM matricula
             WHERE estudiante_id = ? AND estado = 'aprobada' AND nota_final IS NOT NULL
         """, (est,)).fetchone()["p"]
-        inicio = {"vencen_7d": vencen, "promedio_general": prom}
+        inicio = {"vencen_7d": vencen, "sin_verificar_7d": sin_verificar_7d,
+                  "vencidas_sin_entregar": len(grupos["vencidas_sin_entregar"]), "promedio_general": prom}
 
         # ---- Bitacora ----
         bitacora = [{"plataforma": "ERP" if r["plataforma"] == "sga" else "Moodle",

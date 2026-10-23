@@ -27,12 +27,12 @@ import anthropic
 TOOLS = [
     {
         "name": "tareas_pendientes",
-        "description": "Obtiene todas las tareas pendientes del estudiante, de todas las materias.",
+        "description": "Obtiene las tareas del estudiante de todas las materias, separadas en pendientes confirmadas, vencidas sin entregar y SIN VERIFICAR (Moodle no informo si ya las entrego).",
         "input_schema": {"type": "object", "properties": {}},
     },
     {
         "name": "tareas_por_materia",
-        "description": "Obtiene las tareas pendientes de una materia especifica.",
+        "description": "Obtiene las tareas de una materia especifica: pendientes confirmadas, vencidas sin entregar y SIN VERIFICAR (Moodle no informo si ya las entrego).",
         "input_schema": {
             "type": "object",
             "properties": {"nombre_materia": {"type": "string", "description": "Nombre de la materia"}},
@@ -163,6 +163,10 @@ Reglas importantes:
 - NUNCA inventes una nota, fecha o dato que no venga de una herramienta.
 - Si una herramienta indica que no hay datos sincronizados, dilo claramente
   al estudiante en vez de inventar una respuesta.
+- Las tareas marcadas SIN VERIFICAR no son pendientes ni entregadas: no se sabe.
+  Nunca digas que ya las entrego ni que le faltan; explica que no pudiste
+  confirmarlo y que lo revise en Moodle. Solo llama "pendiente" a lo que la
+  herramienta presenta como pendiente.
 - Responde de forma breve, clara y en tono cercano (eres un asistente
   universitario, no un reporte formal).
 - Si el estudiante pide su carne, usa la herramienta carnet_estudiantil y dile
