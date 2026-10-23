@@ -53,7 +53,7 @@ class QueryEngine:
             JOIN materia m ON m.id = t.materia_id
             JOIN matricula mat ON mat.materia_id = m.id AND mat.estudiante_id = ?
             LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
-            WHERE COALESCE(e.entregada, 0) = 0
+            WHERE COALESCE(e.estado, '') <> 'entregada'
             ORDER BY t.fecha_entrega ASC
         """, (self.estudiante_id,))
         rows = cur.fetchall()
@@ -73,7 +73,7 @@ class QueryEngine:
             SELECT t.nombre AS tarea, t.fecha_entrega
             FROM tarea t
             LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = ?
-            WHERE COALESCE(e.entregada, 0) = 0 AND t.materia_id = ?
+            WHERE COALESCE(e.estado, '') <> 'entregada' AND t.materia_id = ?
             ORDER BY t.fecha_entrega ASC
         """, (self.estudiante_id, materia["id"]))
         rows = cur.fetchall()

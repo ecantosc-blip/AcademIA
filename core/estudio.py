@@ -223,7 +223,7 @@ class Estudio:
             tareas = conn.execute("""
                 SELECT t.nombre FROM tarea t
                 LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = ?
-                WHERE t.materia_id = ? AND COALESCE(e.entregada, 0) = 0 AND t.fecha_entrega >= ?
+                WHERE t.materia_id = ? AND COALESCE(e.estado, '') <> 'entregada' AND t.fecha_entrega >= ?
             """, (self.estudiante_id, materia_id, corte)).fetchall()
             eventos = conn.execute("""
                 SELECT nombre FROM evento WHERE estudiante_id = ? AND materia_id = ? AND fecha >= ?

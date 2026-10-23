@@ -118,7 +118,7 @@ def construir_panel(sesion: dict) -> dict:
             JOIN materia m ON m.id = t.materia_id
             JOIN matricula mat ON mat.materia_id = m.id AND mat.estudiante_id = ?
             LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
-            WHERE COALESCE(e.entregada, 0) = 0 AND t.fecha_entrega >= ?
+            WHERE COALESCE(e.estado, '') <> 'entregada' AND t.fecha_entrega >= ?
         """, (est, ahora)):
             fechas.append({"tipo": "Tarea", "nombre": r["nombre"], "materia": r["materia"], "fecha": r["fecha"]})
         for r in conn.execute("""
@@ -172,7 +172,7 @@ def construir_panel(sesion: dict) -> dict:
             SELECT COUNT(DISTINCT t.id) AS n FROM tarea t
             JOIN matricula mat ON mat.materia_id = t.materia_id AND mat.estudiante_id = ?
             LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
-            WHERE COALESCE(e.entregada, 0) = 0 AND t.fecha_entrega >= ? AND t.fecha_entrega <= ?
+            WHERE COALESCE(e.estado, '') <> 'entregada' AND t.fecha_entrega >= ? AND t.fecha_entrega <= ?
         """, (est, ahora, limite7)).fetchone()["n"]
         prom = conn.execute("""
             SELECT ROUND(AVG(nota_final), 1) AS p FROM matricula

@@ -94,10 +94,15 @@ CREATE TABLE IF NOT EXISTS tarea (
     FOREIGN KEY (materia_id) REFERENCES materia(id) ON DELETE CASCADE
 );
 
+-- Estado de entrega de una tarea para un estudiante, tal como lo informa Moodle.
+-- LA AUSENCIA DE FILA SIGNIFICA "SIN VERIFICAR": no se asume ni pendiente ni entregada.
+-- Solo se guarda una fila cuando Moodle dio un estado reconocible; si una consulta
+-- posterior falla, la fila anterior se conserva (verificada_en indica cuando se confirmo).
 CREATE TABLE IF NOT EXISTS entrega (
     tarea_id INTEGER NOT NULL,
     estudiante_id INTEGER NOT NULL,
-    entregada INTEGER NOT NULL DEFAULT 0 CHECK(entregada IN (0, 1)),
+    estado TEXT NOT NULL CHECK(estado IN ('entregada', 'borrador', 'sin_entregar')),
+    verificada_en TEXT,
     PRIMARY KEY (tarea_id, estudiante_id),
     FOREIGN KEY (tarea_id) REFERENCES tarea(id) ON DELETE CASCADE,
     FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
@@ -165,5 +170,6 @@ CREATE INDEX IF NOT EXISTS idx_matricula_materia ON matricula(materia_id);
 CREATE INDEX IF NOT EXISTS idx_componente_matricula ON componente_nota(matricula_id);
 CREATE INDEX IF NOT EXISTS idx_tarea_materia ON tarea(materia_id);
 CREATE INDEX IF NOT EXISTS idx_evento_estudiante ON evento(estudiante_id);
+CREATE INDEX IF NOT EXISTS idx_entrega_estudiante ON entrega(estudiante_id);
 CREATE INDEX IF NOT EXISTS idx_horario_materia ON horario(materia_id);
 CREATE INDEX IF NOT EXISTS idx_extraccion_estudiante ON sesion_extraccion(estudiante_id);

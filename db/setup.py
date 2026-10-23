@@ -75,9 +75,50 @@ def _migracion_2_practica(conn):
     pass
 
 
+def _migracion_3_estado_de_entrega(conn):
+    """
+    Migracion 3: `entrega` pasa de (entregada 0/1 obligatorio) a (estado, verificada_en).
+    Con 0/1 obligatorio no se podia expresar "no se sabe", y como la tabla nunca se
+    llenaba, todas las tareas parecian pendientes. Ahora la ausencia de fila es
+    "sin verificar". Filas antiguas: 1 -> 'entregada', 0 -> 'sin_entregar' (fecha de
+    verificacion desconocida). Todo ocurre en una transaccion: si falla, no cambia nada.
+    """
+    if "entrega" not in _tablas(conn) or not _columna_existe(conn, "entrega", "entregada"):
+        return None          # base nueva (schema.sql ya la creo con la forma nueva)
+    conn.commit()
+    conn.execute("BEGIN")
+    try:
+        conn.execute("DROP TABLE IF EXISTS entrega_nueva")
+        conn.execute("""
+            CREATE TABLE entrega_nueva (
+                tarea_id INTEGER NOT NULL,
+                estudiante_id INTEGER NOT NULL,
+                estado TEXT NOT NULL CHECK(estado IN ('entregada', 'borrador', 'sin_entregar')),
+                verificada_en TEXT,
+                PRIMARY KEY (tarea_id, estudiante_id),
+                FOREIGN KEY (tarea_id) REFERENCES tarea(id) ON DELETE CASCADE,
+                FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+            )
+        """)
+        conn.execute("""
+            INSERT INTO entrega_nueva (tarea_id, estudiante_id, estado, verificada_en)
+            SELECT tarea_id, estudiante_id,
+                   CASE WHEN entregada = 1 THEN 'entregada' ELSE 'sin_entregar' END, NULL
+            FROM entrega
+        """)
+        conn.execute("DROP TABLE entrega")
+        conn.execute("ALTER TABLE entrega_nueva RENAME TO entrega")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_entrega_estudiante ON entrega(estudiante_id)")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+
+
 MIGRACIONES = [
     (1, "Esquema normalizado 3FN (sin finanzas ni carne)", _migracion_1_esquema_3fn),
     (2, "Espacio de estudio: tabla practica", _migracion_2_practica),
+    (3, "Estado de entrega verificable (ausencia de fila = sin verificar)", _migracion_3_estado_de_entrega),
 ]
 
 

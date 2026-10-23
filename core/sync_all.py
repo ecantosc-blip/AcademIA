@@ -16,6 +16,7 @@ from sga.client import build_client_from_env as build_sga_client
 from db.setup import get_connection
 from core.nombres import normalizar as _normalizar_n, coincide, nivel_a_numero
 from core.privacidad import depurar
+from core.entregas import sincronizar_entregas
 
 
 def _normalizar(texto: str) -> str:
@@ -186,6 +187,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
                 )
 
         # Tareas
+        tareas_moodle = []
         assignments_data = moodle.get_assignments(course_ids)
         for course in assignments_data.get("courses", []):
             materia_id = materia_id_por_moodle_id.get(course["id"])
@@ -201,6 +203,17 @@ def sync(estudiante_id: int = 1, db_path: str = None,
                         nombre = excluded.nombre,
                         fecha_entrega = excluded.fecha_entrega
                 """, (materia_id, assign["id"], assign["name"], fecha_entrega))
+                fila = cursor.execute(
+                    "SELECT id FROM tarea WHERE materia_id = ? AND moodle_assign_id = ?",
+                    (materia_id, assign["id"])).fetchone()
+                tareas_moodle.append({"tarea_id": fila["id"], "assign_id": assign["id"],
+                                      "fecha_entrega": fecha_entrega,
+                                      "sin_entrega_online": bool(assign.get("nosubmissions"))})
+
+        # Estado de entrega (mod_assign_get_submission_status). Nunca hace fallar la
+        # sincronizacion: si Moodle no lo permite, las tareas quedan "sin verificar".
+        entregas = sincronizar_entregas(cursor, moodle, info["userid"], estudiante_id, tareas_moodle)
+        print(f"[Moodle] {entregas['detalle']}")
 
         # Eventos - se filtran los que ya estan registrados como tarea con el
         # mismo nombre, para no duplicar informacion en el resumen semanal
@@ -256,7 +269,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
         cursor.execute("""
             INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
             VALUES (?, 'moodle', ?, 'exitosa', ?)
-        """, (estudiante_id, ahora_iso(), f"{len(courses)} cursos"))
+        """, (estudiante_id, ahora_iso(), f"{len(courses)} cursos; {entregas['detalle']}"))
         conn.commit()
         print(f"[Moodle] OK: {len(courses)} materias, tareas, eventos y calificaciones sincronizadas.")
 

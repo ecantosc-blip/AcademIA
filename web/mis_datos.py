@@ -19,7 +19,7 @@ _CONTEO = [
     ("Materias que cursas o cursaste", "SELECT COUNT(*) FROM matricula WHERE estudiante_id = ?"),
     ("Notas por componente", "SELECT COUNT(*) FROM componente_nota c JOIN matricula m ON m.id = c.matricula_id WHERE m.estudiante_id = ?"),
     ("Eventos del calendario", "SELECT COUNT(*) FROM evento WHERE estudiante_id = ?"),
-    ("Entregas registradas", "SELECT COUNT(*) FROM entrega WHERE estudiante_id = ?"),
+    ("Estados de entrega verificados", "SELECT COUNT(*) FROM entrega WHERE estudiante_id = ?"),
     ("Prácticas de estudio", "SELECT COUNT(*) FROM practica WHERE estudiante_id = ?"),
     ("Lecturas de Moodle y ERP", "SELECT COUNT(*) FROM sesion_extraccion WHERE estudiante_id = ?"),
 ]
@@ -55,7 +55,7 @@ def exportar(estudiante_id: int) -> dict:
             "estudiante": est[0] if est else None,
             "matriculas": matriculas,
             "tareas_y_entregas": _filas(conn, """
-                SELECT m.nombre AS materia, t.nombre AS tarea, t.fecha_entrega, COALESCE(e.entregada, 0) AS entregada
+                SELECT m.nombre AS materia, t.nombre AS tarea, t.fecha_entrega, COALESCE(e.estado, 'sin_verificar') AS estado_entrega, e.verificada_en
                 FROM tarea t JOIN materia m ON m.id = t.materia_id
                 JOIN matricula mat ON mat.materia_id = m.id AND mat.estudiante_id = ?
                 LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id

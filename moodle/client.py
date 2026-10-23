@@ -153,6 +153,11 @@ class MoodleClient:
                 params[f"courseids[{i}]"] = cid
         return self.call("mod_assign_get_assignments", **params)
 
+    def get_submission_status(self, assign_id: int, userid: int):
+        """Estado de entrega de una tarea para un usuario (Moodle >= 3.1). Puede no estar
+        habilitada en el servicio del sitio: quien llama debe tolerar el error."""
+        return self.call("mod_assign_get_submission_status", assignid=assign_id, userid=userid)
+
     def get_grades(self, course_id: int, userid: int):
         return self.call("gradereport_user_get_grade_items", courseid=course_id, userid=userid)
 
