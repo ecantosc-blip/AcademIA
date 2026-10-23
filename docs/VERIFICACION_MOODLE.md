@@ -26,9 +26,11 @@ si una consulta posterior falla.
 
 | Supuesto | Estado | Cómo se comprueba |
 |---|---|---|
-| `percentageformatted` es la nota como porcentaje del máximo del ítem (8 de 10 = 80 %), **no el peso** | ❌ en `gradereport_user_get_grade_items`: ese campo **no viene** (0 de 23 ítems, 9 con nota). Queda por comprobar en `gradereport_user_get_grades_table` (sección 3 del script) | Para 2–3 ítems el script imprime nota, rango máximo, `percentageformatted` y `weightformatted`: si `porcentaje ≈ nota / máximo × 100` en todos, es avance |
-| `weightformatted` (si existe) es el peso del ítem en la categoría o en el curso | ❌ **no viene** en `get_grade_items` (0 de 23). Pendiente: columna `weight` en la tabla | Los pesos de una misma categoría deberían sumar ≈ 100 % |
+| `percentageformatted` es la nota como porcentaje del máximo del ítem (8 de 10 = 80 %), **no el peso** | ❌ en `gradereport_user_get_grade_items`: ese campo **no viene** (0 de 23 ítems, 9 con nota). Tampoco en `gradereport_user_get_grades_table`: la tabla solo trae `feedback`, `grade`, `itemname`, `leader`, `parentcategories` (51 filas, 8 con nota, 0 con rango, 0 con porcentaje, 0 con peso). **El porcentaje de Moodle no se puede interpretar porque no existe** | Para 2–3 ítems el script imprime nota, rango máximo, `percentageformatted` y `weightformatted`: si `porcentaje ≈ nota / máximo × 100` en todos, es avance |
+| `weightformatted` (si existe) es el peso del ítem en la categoría o en el curso | ❌ **no viene** en `get_grade_items` (0 de 23). Tampoco hay columna `weight` en la tabla | Los pesos de una misma categoría deberían sumar ≈ 100 % |
 | La nota máxima/mínima para aprobar es 100/70 | ❌ (suposición fija en `query_engine.nota_necesaria`) | Contraste con el modelo evaluativo del ERP |
+
+**Conclusión (23/10/2026):** Moodle UNEMI no entrega pesos ni máximos por ítem al rol estudiante, ni por `get_grade_items` ni por `get_grades_table`. La columna `porcentaje` de `componente_nota` queda siempre vacía con datos reales. Cualquier peso o máximo para el simulador de notas tiene que venir de otra fuente (ERP, o declarado por el estudiante y marcado como tal).
 
 **Regla de uso:** ningún cálculo (simulador de notas, indicador de seguimiento) usará
 `porcentaje` como peso hasta que este apartado esté confirmado. El lector numérico
@@ -46,4 +48,4 @@ si una consulta posterior falla.
 | Fecha | Qué se comprobó | Resultado |
 |---|---|---|
 | 23/10/2026 | Estado de entrega (1 curso con tareas en línea, 6 tareas) | Función disponible para el rol estudiante. `submitted`=4, `new`=1, sin `submission`=1. Sin errores |
-| 23/10/2026 | `percentageformatted` y `weightformatted` en `get_grade_items` | Ausentes en todos los ítems (23 ítems, 9 con nota). No sirven como fuente de pesos. Falta probar la tabla de calificaciones |
+| 23/10/2026 | `percentageformatted` y `weightformatted` en `get_grade_items` | Ausentes en todos los ítems (23 ítems, 9 con nota). No sirven como fuente de pesos. Confirmado también en la tabla de calificaciones (sin `weight`, `range` ni `percentage`) |
