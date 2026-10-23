@@ -21,7 +21,7 @@ import os
 import sys
 import time
 from contextlib import nullcontext
-from datetime import datetime
+from core.tiempo import ahora_iso
 from urllib.parse import urlparse
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -316,7 +316,7 @@ def login_submit():
             sga_alumno_id_final = sga_alumno_id or sga.get_alumno_id_automatico() or ""
 
             # Sincronizacion inicial con los datos de ESTA persona especificamente.
-            inicio_sync = datetime.now().isoformat()
+            inicio_sync = ahora_iso()
             try:
                 sync_estudiante(
                     estudiante_id=estudiante_id,
@@ -395,7 +395,7 @@ def _resync(sid: str, sesion: dict):
         access_token=sesion["sga_access_token"],
         refresh_token=sesion["sga_refresh_token"],
     )
-    inicio_sync = datetime.now().isoformat()
+    inicio_sync = ahora_iso()
     try:
         try:
             sga.cambiar_a_perfil_regular()

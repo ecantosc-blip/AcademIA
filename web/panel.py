@@ -6,10 +6,12 @@ cifras de ejemplo.
 """
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from core import tiempo
+from core.tiempo import ahora_iso
 from db.setup import get_connection
 from sga.client import decodificar_jwt
 
@@ -73,7 +75,7 @@ def fuentes_de(herramientas: list, estudiante_id: int) -> list:
 
 def construir_panel(sesion: dict) -> dict:
     est = sesion["estudiante_id"]
-    ahora = datetime.now().isoformat(timespec="seconds")
+    ahora = ahora_iso("seconds")
     conn = get_connection()
     try:
         # ---- Conexiones ----
@@ -165,7 +167,7 @@ def construir_panel(sesion: dict) -> dict:
         """, (est,))]
 
         # ---- Resumen para la pantalla de Inicio ----
-        limite7 = (datetime.now() + timedelta(days=7)).isoformat(timespec="seconds")
+        limite7 = ahora_iso("seconds", days=7)
         vencen = conn.execute("""
             SELECT COUNT(DISTINCT t.id) AS n FROM tarea t
             JOIN matricula mat ON mat.materia_id = t.materia_id AND mat.estudiante_id = ?
@@ -194,7 +196,7 @@ def construir_panel(sesion: dict) -> dict:
             "moodle": {"ultima": ultimas.get("moodle")},
             "erp": {"ultima": ultimas.get("sga"), "vence": exp_erp, "renovable": bool(sesion.get("sga_refresh_token"))},
         },
-        "ahora": datetime.now().timestamp(),
+        "ahora": tiempo.ahora().timestamp(),
         "materias": materias,
         "fechas": fechas,
         "horario": horario,

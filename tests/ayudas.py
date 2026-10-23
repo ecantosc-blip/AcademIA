@@ -1,8 +1,11 @@
 """Datos y clientes simulados compartidos por las pruebas (nada de esto es real)."""
 import json
 import base64
-from datetime import datetime, timedelta
+from datetime import timedelta
 from types import SimpleNamespace as NS
+
+from core import tiempo
+from core.tiempo import ahora_iso
 
 
 def jwt(exp: int) -> str:
@@ -28,14 +31,14 @@ def sembrar_demo(db_path: str) -> None:
     for it, cal in (("Total N1", "10,00"), ("Total N2", "6,67"), ("Total N3", "-"),
                     ("Total del curso", "6,67"), ("N2 - S5-TAREA_1", "10,00")):
         c.execute("insert into componente_nota(matricula_id,nombre_item,calificacion) values (1,?,?)", (it, cal))
-    f = lambda d, h: (datetime.now() + timedelta(days=d, hours=h)).isoformat(timespec="seconds")
+    f = lambda d, h: ahora_iso("seconds", days=d, hours=h)
     c.execute("insert into tarea(materia_id,moodle_assign_id,nombre,fecha_entrega) values (1,5,'S7-COMPONENTE PRÁCTICO_1',?)", (f(2, 3),))
     c.execute("insert into tarea(materia_id,moodle_assign_id,nombre,fecha_entrega) values (2,6,'Entrega de avance de tesis',?)", (f(5, 0),))
     c.execute("insert into evento(estudiante_id,nombre,tipo,fecha) values (77,'Examen teórico','examen',?)", (f(9, 0),))
     for d, i, fi, m, a in (("Lunes", "18:00", "20:00", 1, "A-101"), ("Martes", "18:00", "19:00", 2, "B-204"),
                            ("Jueves", "19:00", "21:00", 1, "A-101"), ("Viernes", "18:00", "20:00", 2, "LAB-3")):
         c.execute("insert into horario(materia_id,dia,hora_inicio,hora_fin,aula) values (?,?,?,?,?)", (m, d, i, fi, a))
-    now = datetime.now()
+    now = tiempo.ahora().replace(tzinfo=None)
     for k, (p, e, d) in enumerate((("moodle", "exitosa", "2 cursos"), ("sga", "exitosa", "2 materias actualizadas"),
                                    ("sga", "fallida", "Token expirado")), 0):
         c.execute("insert into sesion_extraccion(estudiante_id,plataforma,fecha,estado,detalle) values (77,?,?,?,?)",

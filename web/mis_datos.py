@@ -10,9 +10,9 @@ Respeta la proteccion de datos personales: el estudiante ve, se lleva y borra lo
 se guardo sobre el.
 """
 import sqlite3
-from datetime import datetime
 
 from db.setup import get_connection
+from core.tiempo import ahora_iso
 
 # (etiqueta que ve el estudiante, SQL de conteo). El parametro es el id del estudiante.
 _CONTEO = [
@@ -50,7 +50,7 @@ def exportar(estudiante_id: int) -> dict:
         for mt in matriculas:
             mt["componentes"] = _filas(conn, "SELECT nombre_item, calificacion, porcentaje FROM componente_nota WHERE matricula_id = ? ORDER BY id", (mt["id"],))
         datos = {
-            "exportado": datetime.now().isoformat(timespec="seconds"),
+            "exportado": ahora_iso("seconds"),
             "aviso": "Copia de los datos que AcademIA guarda sobre ti. No incluye contraseñas ni tokens: nunca se guardan.",
             "estudiante": est[0] if est else None,
             "matriculas": matriculas,

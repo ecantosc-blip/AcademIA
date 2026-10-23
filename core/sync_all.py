@@ -7,7 +7,7 @@ correr este script).
 import os
 import sys
 import unicodedata
-from datetime import datetime
+from core.tiempo import ahora_iso, timestamp_a_iso
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -131,7 +131,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
                 nombre = excluded.nombre,
                 moodle_user_id = excluded.moodle_user_id,
                 fecha_sincronizacion = excluded.fecha_sincronizacion
-        """, (estudiante_id, info["fullname"], info["userid"], datetime.now().isoformat()))
+        """, (estudiante_id, info["fullname"], info["userid"], ahora_iso()))
 
         courses = moodle.get_courses()
         course_ids = []
@@ -193,7 +193,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
                 continue
             for assign in course.get("assignments", []):
                 due = assign.get("duedate")
-                fecha_entrega = datetime.fromtimestamp(due).isoformat() if due else None
+                fecha_entrega = timestamp_a_iso(due) if due else None
                 cursor.execute("""
                     INSERT INTO tarea (materia_id, moodle_assign_id, nombre, fecha_entrega)
                     VALUES (?, ?, ?, ?)
@@ -215,7 +215,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
         for e in events.get("events", []):
             if e["name"] in nombres_tareas:
                 continue
-            fecha = datetime.fromtimestamp(e["timestart"]).isoformat()
+            fecha = timestamp_a_iso(e["timestart"])
             cursor.execute("""
                 INSERT INTO evento (estudiante_id, nombre, tipo, fecha)
                 VALUES (?, ?, ?, ?)
@@ -256,7 +256,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
         cursor.execute("""
             INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
             VALUES (?, 'moodle', ?, 'exitosa', ?)
-        """, (estudiante_id, datetime.now().isoformat(), f"{len(courses)} cursos"))
+        """, (estudiante_id, ahora_iso(), f"{len(courses)} cursos"))
         conn.commit()
         print(f"[Moodle] OK: {len(courses)} materias, tareas, eventos y calificaciones sincronizadas.")
 
@@ -264,7 +264,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
         cursor.execute("""
             INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
             VALUES (?, 'moodle', ?, 'fallida', ?)
-        """, (estudiante_id, datetime.now().isoformat(), depurar(e)))
+        """, (estudiante_id, ahora_iso(), depurar(e)))
         conn.commit()
         print(f"[Moodle] Error: {depurar(e)}")
 
@@ -339,7 +339,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
             cursor.execute("""
                 INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
                 VALUES (?, 'sga', ?, 'exitosa', ?)
-            """, (estudiante_id, datetime.now().isoformat(), f"{actualizadas} materias actualizadas"))
+            """, (estudiante_id, ahora_iso(), f"{actualizadas} materias actualizadas"))
             conn.commit()
             print(f"[SGA] OK: {actualizadas} materias actualizadas con nota/asistencia oficial.")
 
@@ -347,7 +347,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
             cursor.execute("""
                 INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
                 VALUES (?, 'sga', ?, 'fallida', ?)
-            """, (estudiante_id, datetime.now().isoformat(), depurar(e)))
+            """, (estudiante_id, ahora_iso(), depurar(e)))
             conn.commit()
             print(f"[SGA] Error: {depurar(e)}")
 

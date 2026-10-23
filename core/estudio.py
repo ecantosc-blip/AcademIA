@@ -18,13 +18,13 @@ import re
 import sys
 import random
 import threading
-from datetime import datetime, timedelta
 from urllib.parse import quote_plus
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from db.setup import get_connection
 from core.nombres import normalizar
+from core.tiempo import ahora_iso
 
 MODELO = os.getenv("ESTUDIO_MODEL", "claude-sonnet-4-6")
 MAX_PREGUNTAS = 10
@@ -217,7 +217,7 @@ class Estudio:
 
     def evaluaciones_activas(self, materia_id: int) -> list:
         """Nombres de tareas/eventos de la materia que aun no vencen (o vencieron hace poco)."""
-        corte = (datetime.now() - timedelta(days=2)).isoformat(timespec="seconds")
+        corte = ahora_iso("seconds", days=-2)
         conn = get_connection()
         try:
             tareas = conn.execute("""
@@ -323,7 +323,7 @@ class Estudio:
                 conn.execute("""INSERT INTO practica (estudiante_id, materia_id, tema, fecha, total, aciertos)
                                 VALUES (?, ?, ?, ?, ?, ?)""",
                              (self.estudiante_id, p["materia_id"], p["tema"] or None,
-                              datetime.now().isoformat(timespec="seconds"), total, aciertos))
+                              ahora_iso("seconds"), total, aciertos))
                 conn.commit()
             finally:
                 conn.close()
