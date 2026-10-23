@@ -1,0 +1,25 @@
+name: Pruebas
+
+# Se ejecutan en cada subida y en cada pull request.
+# Usan solo datos simulados: no necesitan tokens, cuentas ni servicios reales.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+      - name: Ejecutar pruebas
+        run: python -m pytest
