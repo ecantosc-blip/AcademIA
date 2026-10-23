@@ -35,7 +35,7 @@ cp .env.example .env
 ```
 
 Abre `.env` con un editor de texto y completa:
-- `MOODLE_USERNAME` y `MOODLE_PASSWORD` (se usan automáticamente, Moodle no tiene detección de bots).
+- `MOODLE_TOKEN` (recomendado, sin contraseña: el valor del enlace `moodlemobile://token=...`). Solo para pruebas por consola heredadas se admite `MOODLE_USERNAME` y `MOODLE_PASSWORD`; la app web nunca los usa.
 - Para el SGA, el login SÍ tiene protección anti-bot, así que hay que
   obtener el token manualmente la primera vez:
   1. Entra a `https://sgaestudiante.unemi.edu.ec` en Chrome/Firefox.
@@ -84,9 +84,8 @@ python core/sync_all.py
 
 Esto trae tus cursos, tareas, eventos y calificaciones detalladas de Moodle,
 y tu nota final + asistencia oficial del SGA, y lo guarda todo en la base
-de datos local unificada. (El script anterior, `sync_moodle.py`, se deja
-como referencia del primer paso de validación, pero para uso real conviene
-correr `sync_all.py`).
+de datos local unificada. (El script anterior, `sync_moodle.py`, se retiró:
+`sync_all.py` hace todo lo que hacía y más, y está cubierto por las pruebas).
 
 ### 7. Probar el motor de consultas (modo chat, basado en reglas - sin IA todavía)
 
@@ -198,14 +197,16 @@ unemi-assistant/
 ├── web/panel.py         # Datos reales del tablero (conexiones, materias, bitácora)
 ├── db/schema.sql        # Modelo de datos relacional
 ├── db/setup.py          # Inicializa la base de datos SQLite
-├── core/sync_moodle.py  # Sincroniza solo Moodle (primer paso de validación)
 ├── core/sync_all.py     # Sincroniza Moodle + SGA (uso real)
+├── core/privacidad.py   # Depura tokens/datos personales de logs y errores
 ├── core/query_engine.py # Motor de consultas v1: reglas simples (sin IA)
 ├── core/assistant.py    # Asistente v2: LLM real con tool-calling (RAG)
 ├── web/app.py            # Servidor Flask (interfaz web)
 ├── web/sessions_store.py # Sesiones web persistentes y cifradas (SQLite)
 ├── web/templates/        # login.html (2 pasos por token) e index.html
 ├── ver_bd.py             # Muestra las tablas de la base de datos
+├── herramientas/diagnostico/  # Scripts de diagnóstico (salida sin datos personales)
+├── tests/                # Pruebas automáticas (pytest; solo datos simulados)
 └── requirements.txt
 ```
 
@@ -240,3 +241,27 @@ descargarlo (`/api/mis-datos/exportar`, JSON sin contraseñas ni tokens) y borra
 (`/api/mis-datos/borrar`: elimina al estudiante y, en cascada, sus matrículas, notas,
 entregas, eventos, prácticas, lecturas y sesiones; el catálogo de materias y docentes se conserva).
 La lógica está en `web/mis_datos.py`.
+
+
+## Pruebas automáticas
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+Usan solo datos simulados: no necesitan tokens, cuentas ni red (la red está bloqueada
+durante las pruebas y el `.env` no se lee). GitHub Actions las ejecuta en cada subida
+y en cada pull request (`.github/workflows/pruebas.yml`).
+
+## Scripts de diagnóstico
+
+Están en `herramientas/diagnostico/` y se ejecutan desde la carpeta del proyecto, por
+ejemplo `python herramientas/diagnostico/debug_notas_moodle.py`.
+
+- Usan tu **token** (nunca tu contraseña) y no lo imprimen.
+- Por defecto muestran solo la *forma* de los datos o valores con nombres sustituidos
+  (`Curso 1`, `Item 2`). Todo texto pasa por `core/privacidad.depurar`, que quita tokens,
+  correos y números largos (cédulas).
+- Los volcados crudos se guardan en `diagnostico_local/` (ignorada por Git). No los
+  compartas: contienen tus datos.

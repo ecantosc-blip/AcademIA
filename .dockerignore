@@ -12,3 +12,7 @@ __pycache__/
 .git/
 pruebas/resultados_*/
 docs/
+diagnostico_local/
+*_raw.json
+tests/
+.github/

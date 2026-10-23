@@ -615,10 +615,8 @@ if __name__ == "__main__":
     else:
         try:
             materias = client.get_materias_parseadas()
-            print(f"Conexion exitosa. {len(materias)} materias encontradas:\n")
-            for m in materias:
-                print(f"- {m['nombre']}")
-                print(f"    Nota: {m['nota']}  |  Asistencia: {m['asistencia']}%")
+            # Solo cantidades: los nombres y las notas son datos personales.
+            print(f"Conexion exitosa. {len(materias)} materias encontradas.")
         except Exception as e:
             print(f"Error al consultar: {e}")
             print("\nSi el error es 401, tu access_token expiro - repite el paso de "

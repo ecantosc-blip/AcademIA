@@ -10,6 +10,8 @@ import base64
 import requests
 from urllib.parse import unquote
 
+from core.privacidad import depurar
+
 
 def extraer_token_moodle(texto: str) -> str:
     """
@@ -84,13 +86,18 @@ class MoodleClient:
     def login(self, username: str, password: str, service: str = "moodle_mobile_app"):
         """Obtiene un token nuevo. Lo guarda en self.token y lo retorna."""
         url = f"{self.base_url}/login/token.php"
-        resp = self.session.get(url, params={
-            "username": username,
-            "password": password,
-            "service": service,
-        })
-        resp.raise_for_status()
-        data = resp.json()
+        try:
+            resp = self.session.get(url, params={
+                "username": username,
+                "password": password,
+                "service": service,
+            })
+            resp.raise_for_status()
+            data = resp.json()
+        except requests.RequestException as e:
+            # El mensaje de requests incluye la URL completa (con usuario y
+            # contrasena): se depura y se corta la cadena de excepciones.
+            raise RuntimeError(f"Error de red al iniciar sesion en Moodle: {depurar(e)}") from None
 
         if "error" in data:
             raise ValueError(f"Error de Moodle al hacer login: {data['error']}")
@@ -110,9 +117,15 @@ class MoodleClient:
             "moodlewsrestformat": "json",
             **params,
         }
-        resp = self.session.get(url, params=payload)
-        resp.raise_for_status()
-        data = resp.json()
+        try:
+            resp = self.session.get(url, params=payload)
+            resp.raise_for_status()
+            data = resp.json()
+        except requests.RequestException as e:
+            # requests incluye la URL completa en el mensaje, y la URL lleva el
+            # wstoken: se depura y se corta la cadena para que el token no
+            # llegue a los registros, a sesion_extraccion ni a la pantalla.
+            raise RuntimeError(f"Error de red al llamar a Moodle ({wsfunction}): {depurar(e)}") from None
 
         if isinstance(data, dict) and data.get("exception"):
             raise RuntimeError(f"Error Moodle ({wsfunction}): {data.get('message')}")
@@ -322,38 +335,27 @@ class MoodleClient:
 
 
 def build_client_from_env() -> MoodleClient:
-    client = MoodleClient(base_url=os.getenv("MOODLE_BASE_URL", "https://aulagradoa.unemi.edu.ec"))
-    return client
+    """Cliente de Moodle para uso por consola. Si MOODLE_TOKEN esta definido se
+    usa ese token (recomendado, sin contrasena)."""
+    return MoodleClient(
+        base_url=os.getenv("MOODLE_BASE_URL", "https://aulagradoa.unemi.edu.ec"),
+        token=os.getenv("MOODLE_TOKEN") or None,
+    )
 
 
 if __name__ == "__main__":
+    # Prueba de conexion: solo imprime CANTIDADES, nunca nombres ni notas.
     from dotenv import load_dotenv
     load_dotenv()
 
     client = build_client_from_env()
-    username = os.getenv("MOODLE_USERNAME")
-    password = os.getenv("MOODLE_PASSWORD")
-    service = os.getenv("MOODLE_SERVICE", "moodle_mobile_app")
-
-    if not username or not password:
-        print("Faltan MOODLE_USERNAME / MOODLE_PASSWORD en .env")
+    if not client.token:
+        print("Falta MOODLE_TOKEN en .env (el token del enlace moodlemobile://token=...).")
     else:
         try:
-            client.login(username, password, service)
-            print("Login exitoso. Token obtenido.")
-
             info = client.get_site_info()
-            print(f"\nBienvenido, {info['fullname']} (userid={info['userid']})")
-
-            courses = client.get_courses()
-            print(f"\nCursos matriculados ({len(courses)}):")
-            for c in courses:
-                print(f"  - [{c['id']}] {c['fullname']}")
-
-            events = client.get_upcoming_events()
-            print(f"\nProximos eventos ({len(events.get('events', []))}):")
-            for e in events.get("events", [])[:5]:
-                print(f"  - {e['name']} ({e.get('formattedtime', '')})")
-
+            print(f"Conexion exitosa (userid={info['userid']}).")
+            print(f"Cursos matriculados: {len(client.get_courses())}")
+            print(f"Proximos eventos: {len(client.get_upcoming_events().get('events', []))}")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error: {depurar(e)}")

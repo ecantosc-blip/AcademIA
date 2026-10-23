@@ -15,6 +15,7 @@ from moodle.client import build_client_from_env as build_moodle_client, limpiar_
 from sga.client import build_client_from_env as build_sga_client
 from db.setup import get_connection
 from core.nombres import normalizar as _normalizar_n, coincide, nivel_a_numero
+from core.privacidad import depurar
 
 
 def _normalizar(texto: str) -> str:
@@ -263,9 +264,9 @@ def sync(estudiante_id: int = 1, db_path: str = None,
         cursor.execute("""
             INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
             VALUES (?, 'moodle', ?, 'fallida', ?)
-        """, (estudiante_id, datetime.now().isoformat(), str(e)))
+        """, (estudiante_id, datetime.now().isoformat(), depurar(e)))
         conn.commit()
-        print(f"[Moodle] Error: {e}")
+        print(f"[Moodle] Error: {depurar(e)}")
 
     # ---------- Parte 2: SGA (notas y asistencia oficiales) ----------
     sga = sga_client or build_sga_client()
@@ -285,7 +286,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
             if sga.cambiar_a_perfil_regular():
                 print("[SGA] Se detectaron multiples perfiles de carrera - cambiado al de tipo 'Grado'.")
         except Exception as e:
-            print(f"[SGA] Aviso: no se pudo verificar/cambiar el perfil de carrera: {e}")
+            print(f"[SGA] Aviso: no se pudo verificar/cambiar el perfil de carrera: {depurar(e)}")
 
         try:
             materias_sga = sga.get_materias_parseadas()
@@ -324,13 +325,13 @@ def sync(estudiante_id: int = 1, db_path: str = None,
                 # Diagnostico: forma de una materia (solo nombres de campos y
                 # tipos, nunca valores) para ver donde quedo el nombre.
                 try:
-                    from core.debug_horario import resumir_estructura
+                    from core.privacidad import resumir_estructura
                     primera = (sga.get_materias().get("data", {}).get("eMateriasAsignadas") or [{}])[0]
                     print("[SGA] Estructura de una materia (campos, sin valores):")
                     for linea in resumir_estructura(primera, max_items_lista=1)[:70]:
                         print("   ", linea)
                 except Exception as e:
-                    print(f"[SGA] No se pudo mostrar la estructura: {e}")
+                    print(f"[SGA] No se pudo mostrar la estructura: {depurar(e)}")
             if sin_match:
                 print(f"[SGA] Materias sin coincidencia en la BD: {sin_match}")
 
@@ -346,9 +347,9 @@ def sync(estudiante_id: int = 1, db_path: str = None,
             cursor.execute("""
                 INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
                 VALUES (?, 'sga', ?, 'fallida', ?)
-            """, (estudiante_id, datetime.now().isoformat(), str(e)))
+            """, (estudiante_id, datetime.now().isoformat(), depurar(e)))
             conn.commit()
-            print(f"[SGA] Error: {e}")
+            print(f"[SGA] Error: {depurar(e)}")
 
         # --- Horario ---
         try:
@@ -387,7 +388,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
 
         except Exception as e:
             import traceback
-            print(f"[SGA-horario] Error: {e}")
+            print(f"[SGA-horario] Error: {depurar(e)}")
             traceback.print_exc()
 
         # --- Registro academico completo (historial de semestres) ---
@@ -424,7 +425,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
                         print(f"[SGA-registro] Diagnostico: claves de data = {resumen}; "
                               f"claves de la respuesta = {list(crudo.keys()) if isinstance(crudo, dict) else type(crudo).__name__}")
                     except Exception as e:
-                        print(f"[SGA-registro] Diagnostico: no se pudo leer la respuesta cruda: {e}")
+                        print(f"[SGA-registro] Diagnostico: no se pudo leer la respuesta cruda: {depurar(e)}")
 
                 if historial:
                     niveles = sorted({r["nivel"] for r in historial if r.get("nivel")})
@@ -504,7 +505,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
 
             except Exception as e:
                 import traceback
-                print(f"[SGA-registro] Error: {e}")
+                print(f"[SGA-registro] Error: {depurar(e)}")
                 traceback.print_exc()
 
         # --- Malla curricular y prerrequisitos ---
@@ -576,7 +577,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
 
         except Exception as e:
             import traceback
-            print(f"[SGA-malla] Error: {e}")
+            print(f"[SGA-malla] Error: {depurar(e)}")
             traceback.print_exc()
 
     conn.close()

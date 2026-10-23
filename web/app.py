@@ -37,6 +37,7 @@ from sga.client import SGAClient, segundos_para_vencer
 from core.assistant import AssistantLLM
 from core.sync_all import sync as sync_estudiante
 from db.setup import get_connection, init_db
+from core.privacidad import depurar
 
 # Crea las tablas (y aplica migraciones) si la base no existe todavia.
 # Es idempotente: si ya existen, no toca los datos.
@@ -284,7 +285,7 @@ def login_submit():
             except Exception as e:
                 return render_template(
                     "login.html",
-                    error=f"El token de Moodle no es válido o ya venció. Genera uno nuevo y vuelve a intentarlo. ({e})",
+                    error=f"El token de Moodle no es válido o ya venció. Genera uno nuevo y vuelve a intentarlo. ({depurar(e)})",
                     moodle_base_url=moodle_base_url,
                 )
 
@@ -306,7 +307,7 @@ def login_submit():
                     print(f"[login] Se detectaron multiples perfiles de carrera - "
                           f"cambiado automaticamente al de tipo 'Grado'.")
             except Exception as e:
-                print(f"[login] Aviso: no se pudo verificar/cambiar el perfil de carrera: {e}")
+                print(f"[login] Aviso: no se pudo verificar/cambiar el perfil de carrera: {depurar(e)}")
 
             # El ID de alumno para "Registro Academico" ya no se pide manualmente:
             # se extrae automaticamente de la propia respuesta de materias().
@@ -324,7 +325,7 @@ def login_submit():
                     sga_alumno_id=sga_alumno_id_final or None,
                 )
             except Exception as e:
-                print(f"[login] Aviso: la sincronizacion inicial tuvo problemas: {e}")
+                print(f"[login] Aviso: la sincronizacion inicial tuvo problemas: {depurar(e)}")
 
             avisos = avisos_de_sincronizacion(estudiante_id, inicio_sync)
 
@@ -424,7 +425,7 @@ def _resync(sid: str, sesion: dict):
         # "avisos" lista lo que fallo (ej. token del ERP vencido); vacio = todo bien.
         return jsonify({"ok": True, "avisos": avisos_de_sincronizacion(sesion["estudiante_id"], inicio_sync)})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": depurar(e)}), 500
 
 
 @app.errorhandler(Exception)
@@ -433,7 +434,7 @@ def _error_json(e):
     from werkzeug.exceptions import HTTPException
     if request.path == "/sync" or request.path.startswith("/api/"):
         code = e.code if isinstance(e, HTTPException) else 500
-        return jsonify({"error": f"Error interno: {e}"}), code
+        return jsonify({"error": f"Error interno: {depurar(e)}"}), code
     if isinstance(e, HTTPException):
         return e
     raise e
@@ -490,7 +491,7 @@ def carnet():
     except limites.Ocupado:
         return jsonify({"error": "Hay muchas operaciones en curso. Inténtalo de nuevo en un momento."}), 503
     except Exception as e:
-        return jsonify({"error": f"No se pudo obtener el carné: {e}"}), 502
+        return jsonify({"error": f"No se pudo obtener el carné: {depurar(e)}"}), 502
 
 
 # ---------------------------------------------------------------------------
@@ -570,7 +571,7 @@ def proxy_image():
         resp.raise_for_status()
         return Response(resp.content, content_type=resp.headers.get("Content-Type", "image/png"))
     except Exception as e:
-        return f"No se pudo cargar la imagen: {e}", 502
+        return f"No se pudo cargar la imagen: {depurar(e)}", 502
 
 
 @app.route("/api/chat", methods=["POST"])
@@ -607,7 +608,7 @@ def chat():
     except limites.Ocupado:
         return jsonify({"error": "El asistente está muy ocupado. Inténtalo de nuevo en unos segundos."}), 503
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": depurar(e)}), 500
 
 
 # ---------------------------------------------------------------------------

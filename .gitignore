@@ -8,3 +8,7 @@ __pycache__/
 *.db-wal
 *.db-shm
 pruebas/resultados_*/
+# Volcados de diagnostico: contienen datos personales, nunca se suben
+diagnostico_local/
+*_raw.json
+.claude/settings.local.json
