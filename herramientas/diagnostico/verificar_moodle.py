@@ -26,6 +26,7 @@ from core.entregas import interpretar_estado
 from moodle.client import MoodleClient
 
 MAX_ITEMS_CON_NUMEROS = 3
+MAX_TAREAS_POR_CURSO = 6
 
 
 def analizar_item(item: dict) -> dict:
@@ -59,19 +60,20 @@ def _estado_entrega(cliente, userid, cursos, alias_curso):
             print(f"{alias_curso(curso['id'])}: sin tareas con entrega en linea")
             continue
         probadas += 1
-        try:
-            resp = cliente.get_submission_status(tareas[0]["id"], userid)
-        except Exception as e:
-            errores[depurar(e)[:100]] += 1
-            imprimir(f"{alias_curso(curso['id'])}: ERROR -> {e}")
-            continue
-        ultimo = resp.get("lastattempt") if isinstance(resp, dict) else None
-        sub = ultimo.get("submission") if isinstance(ultimo, dict) else None
-        status = sub.get("status") if isinstance(sub, dict) else None
-        cuenta[status or "(sin submission)"] += 1
-        claves = sorted(ultimo.keys())[:12] if isinstance(ultimo, dict) else None
-        imprimir(f"{alias_curso(curso['id'])}: responde. status={status!r}  interpretado={interpretar_estado(resp)!r}  "
-                 f"claves de lastattempt={claves}")
+        for n, tarea in enumerate(tareas[:MAX_TAREAS_POR_CURSO], 1):
+            try:
+                resp = cliente.get_submission_status(tarea["id"], userid)
+            except Exception as e:
+                errores[depurar(e)[:100]] += 1
+                imprimir(f"{alias_curso(curso['id'])} / Tarea {n}: ERROR -> {e}")
+                continue
+            ultimo = resp.get("lastattempt") if isinstance(resp, dict) else None
+            sub = ultimo.get("submission") if isinstance(ultimo, dict) else None
+            status = sub.get("status") if isinstance(sub, dict) else None
+            cuenta[status or "(sin submission)"] += 1
+            imprimir(f"{alias_curso(curso['id'])} / Tarea {n}: status={status!r}  "
+                     f"interpretado={interpretar_estado(resp)!r}  "
+                     f"submission_presente={isinstance(sub, dict)}")
     print(f"\nResumen: cursos probados={probadas}, respuestas={sum(cuenta.values())}, errores={sum(errores.values())}")
     print(f"Valores de status: {dict(cuenta)}")
     if errores:
@@ -85,6 +87,7 @@ def _estado_entrega(cliente, userid, cursos, alias_curso):
 def _porcentaje(cliente, userid, cursos, alias_curso):
     print("\n=== 2) SIGNIFICADO DE percentageformatted ===")
     filas = []
+    vistos = Counter()
     for curso in cursos:
         try:
             data = cliente.get_grades(curso["id"], userid)
@@ -92,12 +95,22 @@ def _porcentaje(cliente, userid, cursos, alias_curso):
             imprimir(f"{alias_curso(curso['id'])}: ERROR -> {e}")
             continue
         for ug in data.get("usergrades", []):
+            vistos["usergrades"] += 1
             for it in ug.get("gradeitems", []):
                 a = analizar_item(it)
+                vistos["items"] += 1
+                if it.get("itemtype") != "course":
+                    vistos["no_curso"] += 1
+                vistos["con_nota"] += a["nota"] is not None
+                vistos["con_pct"] += a["percentage"] is not None
+                vistos["con_peso"] += a["peso"] is not None
                 if a["nota"] is not None and a["percentage"] is not None and it.get("itemtype") != "course":
                     filas.append((curso["id"], it.get("itemtype"), a))
     if not filas:
         print("No encontre items con nota numerica para analizar.")
+        print(f"Por que (solo conteos): usergrades={vistos['usergrades']}, items={vistos['items']}, "
+              f"sin_tipo_curso={vistos['no_curso']}, con_nota={vistos['con_nota']}, "
+              f"con_percentage={vistos['con_pct']}, con_peso={vistos['con_peso']}")
         return
     avance = sum(1 for *_, a in filas if a["percentage_es_avance"])
     comparables = sum(1 for *_, a in filas if a["percentage_es_avance"] is not None)

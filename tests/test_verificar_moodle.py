@@ -102,3 +102,28 @@ def test_sin_conexion_devuelve_error_limpio(verificar, capsys):
             raise RuntimeError(f"fallo wstoken={TOKEN}")
     assert verificar.main(Roto()) == 1
     assert TOKEN not in capsys.readouterr().out
+
+
+def test_sin_items_explica_por_que_solo_con_conteos(verificar, capsys):
+    items = [{"itemtype": "mod", "itemname": TAREA, "gradeformatted": "-", "percentageformatted": "-"}]
+    assert verificar.main(Moodle(items=items)) == 0
+    out = capsys.readouterr().out
+    assert "No encontre items con nota numerica" in out
+    assert "items=" in out and "con_nota=0" in out
+    assert TAREA not in out
+
+
+def test_prueba_varias_tareas_por_curso(verificar, capsys):
+    class VariasTareas(Moodle):
+        estados = iter(["submitted", "draft", "new"])
+
+        def get_assignments(self, ids):
+            return {"courses": [{"id": 1, "assignments": [{"id": 1}, {"id": 2}, {"id": 3}]}]}
+
+        def get_submission_status(self, aid, uid):
+            return {"lastattempt": {"submission": {"status": next(self.estados)}}}
+
+    assert verificar.main(VariasTareas()) == 0
+    out = capsys.readouterr().out
+    assert "Valores de status: {'submitted': 1, 'draft': 1, 'new': 1}" in out
+    assert "Tarea 3" in out
