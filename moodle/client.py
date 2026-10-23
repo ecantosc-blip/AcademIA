@@ -6,11 +6,13 @@ confirmamos en las pruebas que login/token.php no tiene deteccion de bots.
 """
 import os
 import re
+import sys
 import base64
 import requests
 from urllib.parse import unquote
 
-from core.privacidad import depurar
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from core.privacidad import depurar  # noqa: E402
 
 
 def extraer_token_moodle(texto: str) -> str:

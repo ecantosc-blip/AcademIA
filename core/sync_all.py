@@ -7,7 +7,6 @@ correr este script).
 import os
 import sys
 import unicodedata
-from core.tiempo import ahora_iso, timestamp_a_iso
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -17,6 +16,7 @@ from db.setup import get_connection
 from core.nombres import normalizar as _normalizar_n, coincide, nivel_a_numero
 from core.privacidad import depurar
 from core.entregas import sincronizar_entregas
+from core.tiempo import ahora_iso, timestamp_a_iso
 
 
 def _normalizar(texto: str) -> str:

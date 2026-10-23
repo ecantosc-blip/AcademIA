@@ -21,7 +21,6 @@ import os
 import sys
 import time
 from contextlib import nullcontext
-from core.tiempo import ahora_iso
 from urllib.parse import urlparse
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,6 +37,7 @@ from core.assistant import AssistantLLM
 from core.sync_all import sync as sync_estudiante
 from db.setup import get_connection, init_db
 from core.privacidad import depurar
+from core.tiempo import ahora_iso
 
 # Crea las tablas (y aplica migraciones) si la base no existe todavia.
 # Es idempotente: si ya existen, no toca los datos.
