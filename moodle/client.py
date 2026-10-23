@@ -163,6 +163,10 @@ class MoodleClient:
     def get_grades(self, course_id: int, userid: int):
         return self.call("gradereport_user_get_grade_items", courseid=course_id, userid=userid)
 
+    def get_grades_table(self, course_id: int, userid: int):
+        """Respuesta cruda de gradereport_user_get_grades_table (para diagnostico)."""
+        return self.call("gradereport_user_get_grades_table", courseid=course_id, userid=userid)
+
     def get_teachers(self, course_id: int):
         """
         Trae los profesores matriculados en un curso, con nombre y correo

@@ -16,6 +16,7 @@ Uso (desde la carpeta del proyecto, con el entorno virtual activo):
     python herramientas/diagnostico/verificar_moodle.py
 """
 import os
+import re
 import sys
 from collections import Counter
 
@@ -127,6 +128,58 @@ def _porcentaje(cliente, userid, cursos, alias_curso):
                  f"percentage={a['percentage']} calculado={a['percentage_calculado']} peso={a['peso']}")
 
 
+def _texto(celda) -> str:
+    """Contenido de una celda de la tabla de notas, sin etiquetas HTML."""
+    contenido = celda.get("content") if isinstance(celda, dict) else None
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", str(contenido or ""))).replace("&nbsp;", " ").strip()
+
+
+def _tabla(cliente, userid, cursos, alias_curso):
+    """Misma pregunta, pero sobre gradereport_user_get_grades_table (la que usa la app)."""
+    print("\n=== 3) TABLA DE CALIFICACIONES (gradereport_user_get_grades_table) ===")
+    columnas, filas, vistos = set(), [], Counter()
+    for curso in cursos:
+        try:
+            tabla = cliente.get_grades_table(curso["id"], userid)
+        except Exception as e:
+            imprimir(f"{alias_curso(curso['id'])}: ERROR -> {e}")
+            continue
+        for fila in ((tabla.get("tables") or [{}])[0].get("tabledata", []) if isinstance(tabla, dict) else []):
+            if not isinstance(fila, dict):
+                continue
+            vistos["filas"] += 1
+            columnas.update(fila.keys())
+            if "grade" not in fila:
+                continue
+            nota, pct = a_numero(_texto(fila.get("grade"))), a_numero(_texto(fila.get("percentage")))
+            peso, rango = a_numero(_texto(fila.get("weight"))), a_rango(_texto(fila.get("range")))
+            vistos["con_nota"] += nota is not None
+            vistos["con_pct"] += pct is not None
+            vistos["con_peso"] += peso is not None
+            vistos["con_rango"] += rango is not None
+            if nota is None or rango is None or rango[1] == rango[0]:
+                continue
+            calculado = round((nota - rango[0]) / (rango[1] - rango[0]) * 100, 2)
+            filas.append((curso["id"], nota, rango, pct, peso, calculado))
+    print(f"Columnas que trae la tabla (nombres de la API): {sorted(columnas)}")
+    print(f"Conteos: filas={vistos['filas']}, con_nota={vistos['con_nota']}, con_rango={vistos['con_rango']}, "
+          f"con_percentage={vistos['con_pct']}, con_peso={vistos['con_peso']}")
+    comparables = [f for f in filas if f[3] is not None]
+    coinciden = [f for f in comparables if abs(f[3] - f[5]) <= 0.6]
+    print(f"Filas comparables (nota, rango y percentage): {len(comparables)}; "
+          f"donde percentage = nota/maximo*100: {len(coinciden)}")
+    print("Conclusion: " + (
+        "percentage de la tabla es AVANCE (nota sobre su maximo), NO el peso." if comparables and len(coinciden) == len(comparables) else
+        "percentage de la tabla NO coincide siempre con nota/maximo: revisar con el tutor." if comparables else
+        "no hay filas comparables."))
+    print("Peso en la tabla: " + ("SI hay columna de peso con valores." if vistos["con_peso"] else
+                                  "NO hay pesos numericos en la tabla."))
+    print(f"\nNumeros de hasta {MAX_ITEMS_CON_NUMEROS} filas (nombres ocultos):")
+    for n, (cid, nota, rango, pct, peso, calc) in enumerate(filas[:MAX_ITEMS_CON_NUMEROS], 1):
+        imprimir(f"  {alias_curso(cid)} / Fila {n}: nota={nota} rango={rango[0]}-{rango[1]} "
+                 f"percentage={pct} calculado={calc} peso={peso}")
+
+
 def main(cliente=None):
     from dotenv import load_dotenv
     load_dotenv()
@@ -143,6 +196,7 @@ def main(cliente=None):
     print(f"Cursos: {len(cursos)}\n")
     _estado_entrega(cliente, userid, cursos, alias_curso)
     _porcentaje(cliente, userid, cursos, alias_curso)
+    _tabla(cliente, userid, cursos, alias_curso)
     return 0
 
 

@@ -45,6 +45,15 @@ class Moodle:
     def get_grades(self, cid, uid):
         return {"usergrades": [{"gradeitems": self.items}]}
 
+    def get_grades_table(self, cid, uid):
+        return {"tables": [{"tabledata": [
+            {"itemname": {"content": TAREA}, "grade": {"content": "8,00"},
+             "range": {"content": "0–10"}, "percentage": {"content": "80,00 %"}},
+            {"itemname": {"content": "Otra"}, "grade": {"content": "5,00"},
+             "range": {"content": "0–20"}, "percentage": {"content": "25,00 %"}},
+            {"itemname": {"content": "Total"}},
+        ]}]}
+
 
 def test_funcion_disponible_y_porcentaje_es_avance(verificar, capsys):
     items = [{"itemtype": "mod", "itemname": TAREA, "graderaw": 8, "grademin": 0, "grademax": 10,
@@ -65,7 +74,7 @@ def test_si_el_porcentaje_no_coincide_no_se_afirma_que_sea_avance(verificar, cap
     items = [{"itemtype": "mod", "itemname": "A", "graderaw": 8, "grademin": 0, "grademax": 10,
               "percentageformatted": "20,00 %", "weightformatted": "20,00 %"}]
     verificar.main(Moodle(items=items))
-    out = capsys.readouterr().out
+    out = capsys.readouterr().out.split("=== 3)")[0]
     assert "NO coincide siempre" in out and "AVANCE" not in out
 
 
@@ -87,7 +96,7 @@ def test_limita_los_numeros_a_tres_items(verificar, capsys):
     items = [{"itemtype": "mod", "itemname": f"n{i}", "graderaw": i, "grademin": 0, "grademax": 10,
               "percentageformatted": f"{i*10},00 %"} for i in range(1, 8)]
     verificar.main(Moodle(items=items))
-    out = capsys.readouterr().out
+    out = capsys.readouterr().out.split("=== 3)")[0]
     assert out.count("nota=") == 3
 
 
@@ -127,3 +136,13 @@ def test_prueba_varias_tareas_por_curso(verificar, capsys):
     out = capsys.readouterr().out
     assert "Valores de status: {'submitted': 1, 'draft': 1, 'new': 1}" in out
     assert "Tarea 3" in out
+
+
+def test_tabla_de_calificaciones_se_analiza_sin_filtrar_nombres(verificar, capsys):
+    assert verificar.main(Moodle()) == 0
+    out = capsys.readouterr().out
+    assert "TABLA DE CALIFICACIONES" in out
+    assert "'percentage'" in out and "'weight'" not in out
+    assert "percentage de la tabla es AVANCE" in out
+    assert "NO hay pesos numericos en la tabla" in out
+    assert TAREA not in out and CURSO not in out
