@@ -139,10 +139,18 @@ def test_novedades_textos_y_marcar_como_vistas(con):
     nov = cambios.novedades(con, E)
     textos = {n["texto"] for n in nov}
     assert "Nueva tarea: Informe 3 (vence 30 oct, 23:59)" in textos
-    assert "Nota publicada en Total N3: 8,5" in textos
+    assert "Nota publicada en Total N3: 8,50" in textos
     assert cambios.contar_nuevas(con, E) == 2
     assert cambios.marcar_vistas(con, E) == 2
     assert cambios.contar_nuevas(con, E) == 0
     assert cambios.novedades(con, E) == []
     assert len(cambios.novedades(con, E, solo_nuevas=False)) == 2
     assert cambios.marcar_vistas(con, E) == 0
+
+
+def test_las_notas_se_muestran_con_el_formato_de_origen(con):
+    d = cambios.describir
+    assert d({"tipo": "nota_cambio", "item": "N2", "antes": "6,67", "despues": "7,00"}) == "Cambió la nota de N2: de 6,67 a 7,00"
+    assert d({"tipo": "sga_nota_final", "antes": "66.7", "despues": "70.5"}) == "Nota final en el ERP: de 66,7 a 70,5"
+    assert d({"tipo": "sga_nota_final", "antes": None, "despues": "80.0"}) == "Nota final en el ERP: 80 (nueva)"
+    assert d({"tipo": "sga_asistencia", "antes": "100.0", "despues": "98.25"}) == "Asistencia en el ERP: de 100% a 98,25%"

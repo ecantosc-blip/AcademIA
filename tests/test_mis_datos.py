@@ -28,3 +28,23 @@ def test_borrar_elimina_todo_lo_del_estudiante_y_conserva_el_catalogo(bd_demo):
         assert c.execute(q).fetchone()[0] == 0, q
     assert c.execute("select count(*) from materia").fetchone()[0] == materias_antes
     c.close()
+
+
+def test_novedades_se_ven_se_exportan_y_se_borran(bd_demo):
+    from core import cambios
+    from db.setup import get_connection
+    c = get_connection()
+    c.execute("PRAGMA foreign_keys = ON")
+    cambios.registrar(c, 77, "moodle")
+    c.execute("update tarea set fecha_entrega='2026-12-01T10:00:00' where moodle_assign_id=5")
+    cambios.registrar(c, 77, "moodle")
+    c.commit()
+    c.close()
+    assert {x["nombre"]: x["cantidad"] for x in mis_datos.resumen(77)["conteos"]}["Novedades detectadas"] == 1
+    exp = mis_datos.exportar(77)
+    assert [n["tipo"] for n in exp["novedades"]] == ["tarea_fecha"]
+    mis_datos.borrar(77)
+    c = get_connection()
+    assert c.execute("select count(*) from cambio").fetchone()[0] == 0
+    assert c.execute("select count(*) from foto_estado").fetchone()[0] == 0
+    c.close()

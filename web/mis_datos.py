@@ -20,6 +20,7 @@ _CONTEO = [
     ("Notas por componente", "SELECT COUNT(*) FROM componente_nota c JOIN matricula m ON m.id = c.matricula_id WHERE m.estudiante_id = ?"),
     ("Eventos del calendario", "SELECT COUNT(*) FROM evento WHERE estudiante_id = ?"),
     ("Estados de entrega verificados", "SELECT COUNT(*) FROM entrega WHERE estudiante_id = ?"),
+    ("Novedades detectadas", "SELECT COUNT(*) FROM cambio WHERE estudiante_id = ?"),
     ("Prácticas de estudio", "SELECT COUNT(*) FROM practica WHERE estudiante_id = ?"),
     ("Lecturas de Moodle y ERP", "SELECT COUNT(*) FROM sesion_extraccion WHERE estudiante_id = ?"),
 ]
@@ -61,6 +62,10 @@ def exportar(estudiante_id: int) -> dict:
                 LEFT JOIN entrega e ON e.tarea_id = t.id AND e.estudiante_id = mat.estudiante_id
                 ORDER BY t.fecha_entrega""", (estudiante_id,)),
             "eventos": _filas(conn, "SELECT nombre, tipo, fecha FROM evento WHERE estudiante_id = ? ORDER BY fecha", (estudiante_id,)),
+            "novedades": _filas(conn, """
+                SELECT c.plataforma, c.tipo, m.nombre AS materia, c.item, c.antes, c.despues, c.detectado_en, c.visto_en
+                FROM cambio c LEFT JOIN materia m ON m.id = c.materia_id
+                WHERE c.estudiante_id = ? ORDER BY c.id""", (estudiante_id,)),
             "practicas": _filas(conn, """
                 SELECT m.nombre AS materia, p.tema, p.fecha, p.total, p.aciertos
                 FROM practica p JOIN materia m ON m.id = p.materia_id WHERE p.estudiante_id = ? ORDER BY p.fecha""", (estudiante_id,)),

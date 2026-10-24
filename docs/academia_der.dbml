@@ -25,6 +25,26 @@ Table entrega {
   verificada_en text
 }
 
+Table foto_estado {
+  estudiante_id integer [pk, ref: > estudiante.id]
+  plataforma text [pk, note: 'sga | moodle']
+  creada_en text [not null]
+  datos text [not null, note: 'JSON: estado tras la ultima lectura EXITOSA']
+}
+
+Table cambio {
+  id integer [pk, increment]
+  estudiante_id integer [not null, ref: > estudiante.id]
+  plataforma text [not null, note: 'sga | moodle']
+  tipo text [not null, note: 'tarea_nueva | tarea_fecha | tarea_estado | nota_nueva | nota_cambio | evento_nuevo | evento_fecha | sga_nota_final | sga_asistencia']
+  materia_id integer [ref: > materia.id]
+  item text
+  antes text
+  despues text
+  detectado_en text [not null]
+  visto_en text [note: 'NULL = novedad aun no vista']
+}
+
 Table estudiante {
   id integer [pk]
   nombre text [not null]

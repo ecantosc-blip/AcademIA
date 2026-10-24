@@ -285,3 +285,22 @@ con `MAX_CONSULTAS_ENTREGA` (60 por defecto).
 `python herramientas/diagnostico/verificar_moodle.py` y revisa la salida antes de compartirla.
 Las fechas se manejan en `America/Guayaquil` (`core/tiempo.py`; en Windows hace falta el
 paquete `tzdata`, ya incluido en `requirements.txt`).
+
+## Novedades (detector de cambios)
+
+Moodle y el ERP ya muestran tareas y notas, pero no avisan de que algo **cambió**. AcademIA
+guarda una "foto" de tus datos tras cada lectura exitosa y la compara con la anterior
+(`core/cambios.py`). La pestaña **Novedades** muestra lo que cambió desde tu última visita:
+tareas nuevas, fechas movidas, notas publicadas o modificadas, eventos nuevos y cambios de
+nota final o asistencia en el ERP.
+
+Reglas (todas cubiertas por pruebas):
+- Solo se compara entre lecturas **exitosas**. Si una lectura falla, no se guarda nada a medias
+  y no se interpreta como un cambio; el cambio real se informa en la siguiente lectura buena.
+- La primera lectura solo guarda el punto de partida (no hay con qué comparar).
+- Sin duplicados: cada cambio se registra una sola vez.
+- Lo que desaparece no se reporta (los eventos próximos se van solos con el tiempo), y pasar
+  de "sin verificar" a un estado conocido tampoco es un cambio: es verificar.
+- Se informa el valor de antes y el de después; no se interpreta ni se predice nada.
+- Las novedades se ven en **Mis datos**, se incluyen en la descarga y se borran con "Borrar mis datos".
+

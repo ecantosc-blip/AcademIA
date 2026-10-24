@@ -449,6 +449,36 @@ def api_panel():
     return jsonify(panel.construir_panel(sesion))
 
 
+@app.route("/api/novedades")
+def api_novedades():
+    """Cambios detectados entre lecturas exitosas: los no vistos y los ultimos ya vistos."""
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "No has iniciado sesión"}), 401
+    from core import cambios
+    conn = get_connection()
+    try:
+        est = sesion["estudiante_id"]
+        return jsonify({"nuevas": cambios.novedades(conn, est, solo_nuevas=True),
+                        "anteriores": [n for n in cambios.novedades(conn, est, solo_nuevas=False, limite=40)
+                                       if n["visto"]][:20]})
+    finally:
+        conn.close()
+
+
+@app.route("/api/novedades/vistas", methods=["POST"])
+def api_novedades_vistas():
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "No has iniciado sesión"}), 401
+    from core import cambios
+    conn = get_connection()
+    try:
+        return jsonify({"marcadas": cambios.marcar_vistas(conn, sesion["estudiante_id"])})
+    finally:
+        conn.close()
+
+
 @app.route("/carnet")
 def carnet():
     """

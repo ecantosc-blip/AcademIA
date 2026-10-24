@@ -182,8 +182,12 @@ def _fecha_humana(iso):
 
 
 def _num(valor):
+    """Moodle ya entrega notas formateadas ("7,00"): se muestran tal cual. Los numeros del ERP
+    (66.7) se escriben con coma y hasta 2 decimales, sin ceros de relleno."""
     n = a_numero(valor)
-    return str(valor) if n is None else (f"{n:g}".replace(".", ","))
+    if n is None or "," in str(valor):
+        return str(valor)
+    return f"{n:.2f}".rstrip("0").rstrip(".").replace(".", ",")
 
 
 def describir(c: dict) -> str:
