@@ -58,7 +58,7 @@ def test_base_existente_con_datos_conserva_las_filas(ruta_bd):
     # lo demas no se toca
     assert c.execute("select count(*) from tarea").fetchone()[0] == 3
     assert c.execute("select count(*) from estudiante").fetchone()[0] == 2
-    assert c.execute("select version from schema_version order by version").fetchall()[-1][0] == 3
+    assert c.execute("select version from schema_version order by version").fetchall()[-1][0] == max(m[0] for m in MIGRACIONES)
     # clave primaria, claves foraneas e indice siguen activos
     with pytest.raises(sqlite3.IntegrityError):
         c.execute("insert into entrega(tarea_id,estudiante_id,estado) values (1,77,'borrador')")

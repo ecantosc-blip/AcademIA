@@ -164,6 +164,42 @@ CREATE TABLE IF NOT EXISTS practica (
     FOREIGN KEY (materia_id) REFERENCES materia(id) ON DELETE CASCADE
 );
 
+-- Detector de cambios (Fase 1).
+-- foto_estado guarda UNA foto por estudiante y plataforma: el estado tal como quedo tras la
+-- ultima sincronizacion EXITOSA. Una sincronizacion fallida nunca la toca, asi que un fallo
+-- no se confunde con un cambio en los datos. 'datos' es JSON.
+CREATE TABLE IF NOT EXISTS foto_estado (
+    estudiante_id INTEGER NOT NULL,
+    plataforma TEXT NOT NULL CHECK(plataforma IN ('sga', 'moodle')),
+    creada_en TEXT NOT NULL,
+    datos TEXT NOT NULL,
+    PRIMARY KEY (estudiante_id, plataforma),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
+
+-- cambio: lo que difiere entre dos fotos consecutivas. visto_en NULL = aun es una novedad.
+-- La primera sincronizacion solo guarda la foto de partida (no hay con que comparar).
+CREATE TABLE IF NOT EXISTS cambio (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    estudiante_id INTEGER NOT NULL,
+    plataforma TEXT NOT NULL CHECK(plataforma IN ('sga', 'moodle')),
+    tipo TEXT NOT NULL CHECK(tipo IN (
+        'tarea_nueva', 'tarea_fecha', 'tarea_estado',
+        'nota_nueva', 'nota_cambio',
+        'evento_nuevo', 'evento_fecha',
+        'sga_nota_final', 'sga_asistencia')),
+    materia_id INTEGER,
+    item TEXT,
+    antes TEXT,
+    despues TEXT,
+    detectado_en TEXT NOT NULL,
+    visto_en TEXT,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE,
+    FOREIGN KEY (materia_id) REFERENCES materia(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_cambio_estudiante ON cambio(estudiante_id, visto_en, detectado_en);
+
 CREATE INDEX IF NOT EXISTS idx_practica_estudiante_materia ON practica(estudiante_id, materia_id);
 CREATE INDEX IF NOT EXISTS idx_matricula_estudiante ON matricula(estudiante_id);
 CREATE INDEX IF NOT EXISTS idx_matricula_materia ON matricula(materia_id);

@@ -16,6 +16,7 @@ from db.setup import get_connection
 from core.nombres import normalizar as _normalizar_n, coincide, nivel_a_numero
 from core.privacidad import depurar
 from core.entregas import sincronizar_entregas
+from core import cambios as detector_cambios
 from core.tiempo import ahora_iso, timestamp_a_iso
 
 
@@ -79,6 +80,24 @@ def _buscar_materia_id(cursor, nombre_buscado: str, estudiante_id: int = None):
             mejor_id = row["id"]
             mejor_longitud = len(nombre_norm)
     return mejor_id
+
+
+def _registrar_cambios(conn, estudiante_id: int, plataforma: str) -> int:
+    """
+    Detector de cambios: se llama SOLO cuando la sincronizacion de esa plataforma termino bien
+    y sus datos ya estan guardados. Si el detector falla, la sincronizacion sigue siendo
+    exitosa (solo se pierde esa comparacion) y no queda nada a medias.
+    """
+    try:
+        n = detector_cambios.registrar(conn, estudiante_id, plataforma)
+        conn.commit()
+        if n:
+            print(f"[{plataforma}] Novedades detectadas: {n}")
+        return n
+    except Exception as e:
+        conn.rollback()
+        print(f"[{plataforma}] Aviso: no se pudieron comparar cambios: {depurar(e)}")
+        return 0
 
 
 def sync(estudiante_id: int = 1, db_path: str = None,
@@ -266,6 +285,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
             """, (matricula_id, g["item"], g["calificacion"], g["porcentaje"]))
 
         conn.commit()
+        _registrar_cambios(conn, estudiante_id, "moodle")
         cursor.execute("""
             INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
             VALUES (?, 'moodle', ?, 'exitosa', ?)
@@ -274,6 +294,9 @@ def sync(estudiante_id: int = 1, db_path: str = None,
         print(f"[Moodle] OK: {len(courses)} materias, tareas, eventos y calificaciones sincronizadas.")
 
     except Exception as e:
+        # Una lectura que fallo a medias no debe dejar datos parciales: se conserva lo ultimo
+        # que se verifico (y el detector de cambios no lo confunde con una novedad).
+        conn.rollback()
         cursor.execute("""
             INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
             VALUES (?, 'moodle', ?, 'fallida', ?)
@@ -349,6 +372,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
                 print(f"[SGA] Materias sin coincidencia en la BD: {sin_match}")
 
             conn.commit()
+            _registrar_cambios(conn, estudiante_id, "sga")
             cursor.execute("""
                 INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
                 VALUES (?, 'sga', ?, 'exitosa', ?)
@@ -357,6 +381,7 @@ def sync(estudiante_id: int = 1, db_path: str = None,
             print(f"[SGA] OK: {actualizadas} materias actualizadas con nota/asistencia oficial.")
 
         except Exception as e:
+            conn.rollback()                    # sin notas a medio actualizar
             cursor.execute("""
                 INSERT INTO sesion_extraccion (estudiante_id, plataforma, fecha, estado, detalle)
                 VALUES (?, 'sga', ?, 'fallida', ?)

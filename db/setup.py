@@ -115,10 +115,19 @@ def _migracion_3_estado_de_entrega(conn):
         raise
 
 
+def _migracion_4_detector_de_cambios(conn):
+    # Las tablas `foto_estado` y `cambio` se crean en schema.sql (CREATE TABLE IF NOT EXISTS),
+    # asi que una base existente las recibe sin tocar ningun dato. Esta migracion solo deja
+    # constancia de la version. Un estudiante que ya tenia datos no recibe cambios falsos:
+    # su primera sincronizacion despues de actualizar solo guarda la foto de partida.
+    pass
+
+
 MIGRACIONES = [
     (1, "Esquema normalizado 3FN (sin finanzas ni carne)", _migracion_1_esquema_3fn),
     (2, "Espacio de estudio: tabla practica", _migracion_2_practica),
     (3, "Estado de entrega verificable (ausencia de fila = sin verificar)", _migracion_3_estado_de_entrega),
+    (4, "Detector de cambios: tablas foto_estado y cambio", _migracion_4_detector_de_cambios),
 ]
 
 
