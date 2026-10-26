@@ -49,7 +49,7 @@ def test_con_pesos_muestra_numeros_y_nombres_de_campos_sin_datos_personales(veri
     out = capsys.readouterr().out
     assert "modeloevaluativo.detalle[].pesoporcentaje = 30.0" in out
     assert "pesoporcentaje = 40.0" in out and "notamaxima = 40.0" in out
-    assert "Hay campos numericos" in out
+    assert "Hay numeros con nombre de peso" in out
     for secreto in (NOMBRE, CEDULA, MATERIA, "ACD", "EXAMEN"):
         assert secreto not in out
     guardado = (tmp_path / "erp_campos.json").read_text(encoding="utf-8")
@@ -94,3 +94,16 @@ def test_el_token_pedido_no_se_imprime(verificar, monkeypatch, capsys, tmp_path)
     assert verificar.main(carpeta_local=str(tmp_path)) == 0
     assert llamado["token"] == TOKEN                       # sin la palabra Bearer
     assert TOKEN not in capsys.readouterr().out
+
+
+def test_numeros_generales_del_periodo_no_se_confunden_con_pesos(verificar, capsys, tmp_path):
+    class ERPPeriodo(ERP):
+        def get_materias(self):
+            r = super().get_materias()
+            r["data"]["ePeriodo"] = {"valor_maximo": 10.0, "porcentaje_gratuidad": 10.0}
+            return r
+    assert verificar.main(ERPPeriodo(con_pesos=False), carpeta_local=str(tmp_path)) == 0
+    out = capsys.readouterr().out
+    assert "data.ePeriodo.valor_maximo = 10.0" in out
+    assert "El ERP NO entrega pesos" in out and "datos generales" in out
+    assert "Hay numeros con nombre de peso" not in out

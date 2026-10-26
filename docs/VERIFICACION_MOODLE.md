@@ -49,3 +49,24 @@ si una consulta posterior falla.
 |---|---|---|
 | 23/10/2026 | Estado de entrega (1 curso con tareas en línea, 6 tareas) | Función disponible para el rol estudiante. `submitted`=4, `new`=1, sin `submission`=1. Sin errores |
 | 23/10/2026 | `percentageformatted` y `weightformatted` en `get_grade_items` | Ausentes en todos los ítems (23 ítems, 9 con nota). No sirven como fuente de pesos. Confirmado también en la tabla de calificaciones (sin `weight`, `range` ni `percentage`) |
+
+## 4. Pesos y máximos en el ERP (SGA)
+
+Verificado el 26/10/2026 con `herramientas/diagnostico/verificar_erp.py` sobre las dos consultas
+que usa el proyecto (`/alumno/materias` y `/alumno/notas`):
+
+| Pregunta | Resultado |
+|---|---|
+| ¿Trae pesos o máximos **por componente** de nota? | ❌ No. En materias actuales, solo `notafinal` e `importa_nota` por materia; en el registro, solo `nota` por materia |
+| ¿Qué números con nombre de peso/máximo aparecen? | Solo datos generales del periodo (`valor_maximo`, `porcentaje_gratuidad`, mínimo y máximo de actividades extracurriculares). **No** son pesos de componentes y no deben usarse como tales. Su significado exacto tampoco está confirmado |
+| Otros campos de interés | `keymoodleevaluacion` y `urlmoodleevaluacion` (periodo): el ERP remite a Moodle para la evaluación |
+
+**Conclusión:** ni Moodle ni el ERP entregan, en las consultas verificadas, el peso o el máximo de cada
+componente. El simulador de notas de la Fase 2 no puede basarse en datos verificados de ninguna de las
+dos plataformas. Opciones pendientes de decisión (estudiante y tutor): pesos declarados por el
+estudiante desde el sílabo (marcados como no verificados), o no construir el simulador.
+
+**Atención:** `query_engine.nota_necesaria` asume nota máxima 100 y mínima 70 para aprobar (hipótesis
+de la sección 2, sin confirmar con una fuente oficial). `valor_maximo = 10.0` del ERP no permite
+confirmarla ni descartarla.
+

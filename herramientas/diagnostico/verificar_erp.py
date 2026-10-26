@@ -64,8 +64,11 @@ def analizar(respuesta) -> dict:
         if n is not None and (ruta, n) not in vistos:
             vistos.add((ruta, n))
             numeros.append((ruta, n))
+    # Un peso por componente vive DENTRO de una lista (un elemento por materia o por componente: ruta con "[]").
+    # Un numero fuera de una lista es un dato general (del periodo, del alumno...), no un peso.
     return {"total_campos": len(campos), "campos": sorted(campos), "evaluacion": evaluacion,
-            "numeros": numeros[:MAX_NUMEROS], "con_peso": bool(numeros)}
+            "numeros": numeros[:MAX_NUMEROS], "con_peso": any("[]" in r for r, _ in numeros),
+            "solo_generales": bool(numeros) and not any("[]" in r for r, _ in numeros)}
 
 
 def _informe(titulo, respuesta):
@@ -125,10 +128,15 @@ def main(cliente=None, token=None, carpeta_local=None):
 
     hay = any(i and i["con_peso"] for i in informes.values())
     print("\n=== CONCLUSION ===")
-    print("Hay campos numericos con nombre de peso/maximo: revisa arriba si corresponden a componentes de nota."
-          if hay else
-          "El ERP NO entrega pesos ni maximos por componente en estas dos consultas. "
-          "Los pesos tendrian que venir del sílabo (declarados por el estudiante) o consultarse con el tutor.")
+    generales = any(i and i["solo_generales"] for i in informes.values())
+    if hay:
+        print("Hay numeros con nombre de peso/maximo DENTRO de listas (por materia o componente): "
+              "revisa arriba si corresponden a componentes de nota.")
+    else:
+        print("El ERP NO entrega pesos ni maximos por componente en estas dos consultas."
+              + (" Los numeros que aparecen arriba son datos generales (del periodo), no pesos de componentes."
+                 if generales else "")
+              + "\nLos pesos tendrian que venir del silabo (declarados por el estudiante) o consultarse con el tutor.")
     try:
         ruta = guardar_local("erp_campos.json", {k: (v or {}).get("campos") for k, v in informes.items()},
                              carpeta_local)
