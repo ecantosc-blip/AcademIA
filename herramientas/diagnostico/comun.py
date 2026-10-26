@@ -17,3 +17,11 @@ def token_moodle() -> str:
     crudo = os.getenv("MOODLE_TOKEN") or getpass.getpass(
         "Pega tu token de Moodle (o el enlace moodlemobile://...; no se muestra): ")
     return extraer_token_moodle(crudo)
+
+
+def token_erp() -> str:
+    """Token de acceso del ERP (JWT) pedido sin mostrarlo en pantalla; Enter = usar SGA_ACCESS_TOKEN del .env."""
+    token = getpass.getpass("Pega el token del ERP (empieza por eyJ...; no se muestra): ").strip()
+    if token.lower().startswith("bearer "):
+        token = token[7:].strip()
+    return token or os.getenv("SGA_ACCESS_TOKEN") or ""

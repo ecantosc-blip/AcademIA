@@ -266,6 +266,10 @@ ejemplo `python herramientas/diagnostico/debug_notas_moodle.py`.
 - Los volcados crudos se guardan en `diagnostico_local/` (ignorada por Git). No los
   compartas: contienen tus datos.
 
+## Verificación del ERP (pesos de las notas)
+
+`python herramientas/diagnostico/verificar_erp.py` revisa si el ERP trae los pesos o máximos de cada componente de nota. Imprime solo nombres de campos y números de peso; nunca nombres, cédulas ni el token.
+
 ## Estado de entrega de las tareas
 
 Moodle informa (o no) si una tarea ya se entregó. AcademIA nunca lo supone:
