@@ -127,6 +127,20 @@
   .est.sin_datos{background:transparent; border:1px dashed var(--muted); color:var(--muted)}
   .insignia{margin-left:auto; min-width:1.35rem; height:1.35rem; padding:0 6px; border-radius:999px; background:var(--accent); color:#fff; font-size:.75rem; font-weight:600; display:inline-flex; align-items:center; justify-content:center}
   .insignia[hidden]{display:none}
+  .rejilla{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px}
+  .campo{display:grid; gap:4px; font-size:.9rem; margin:8px 0}
+  .campo input,.campo select{padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); font:inherit; min-width:0}
+  .grupo{border:0; padding:0; margin:0 0 18px} .grupo legend{font-weight:600; margin-bottom:6px}
+  .chk{display:flex; gap:8px; align-items:center; margin:6px 0}
+  .dia{border-top:1px solid var(--line); padding:12px 0} .dia h3{margin:0 0 6px; font-size:.95rem; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+  .dia h3 small{font-weight:400; color:var(--muted)}
+  .bloque{display:flex; justify-content:space-between; gap:10px; align-items:flex-start; padding:6px 0; flex-wrap:wrap}
+  .bloque .t{overflow-wrap:anywhere; min-width:0; flex:1 1 14rem} .bloque .m{color:var(--muted); font-size:.85rem}
+  .bloque .acc{display:flex; gap:8px; align-items:center}
+  .bloque .acc button,.alerta button,.plan-item button{padding:4px 10px; font-size:.82rem; width:auto}
+  .alerta,.plan-item{display:flex; justify-content:space-between; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line); flex-wrap:wrap}
+  .alerta span,.plan-item span{overflow-wrap:anywhere; min-width:0; flex:1 1 14rem}
+  details.pq summary{cursor:pointer; color:var(--muted); font-size:.82rem}
   .nov{display:grid; grid-template-columns:5.2rem minmax(0,1fr); gap:14px; padding:10px 0; border-top:1px solid var(--line)}
   .nov .cuando{font-size:.82rem; color:var(--muted); line-height:1.3}
   .nov .que{font-weight:500; overflow-wrap:anywhere}
@@ -273,6 +287,7 @@
       <a href="#materias" data-vista="materias"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3zM4 16a3 3 0 0 1 3-3h11"/></svg>Materias</a>
       <a href="#agenda" data-vista="agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</a>
       <a href="#novedades" data-vista="novedades"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9zM10 20a2 2 0 0 0 4 0"/></svg>Novedades<span class="insignia" id="ins-nov" hidden></span></a>
+      <a href="#plan" data-vista="plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Plan</a>
       <a href="/estudio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l10 5-10 5L2 9zM6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg>Estudio</a>
       <a href="#datos" data-vista="datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.3 8-8 9-4.7-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Mis datos</a>
     </nav>
@@ -304,6 +319,13 @@
         <div class="kpi" id="k-prom"><span class="et">Tu promedio</span><span class="gran num" id="k-prom-n">—</span><span class="det" id="k-prom-d">Materias aprobadas</span></div>
         <div class="kpi" id="k-estado"><span class="et">Tus datos</span><span class="gran mid" id="k-estado-n">—</span><span class="det" id="k-estado-d">Cargando…</span></div>
       </div>
+      <section class="card" id="card-alertas" aria-labelledby="h-alertas" hidden>
+        <div class="barra">
+          <h2 id="h-alertas">Alertas</h2>
+          <button type="button" class="btn-o" id="btn-alertas-todas">Descartar todas</button>
+        </div>
+        <div id="alertas"></div>
+      </section>
       <section class="card" aria-labelledby="h-seg">
         <h2 id="h-seg">Tu seguimiento</h2>
         <p class="seg-res" id="seg-res">Cargando…</p>
@@ -368,6 +390,44 @@
           <div id="nov-anteriores"></div>
         </section>
         <p class="sub">Solo se comparan lecturas exitosas: si una lectura falla, no se toma como un cambio. La primera lectura únicamente guarda tu punto de partida.</p>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section class="vista" id="v-plan" aria-labelledby="t-plan" hidden>
+      <h1 id="t-plan">Plan de estudio</h1>
+      <p class="sub">Un plan de 7 días armado con reglas simples y con lo que tú indicas. Cada bloque dice por qué está ahí.</p>
+      <div class="col">
+        <section class="card" aria-labelledby="h-plan-cfg">
+          <h2 id="h-plan-cfg">Tus datos para el plan</h2>
+          <form id="f-plan" novalidate>
+            <fieldset class="grupo"><legend>¿Cuántos minutos puedes estudiar cada día?</legend>
+              <div class="rejilla" id="p-disp"></div></fieldset>
+            <fieldset class="grupo"><legend>Estimaciones</legend>
+              <label class="campo">Minutos por tarea <input type="number" min="15" max="720" step="15" id="p-tarea"></label>
+              <label class="campo">Minutos por evaluación <input type="number" min="15" max="720" step="15" id="p-eval"></label></fieldset>
+            <fieldset class="grupo"><legend>Dificultad que sientes en cada materia</legend>
+              <div id="p-dif"></div></fieldset>
+            <fieldset class="grupo"><legend>Alertas</legend>
+              <label class="campo">Avisar con anticipación <select id="p-horas"></select></label>
+              <div id="p-tipos"></div>
+              <label class="campo">Asistencia mínima propia (%) <input type="number" min="0" max="100" id="p-asis" placeholder="Vacío = sin alerta de asistencia"></label></fieldset>
+            <div class="botones"><button type="submit" class="btn-p" id="p-guardar">Guardar y recalcular</button></div>
+            <p class="sub" id="p-msg" role="status"></p>
+          </form>
+        </section>
+        <section class="card" aria-labelledby="h-plan-dias">
+          <h2 id="h-plan-dias">Tu semana</h2>
+          <div id="plan-dias"><p class="vacio">Cargando…</p></div>
+        </section>
+        <section class="card" id="card-plan-avisos" aria-labelledby="h-plan-av" hidden>
+          <h2 id="h-plan-av">Lo que no entró en el plan</h2>
+          <div id="plan-avisos"></div>
+        </section>
+        <section class="card" aria-labelledby="h-plan-sup">
+          <h2 id="h-plan-sup">Cómo se calcula</h2>
+          <ul id="plan-sup" class="lista"></ul>
+        </section>
       </div>
     </section>
 
@@ -467,6 +527,8 @@
     <div class="botones" style="margin-top:0">
       <button class="btn-peligro" type="button" id="dlg-si">Sí, borrar todo</button>
       <button class="btn-o" type="button" id="dlg-no">Cancelar</button>
+      </div>
+    </section>
     </div>
   </dialog>
 </div>
@@ -509,7 +571,7 @@
   rotuloTema();
 
   // ---- Navegacion entre vistas (Inicio, Materias, Agenda, Mis datos) ----
-  const VISTAS = ['inicio','materias','agenda','novedades','datos'];
+  const VISTAS = ['inicio','materias','agenda','novedades','plan','datos'];
   function irA(){
     const h = (location.hash || '#inicio').slice(1);
     const v = VISTAS.includes(h) ? h : 'inicio';
@@ -517,9 +579,10 @@
     document.querySelectorAll('#menu a[data-vista]').forEach(a => {
       if(a.dataset.vista === v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
     });
-    document.title = {inicio:'Inicio', materias:'Materias', agenda:'Agenda', novedades:'Novedades', datos:'Mis datos'}[v] + ' — AcademIA';
+    document.title = {inicio:'Inicio', materias:'Materias', agenda:'Agenda', novedades:'Novedades', plan:'Plan', datos:'Mis datos'}[v] + ' — AcademIA';
     if(v === 'datos') cargarMisDatos();
     if(v === 'novedades') cargarNovedades();
+    if(v === 'plan') cargarPlan();
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', irA);
@@ -764,6 +827,128 @@
     await cargarNovedades();
   });
 
+
+  // ---- Alertas (Inicio) ----
+  function pintarAlertas(lista){
+    const cont = $('alertas'); cont.replaceChildren();
+    $('card-alertas').hidden = !lista.length;
+    lista.forEach(a => cont.append(el('div', {class:'alerta'}, el('span', {text:a.mensaje}),
+      el('button', {type:'button', class:'btn-o', text:'Descartar', 'data-id':a.id}))));
+  }
+  async function descartarAlertas(ids){
+    try{
+      const r = await fetch('/api/alertas/vistas', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ids ? {ids} : {})});
+      if(r.status === 401){ location = '/login'; return; }
+      const d = await r.json(); pintarAlertas(d.alertas || []);
+    }catch(e){ mostrarAviso('No se pudo descartar: ' + e.message, true); }
+  }
+  $('alertas').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if(b) descartarAlertas([Number(b.dataset.id)]); });
+  $('btn-alertas-todas').addEventListener('click', () => descartarAlertas(null));
+
+  // ---- Plan de estudio ----
+  const NOM_DIA = {lunes:'Lunes', martes:'Martes', miercoles:'Miércoles', jueves:'Jueves', viernes:'Viernes', sabado:'Sábado', domingo:'Domingo'};
+  const NOM_TIPO = {vence_pronto:'Una tarea vence pronto', vencida:'Una tarea venció sin entregarse', lectura_fallida:'Falló la lectura de Moodle o del ERP', asistencia_baja:'Mi asistencia baja de mi mínimo'};
+  const mins = m => m >= 60 ? Math.floor(m/60) + ' h' + (m%60 ? ' ' + (m%60) + ' min' : '') : m + ' min';
+  let planDatos = null;
+
+  function pintarConfigPlan(d){
+    const pf = d.preferencias;
+    const disp = $('p-disp'); disp.replaceChildren();
+    d.dias.forEach(dia => disp.append(el('label', {class:'campo'}, NOM_DIA[dia] || dia,
+      el('input', {type:'number', min:'0', max:'720', step:'15', 'data-dia':dia, value:pf.disponibilidad[dia] ?? '', placeholder:'0'}))));
+    $('p-tarea').value = pf.minutos_por_tarea; $('p-eval').value = pf.minutos_evaluacion;
+    const dif = $('p-dif'); dif.replaceChildren();
+    if(!d.materias.length) dif.append(el('p', {class:'vacio', text:'No hay materias en curso.'}));
+    d.materias.forEach(m => {
+      const sel = el('select', {'data-materia':m.id});
+      [['', 'Normal (sin indicar)'], ['1', 'Fácil'], ['2', 'Media'], ['3', 'Difícil']].forEach(([v,t]) => sel.append(el('option', {value:v, text:t})));
+      sel.value = m.dificultad ? String(m.dificultad) : '';
+      dif.append(el('label', {class:'campo'}, m.nombre, sel));
+    });
+    const h = $('p-horas'); h.replaceChildren();
+    [12,24,48,72].forEach(x => h.append(el('option', {value:x, text:x + ' horas antes'})));
+    h.value = pf.alerta_horas;
+    const t = $('p-tipos'); t.replaceChildren();
+    Object.keys(NOM_TIPO).forEach(k => {
+      const c = el('input', {type:'checkbox', 'data-tipo':k}); c.checked = pf.alertas_tipos.includes(k);
+      t.append(el('label', {class:'chk'}, c, NOM_TIPO[k]));
+    });
+    $('p-asis').value = pf.asistencia_minima ?? '';
+  }
+
+  function filaItem(texto, boton){
+    return el('div', {class:'plan-item'}, el('span', {text:texto}), boton || null);
+  }
+  function pintarPlan(d){
+    const pl = d.plan, cont = $('plan-dias'); cont.replaceChildren();
+    if(!pl.configurado){
+      cont.append(el('p', {class:'vacio', text:'Indica arriba cuántos minutos puedes estudiar cada día y guarda. Sin eso no armo el plan: no supongo tu tiempo.'}));
+      if(pl.por_planificar.length){
+        cont.append(el('p', {class:'sub', text:'Esto es lo que habría que planificar (' + mins(pl.total_necesario_min) + ' en total):'}));
+        pl.por_planificar.forEach(x => cont.append(filaItem(x.item + ' · ' + x.materia + ' — ' + mins(x.minutos))));
+      }
+    }else{
+      cont.append(el('p', {class:'sub', text:'Necesitas ' + mins(pl.total_necesario_min) + ' y tienes ' + mins(pl.total_disponible_min) + ' disponibles esta semana.'}));
+      pl.dias.forEach(dia => {
+        const f = new Date(dia.fecha + 'T00:00:00');
+        const cab = el('h3', {}, (NOM_DIA[dia.dia] || dia.dia) + ' ' + f.toLocaleDateString('es-EC',{day:'numeric',month:'short'}),
+                       el('small', {text:mins(dia.usado_min) + ' de ' + mins(dia.disponible_min)}));
+        const b = el('div', {class:'dia'}, cab);
+        if(!dia.bloques.length) b.append(el('p', {class:'vacio', text: dia.disponible_min ? 'Libre.' : 'Sin tiempo indicado.'}));
+        dia.bloques.forEach(bl => b.append(el('div', {class:'bloque'},
+          el('div', {class:'t'}, el('div', {text:bl.item + ' — ' + mins(bl.minutos)}), el('div', {class:'m', text:bl.materia}),
+             el('details', {class:'pq'}, el('summary', {text:'¿Por qué?'}), el('div', {class:'m', text:bl.motivo}))),
+          el('div', {class:'acc'}, el('button', {type:'button', class:'btn-o', text:'Quitar', 'data-quitar':bl.clave})))));
+        cont.append(b);
+      });
+    }
+    const av = $('plan-avisos'); av.replaceChildren(); let hay = false;
+    const seccion = (titulo, filas) => { if(!filas.length) return; hay = true; av.append(el('h3', {text:titulo})); filas.forEach(f => av.append(f)); };
+    seccion('No alcanza el tiempo', pl.no_alcanza.map(x => filaItem(x.item + ' · ' + x.materia + ' — faltan ' + mins(x.faltan_min) + (x.fecha ? ' (entrega ' + cuando(x.fecha).join(', ') + ')' : ''))));
+    seccion('Sin espacio esta semana', pl.sin_espacio.map(x => filaItem(x.item + ' · ' + x.materia + ' — faltan ' + mins(x.faltan_min))));
+    seccion('Fuera de los 7 días', pl.fuera_del_plan.map(x => filaItem(x.item + (x.fecha ? ' — ' + cuando(x.fecha).join(', ') : ''))));
+    seccion('Sin verificar (no entran al plan; revísalas en Moodle)', pl.sin_verificar.map(x => filaItem(x.item + ' · ' + x.materia)));
+    seccion('Quitados por ti', pl.quitados.map(x => filaItem(x.item, el('button', {type:'button', class:'btn-o', text:'Volver a incluir', 'data-incluir':x.clave}))));
+    $('card-plan-avisos').hidden = !hay;
+    const sup = $('plan-sup'); sup.replaceChildren(); pl.supuestos.forEach(t => sup.append(el('li', {text:t})));
+  }
+  function pintarTodoPlan(d, conConfig){ planDatos = d; if(conConfig) pintarConfigPlan(d); pintarPlan(d); }
+
+  async function cargarPlan(){
+    try{
+      const r = await fetch('/api/plan');
+      if(r.status === 401){ location = '/login'; return; }
+      pintarTodoPlan(await r.json(), true);
+    }catch(e){ $('plan-dias').replaceChildren(el('p', {class:'vacio', text:'No se pudo cargar: ' + e.message})); }
+  }
+  async function postPlan(ruta, cuerpo){
+    const r = await fetch(ruta, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cuerpo)});
+    if(r.status === 401){ location = '/login'; return null; }
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'No se pudo guardar.');
+    return d;
+  }
+  $('f-plan').addEventListener('submit', async e => {
+    e.preventDefault();
+    const b = $('p-guardar'), msg = $('p-msg'); b.disabled = true; msg.textContent = '';
+    const disponibilidad = {};
+    document.querySelectorAll('#p-disp input').forEach(i => { if(i.value !== '') disponibilidad[i.dataset.dia] = i.value; });
+    const dificultades = {};
+    document.querySelectorAll('#p-dif select').forEach(sl => { dificultades[sl.dataset.materia] = sl.value === '' ? null : Number(sl.value); });
+    const cuerpo = {disponibilidad, dificultades, minutos_por_tarea:$('p-tarea').value, minutos_evaluacion:$('p-eval').value,
+      alerta_horas:Number($('p-horas').value), asistencia_minima:$('p-asis').value,
+      alertas_tipos:[...document.querySelectorAll('#p-tipos input:checked')].map(c => c.dataset.tipo)};
+    try{ pintarTodoPlan(await postPlan('/api/plan/preferencias', cuerpo), true); msg.textContent = 'Guardado.'; cargarPanel(); }
+    catch(err){ msg.textContent = err.message; }
+    b.disabled = false;
+  });
+  $('v-plan').addEventListener('click', async e => {
+    const q = e.target.closest('[data-quitar]'), i = e.target.closest('[data-incluir]');
+    if(!q && !i) return;
+    try{ pintarTodoPlan(await postPlan(q ? '/api/plan/excluir' : '/api/plan/incluir', {clave:(q || i).dataset[q ? 'quitar' : 'incluir']}), false); }
+    catch(err){ mostrarAviso(err.message, true); }
+  });
+
   // ---- Mis datos ----
   async function cargarMisDatos(){
     try{
@@ -801,7 +986,7 @@
     const r = await fetch('/api/panel');
     if(r.status === 401){ location = '/login'; return; }
     const d = await r.json();
-    pintarConexiones(d); pintarInicio(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d);
+    pintarConexiones(d); pintarInicio(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d); pintarAlertas(d.alertas || []);
     if(!$('v-novedades').hidden) cargarNovedades();
   }
 

@@ -21,6 +21,10 @@ _CONTEO = [
     ("Eventos del calendario", "SELECT COUNT(*) FROM evento WHERE estudiante_id = ?"),
     ("Estados de entrega verificados", "SELECT COUNT(*) FROM entrega WHERE estudiante_id = ?"),
     ("Novedades detectadas", "SELECT COUNT(*) FROM cambio WHERE estudiante_id = ?"),
+    ("Preferencias del plan de estudio", "SELECT COUNT(*) FROM preferencia WHERE estudiante_id = ?"),
+    ("Dificultades que indicaste", "SELECT COUNT(*) FROM dificultad_materia WHERE estudiante_id = ?"),
+    ("Elementos quitados del plan", "SELECT COUNT(*) FROM plan_excluido WHERE estudiante_id = ?"),
+    ("Alertas generadas", "SELECT COUNT(*) FROM alerta WHERE estudiante_id = ?"),
     ("Prácticas de estudio", "SELECT COUNT(*) FROM practica WHERE estudiante_id = ?"),
     ("Lecturas de Moodle y ERP", "SELECT COUNT(*) FROM sesion_extraccion WHERE estudiante_id = ?"),
 ]
@@ -66,6 +70,12 @@ def exportar(estudiante_id: int) -> dict:
                 SELECT c.plataforma, c.tipo, m.nombre AS materia, c.item, c.antes, c.despues, c.detectado_en, c.visto_en
                 FROM cambio c LEFT JOIN materia m ON m.id = c.materia_id
                 WHERE c.estudiante_id = ? ORDER BY c.id""", (estudiante_id,)),
+            "preferencias": _filas(conn, "SELECT clave, valor FROM preferencia WHERE estudiante_id = ? ORDER BY clave", (estudiante_id,)),
+            "dificultades": _filas(conn, """
+                SELECT m.nombre AS materia, d.nivel FROM dificultad_materia d JOIN materia m ON m.id = d.materia_id
+                WHERE d.estudiante_id = ? ORDER BY m.nombre""", (estudiante_id,)),
+            "plan_quitados": _filas(conn, "SELECT clave FROM plan_excluido WHERE estudiante_id = ? ORDER BY clave", (estudiante_id,)),
+            "alertas": _filas(conn, "SELECT tipo, mensaje, creada_en, vista_en FROM alerta WHERE estudiante_id = ? ORDER BY id", (estudiante_id,)),
             "practicas": _filas(conn, """
                 SELECT m.nombre AS materia, p.tema, p.fecha, p.total, p.aciertos
                 FROM practica p JOIN materia m ON m.id = p.materia_id WHERE p.estudiante_id = ? ORDER BY p.fecha""", (estudiante_id,)),

@@ -48,3 +48,26 @@ def test_novedades_se_ven_se_exportan_y_se_borran(bd_demo):
     assert c.execute("select count(*) from cambio").fetchone()[0] == 0
     assert c.execute("select count(*) from foto_estado").fetchone()[0] == 0
     c.close()
+
+
+def test_datos_del_plan_se_ven_se_exportan_y_se_borran(bd_demo):
+    from core import preferencias as P
+    from db.setup import get_connection
+    c = get_connection()
+    c.execute("PRAGMA foreign_keys = ON")
+    P.guardar_todo(c, 77, {"minutos_por_tarea": 45, "dificultades": {"1": 3}})
+    P.excluir(c, 77, "t:1")
+    c.execute("insert into alerta(estudiante_id,tipo,clave,mensaje,creada_en) values (77,'vencida','k','mensaje','2026-10-30T10:00:00')")
+    c.commit()
+    c.close()
+    n = {x["nombre"]: x["cantidad"] for x in mis_datos.resumen(77)["conteos"]}
+    assert (n["Preferencias del plan de estudio"], n["Dificultades que indicaste"],
+            n["Elementos quitados del plan"], n["Alertas generadas"]) == (1, 1, 1, 1)
+    exp = mis_datos.exportar(77)
+    assert exp["preferencias"][0]["clave"] == "minutos_por_tarea" and exp["dificultades"][0]["nivel"] == 3
+    assert exp["plan_quitados"] == [{"clave": "t:1"}] and exp["alertas"][0]["mensaje"] == "mensaje"
+    mis_datos.borrar(77)
+    c = get_connection()
+    for t in ("preferencia", "dificultad_materia", "plan_excluido", "alerta"):
+        assert c.execute(f"select count(*) from {t}").fetchone()[0] == 0, t
+    c.close()

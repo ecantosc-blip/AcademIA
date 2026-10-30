@@ -100,22 +100,55 @@ def dificultades(conn, estudiante_id: int) -> dict:
         "SELECT materia_id, nivel FROM dificultad_materia WHERE estudiante_id = ?", (estudiante_id,))}
 
 
-def guardar_dificultad(conn, estudiante_id: int, materia_id, nivel) -> None:
-    """nivel 1 (fácil), 2 (media), 3 (difícil); None la quita. Solo para materias que la persona cursa."""
+def _validar_dificultad(conn, estudiante_id, materia_id, nivel):
     materia_id = _entero(materia_id, "Materia", 1, 10**9)
     if not conn.execute("SELECT 1 FROM matricula WHERE estudiante_id = ? AND materia_id = ?",
                         (estudiante_id, materia_id)).fetchone():
         raise ValueError("Esa materia no está entre las tuyas.")
-    if nivel is None or nivel == "":
-        conn.execute("DELETE FROM dificultad_materia WHERE estudiante_id = ? AND materia_id = ?",
-                     (estudiante_id, materia_id))
-    else:
-        nivel = _entero(nivel, "Dificultad", 1, 3)
-        conn.execute("""
-            INSERT INTO dificultad_materia (estudiante_id, materia_id, nivel) VALUES (?, ?, ?)
-            ON CONFLICT(estudiante_id, materia_id) DO UPDATE SET nivel = excluded.nivel
-        """, (estudiante_id, materia_id, nivel))
+    return materia_id, (None if nivel is None or nivel == "" else _entero(nivel, "Dificultad", 1, 3))
+
+
+def guardar_dificultades(conn, estudiante_id: int, mapa: dict) -> None:
+    """{materia_id: nivel}. nivel 1 (fácil), 2 (media), 3 (difícil); None la quita.
+    Solo materias que la persona cursa. Todo o nada: si una falla, no se guarda ninguna."""
+    if not isinstance(mapa, dict):
+        raise ValueError("Dificultad: formato no válido.")
+    validadas = [_validar_dificultad(conn, estudiante_id, m, n) for m, n in mapa.items()]
+    for materia_id, nivel in validadas:
+        if nivel is None:
+            conn.execute("DELETE FROM dificultad_materia WHERE estudiante_id = ? AND materia_id = ?",
+                         (estudiante_id, materia_id))
+        else:
+            conn.execute("""
+                INSERT INTO dificultad_materia (estudiante_id, materia_id, nivel) VALUES (?, ?, ?)
+                ON CONFLICT(estudiante_id, materia_id) DO UPDATE SET nivel = excluded.nivel
+            """, (estudiante_id, materia_id, nivel))
     conn.commit()
+
+
+def guardar_dificultad(conn, estudiante_id: int, materia_id, nivel) -> None:
+    guardar_dificultades(conn, estudiante_id, {materia_id: nivel})
+
+
+def guardar_todo(conn, estudiante_id: int, cambios: dict) -> None:
+    """Preferencias y dificultades (clave 'dificultades': {materia_id: nivel}) en una sola operacion:
+    se valida TODO primero; si algo falla no se guarda nada."""
+    if not isinstance(cambios, dict):
+        raise ValueError("No hay nada que guardar.")
+    cambios = dict(cambios)
+    dificultades = cambios.pop("dificultades", None)
+    if not cambios and dificultades is None:
+        raise ValueError("No hay nada que guardar.")
+    if dificultades is not None and not isinstance(dificultades, dict):
+        raise ValueError("Dificultad: formato no válido.")
+    for clave, valor in cambios.items():
+        _validar(clave, valor)
+    for materia_id, nivel in (dificultades or {}).items():
+        _validar_dificultad(conn, estudiante_id, materia_id, nivel)
+    if cambios:
+        guardar(conn, estudiante_id, cambios)
+    if dificultades is not None:
+        guardar_dificultades(conn, estudiante_id, dificultades)
 
 
 # ---- elementos quitados del plan ------------------------------------------------

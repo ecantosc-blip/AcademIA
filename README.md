@@ -327,3 +327,16 @@ Lo que NO hace, a propósito: no predice ni habla de "riesgo de reprobar"; no ju
 ERP no entregan pesos ni máximos); no compara con reglamentos; no inventa un mínimo de asistencia.
 Si faltan datos, dice "sin datos".
 
+
+
+## Plan de estudio y alertas (Fase 3)
+
+Vista **Plan** (`#plan`) y tarjeta **Alertas** en Inicio. Todo se calcula con reglas visibles; no hay predicciones.
+
+- **Datos que pones tú**: minutos disponibles por día (no se supone ninguno: sin ellos no se arma el plan), minutos por tarea y por evaluación (60 y 120 de partida), dificultad por materia (fácil ×0,75, media ×1, difícil ×1,5) y la anticipación de las alertas (12, 24, 48 o 72 h).
+- **Qué entra al plan**: solo tareas que Moodle confirma sin entregar (más las vencidas sin entregar) y eventos del calendario cuyo nombre parece una evaluación. Las tareas «sin verificar» se listan aparte.
+- **Cómo se ordena**: primero lo vencido, luego por fecha de entrega más cercana; nunca se agenda después de la fecha límite. Si no cabe, se dice cuántos minutos faltan.
+- **Ajustable**: cada bloque tiene «¿Por qué?» y «Quitar» (se puede volver a incluir).
+- **Alertas** (sin duplicados): vence pronto, vencida sin entregar, lectura fallida y asistencia bajo un mínimo que tú fijas. Se pueden desactivar por tipo y descartar; una alerta descartada no reaparece.
+- Rutas: `GET /api/plan`, `POST /api/plan/preferencias|excluir|incluir`, `GET /api/alertas`, `POST /api/alertas/vistas`.
+- Estos datos aparecen en **Mis datos**, se exportan y se borran con tu cuenta.

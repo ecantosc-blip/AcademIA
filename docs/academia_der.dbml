@@ -45,6 +45,33 @@ Table cambio {
   visto_en text [note: 'NULL = novedad aun no vista']
 }
 
+Table preferencia {
+  estudiante_id integer [pk, ref: > estudiante.id]
+  clave text [pk, note: 'disponibilidad | minutos_por_tarea | minutos_evaluacion | alerta_horas | alertas_tipos | asistencia_minima']
+  valor text [not null, note: 'JSON']
+}
+
+Table dificultad_materia {
+  estudiante_id integer [pk, ref: > estudiante.id]
+  materia_id integer [pk, ref: > materia.id]
+  nivel integer [not null, note: '1 facil | 2 media | 3 dificil (lo indica el estudiante)']
+}
+
+Table plan_excluido {
+  estudiante_id integer [pk, ref: > estudiante.id]
+  clave text [pk, note: 't:<tarea_id> | e:<nombre del evento>']
+}
+
+Table alerta {
+  id integer [pk, increment]
+  estudiante_id integer [not null, ref: > estudiante.id]
+  tipo text [not null, note: 'vence_pronto | vencida | lectura_fallida | asistencia_baja']
+  clave text [not null, note: 'UNIQUE(estudiante_id, tipo, clave): evita duplicados']
+  mensaje text [not null]
+  creada_en text [not null]
+  vista_en text [note: 'NULL = activa']
+}
+
 Table estudiante {
   id integer [pk]
   nombre text [not null]

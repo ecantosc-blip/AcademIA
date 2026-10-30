@@ -479,6 +479,90 @@ def api_novedades_vistas():
         conn.close()
 
 
+# ---------------------------------------------------------------------------
+# Plan de estudio y alertas (Fase 3)
+# ---------------------------------------------------------------------------
+def _con_estudiante(fn):
+    """Ejecuta fn(conn, estudiante_id, cuerpo_json) para la sesion actual. ValueError -> 400."""
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "No has iniciado sesión"}), 401
+    conn = get_connection()
+    try:
+        conn.execute("PRAGMA foreign_keys = ON")
+        cuerpo = request.get_json(silent=True)
+        return jsonify(fn(conn, sesion["estudiante_id"], cuerpo if isinstance(cuerpo, dict) else {}))
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    finally:
+        conn.close()
+
+
+def _vista_plan(conn, est, _cuerpo=None):
+    from core import planificador, preferencias
+    materias = [{"id": f["materia_id"], "nombre": f["nombre"]} for f in conn.execute("""
+        SELECT mat.materia_id, m.nombre FROM matricula mat JOIN materia m ON m.id = mat.materia_id
+        WHERE mat.estudiante_id = ? AND mat.estado = 'en_curso' ORDER BY m.nombre""", (est,))]
+    dif = preferencias.dificultades(conn, est)
+    for m in materias:
+        m["dificultad"] = dif.get(m["id"])
+    return {"plan": planificador.generar(conn, est), "preferencias": preferencias.obtener(conn, est),
+            "materias": materias, "dias": preferencias.DIAS}
+
+
+@app.route("/api/plan")
+def api_plan():
+    return _con_estudiante(_vista_plan)
+
+
+@app.route("/api/plan/preferencias", methods=["POST"])
+def api_plan_preferencias():
+    def guardar(conn, est, d):
+        from core import preferencias
+        preferencias.guardar_todo(conn, est, d)
+        return _vista_plan(conn, est)
+    return _con_estudiante(guardar)
+
+
+@app.route("/api/plan/excluir", methods=["POST"])
+def api_plan_excluir():
+    def f(conn, est, d):
+        from core import preferencias
+        preferencias.excluir(conn, est, d.get("clave"))
+        return _vista_plan(conn, est)
+    return _con_estudiante(f)
+
+
+@app.route("/api/plan/incluir", methods=["POST"])
+def api_plan_incluir():
+    def f(conn, est, d):
+        from core import preferencias
+        preferencias.incluir(conn, est, d.get("clave") or "")
+        return _vista_plan(conn, est)
+    return _con_estudiante(f)
+
+
+@app.route("/api/alertas")
+def api_alertas():
+    def f(conn, est, _d):
+        from core import alertas
+        alertas.generar(conn, est)
+        return {"alertas": alertas.activas(conn, est)}
+    return _con_estudiante(f)
+
+
+@app.route("/api/alertas/vistas", methods=["POST"])
+def api_alertas_vistas():
+    def f(conn, est, d):
+        from core import alertas
+        ids = d.get("ids")
+        if ids is not None and (not isinstance(ids, list) or not all(isinstance(i, int) and not isinstance(i, bool) for i in ids)):
+            raise ValueError("Alertas: formato no válido.")
+        n = alertas.marcar_vistas(conn, est, ids)
+        return {"marcadas": n, "alertas": alertas.activas(conn, est)}
+    return _con_estudiante(f)
+
+
 @app.route("/carnet")
 def carnet():
     """
