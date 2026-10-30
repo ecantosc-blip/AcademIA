@@ -113,6 +113,18 @@
   .fecha .cuando b{display:block; font-size:.95rem}
   .fecha .que{font-weight:500; overflow-wrap:anywhere}
   .fecha .de{color:var(--muted); font-size:.85rem}
+  .seg-res{margin:0 0 6px; font-weight:600}
+  .seg{padding:10px 0; border-top:1px solid var(--line)}
+  .seg .t{display:flex; gap:8px; align-items:baseline; flex-wrap:wrap}
+  .seg .d{margin:2px 0 0; overflow-wrap:anywhere}
+  .seg ul{margin:6px 0 0; padding-left:18px; color:var(--muted); font-size:.88rem}
+  .seg details{margin-top:4px; color:var(--muted); font-size:.85rem}
+  .seg summary{cursor:pointer; width:max-content}
+  .est{display:inline-block; font-size:.75rem; padding:0 7px; border-radius:6px; font-weight:600; white-space:nowrap}
+  .est.atencion{background:var(--warn-bg); color:var(--warn)}
+  .est.ok{background:var(--ok-bg); color:var(--ok)}
+  .est.info{background:var(--accent-bg); color:var(--ink)}
+  .est.sin_datos{background:transparent; border:1px dashed var(--muted); color:var(--muted)}
   .insignia{margin-left:auto; min-width:1.35rem; height:1.35rem; padding:0 6px; border-radius:999px; background:var(--accent); color:#fff; font-size:.75rem; font-weight:600; display:inline-flex; align-items:center; justify-content:center}
   .insignia[hidden]{display:none}
   .nov{display:grid; grid-template-columns:5.2rem minmax(0,1fr); gap:14px; padding:10px 0; border-top:1px solid var(--line)}
@@ -292,6 +304,12 @@
         <div class="kpi" id="k-prom"><span class="et">Tu promedio</span><span class="gran num" id="k-prom-n">—</span><span class="det" id="k-prom-d">Materias aprobadas</span></div>
         <div class="kpi" id="k-estado"><span class="et">Tus datos</span><span class="gran mid" id="k-estado-n">—</span><span class="det" id="k-estado-d">Cargando…</span></div>
       </div>
+      <section class="card" aria-labelledby="h-seg">
+        <h2 id="h-seg">Tu seguimiento</h2>
+        <p class="seg-res" id="seg-res">Cargando…</p>
+        <div id="seg"></div>
+        <p class="sub" style="margin-top:10px">Son reglas simples sobre datos verificados, no una predicción. Abre «¿Por qué?» para ver cada regla.</p>
+      </section>
       <section class="card" aria-labelledby="h-prox">
         <h2 id="h-prox">Lo próximo</h2>
         <div id="prox"><p class="vacio">Cargando…</p></div>
@@ -513,7 +531,7 @@
     const d = new Date(iso); if(isNaN(d)) return ['',''];
     const hoy = new Date(); hoy.setHours(0,0,0,0);
     const dias = Math.round((new Date(d).setHours(0,0,0,0) - hoy) / 864e5);
-    const rel = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : 'En ' + dias + ' días';
+    const rel = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : dias === -1 ? 'Ayer' : dias < 0 ? 'Hace ' + (-dias) + ' días' : 'En ' + dias + ' días';
     return [rel, d.toLocaleDateString('es-EC',{day:'numeric',month:'short'}) + ', ' + hhmm(iso)];
   }
 
@@ -696,6 +714,21 @@
     }
   }
 
+  // ---- Seguimiento ----
+  const ROTULO_EST = {atencion:'Atención', ok:'Al día', info:'Dato', sin_datos:'Sin datos'};
+  function pintarSeguimiento(d){
+    const s = d.seguimiento; if(!s) return;
+    $('seg-res').textContent = s.resumen.texto;
+    const cont = $('seg'); cont.replaceChildren();
+    for(const r of s.reglas){
+      const items = r.items.length ? el('ul', {}, ...r.items.map(i => el('li', {text:i.texto + (i.fecha ? ' — ' + cuando(i.fecha).join(', ') : '')}))) : null;
+      cont.append(el('div', {class:'seg'},
+        el('div', {class:'t'}, el('span', {class:'est ' + r.estado, text:ROTULO_EST[r.estado] || r.estado}), el('b', {text:r.titulo})),
+        el('p', {class:'d', text:r.detalle}), items,
+        el('details', {}, el('summary', {text:'¿Por qué?'}), el('span', {text:r.porque}))));
+    }
+  }
+
   // ---- Novedades ----
   function pintarInsignia(n){
     const b = $('ins-nov'); b.hidden = !n; b.textContent = n > 99 ? '99+' : n;
@@ -768,7 +801,7 @@
     const r = await fetch('/api/panel');
     if(r.status === 401){ location = '/login'; return; }
     const d = await r.json();
-    pintarConexiones(d); pintarInicio(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0);
+    pintarConexiones(d); pintarInicio(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d);
     if(!$('v-novedades').hidden) cargarNovedades();
   }
 

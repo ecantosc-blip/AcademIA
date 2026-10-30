@@ -10,7 +10,7 @@ from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core import tiempo, cambios
+from core import tiempo, cambios, seguimiento
 from core.tiempo import ahora_iso
 from core.tareas import clasificar_tareas, en_ventana
 from db.setup import get_connection
@@ -185,12 +185,14 @@ def construir_panel(sesion: dict) -> dict:
             WHERE estudiante_id = ? ORDER BY id DESC LIMIT 12
         """, (est,))]
         novedades_nuevas = cambios.contar_nuevas(conn, est)
+        indicador = seguimiento.evaluar(conn, est)
     finally:
         conn.close()
 
     return {
         "nombre": sesion.get("nombre", ""),
         "novedades_nuevas": novedades_nuevas,
+        "seguimiento": indicador,
         "conexiones": {
             "moodle": {"ultima": ultimas.get("moodle")},
             "erp": {"ultima": ultimas.get("sga"), "vence": exp_erp, "renovable": bool(sesion.get("sga_refresh_token"))},

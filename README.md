@@ -308,3 +308,22 @@ Reglas (todas cubiertas por pruebas):
 - Se informa el valor de antes y el de después; no se interpreta ni se predice nada.
 - Las novedades se ven en **Mis datos**, se incluyen en la descarga y se borran con "Borrar mis datos".
 
+## Tu seguimiento (indicador por reglas)
+
+En **Inicio**, la tarjeta «Tu seguimiento» junta en un solo lugar lo que pide atención hoy
+(`core/seguimiento.py`). Son 6 reglas simples sobre datos ya verificados, y cada una explica
+su criterio en «¿Por qué?»:
+
+| Regla | Qué mide |
+|---|---|
+| Tareas vencidas sin entregar | Moodle informa que no está entregada (o en borrador) y su fecha pasó |
+| Vencen en 48 horas | Lo mismo, pero con fecha dentro de las próximas 48 horas |
+| Tareas sin verificar | Moodle no informó el estado: no se cuentan como pendientes ni como entregadas |
+| Asistencia | La más baja entre tus materias en curso (dato del ERP, sin veredicto) |
+| Novedades | Cambios detectados que aún no viste |
+| Datos al día | La última lectura falló, no existe, o tiene más de 2 días |
+
+Lo que NO hace, a propósito: no predice ni habla de "riesgo de reprobar"; no juzga notas (Moodle y el
+ERP no entregan pesos ni máximos); no compara con reglamentos; no inventa un mínimo de asistencia.
+Si faltan datos, dice "sin datos".
+

@@ -74,3 +74,17 @@ def test_la_pagina_trae_la_vista_de_novedades(app_web):
     finally:
         p.stop()
     assert 'id="v-novedades"' in html and 'data-vista="novedades"' in html and "/api/novedades" in html
+
+
+def test_el_panel_incluye_el_seguimiento_y_la_pagina_lo_muestra(app_web):
+    cli, p = _cliente(app_web)
+    try:
+        panel = cli.get("/api/panel").get_json()
+        html = cli.get("/").get_data(as_text=True)
+    finally:
+        p.stop()
+    seg = panel["seguimiento"]
+    assert set(seg) == {"resumen", "reglas"}
+    assert [r["id"] for r in seg["reglas"]] == ["vencidas", "proximas", "sin_verificar", "asistencia", "novedades", "datos"]
+    assert all(r["porque"] and r["detalle"] for r in seg["reglas"])      # toda regla se explica
+    assert 'id="seg"' in html and "Tu seguimiento" in html and "no una predicción" in html
