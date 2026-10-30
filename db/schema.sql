@@ -200,6 +200,48 @@ CREATE TABLE IF NOT EXISTS cambio (
 
 CREATE INDEX IF NOT EXISTS idx_cambio_estudiante ON cambio(estudiante_id, visto_en, detectado_en);
 
+-- Plan de estudio y alertas (Fase 3). Todo lo escribe el propio estudiante o se deriva de sus datos.
+-- preferencia: clave/valor validado en core/preferencias.py (disponibilidad por dia, minutos por tarea...).
+CREATE TABLE IF NOT EXISTS preferencia (
+    estudiante_id INTEGER NOT NULL,
+    clave TEXT NOT NULL,
+    valor TEXT NOT NULL,
+    PRIMARY KEY (estudiante_id, clave),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
+
+-- Dificultad que el estudiante percibe en cada materia: 1 facil, 2 media, 3 dificil.
+CREATE TABLE IF NOT EXISTS dificultad_materia (
+    estudiante_id INTEGER NOT NULL,
+    materia_id INTEGER NOT NULL,
+    nivel INTEGER NOT NULL CHECK(nivel BETWEEN 1 AND 3),
+    PRIMARY KEY (estudiante_id, materia_id),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE,
+    FOREIGN KEY (materia_id) REFERENCES materia(id) ON DELETE CASCADE
+);
+
+-- Elementos que el estudiante quito de su plan (clave: 't:<tarea_id>' o 'e:<nombre>|<fecha>').
+CREATE TABLE IF NOT EXISTS plan_excluido (
+    estudiante_id INTEGER NOT NULL,
+    clave TEXT NOT NULL,
+    PRIMARY KEY (estudiante_id, clave),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
+
+-- Alertas dentro de la app. UNIQUE(estudiante, tipo, clave) impide repetir una misma alerta:
+-- aunque se descarte (vista_en), la fila queda y la condicion no la vuelve a crear.
+CREATE TABLE IF NOT EXISTS alerta (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    estudiante_id INTEGER NOT NULL,
+    tipo TEXT NOT NULL CHECK(tipo IN ('vence_pronto', 'vencida', 'lectura_fallida', 'asistencia_baja')),
+    clave TEXT NOT NULL,
+    mensaje TEXT NOT NULL,
+    creada_en TEXT NOT NULL,
+    vista_en TEXT,
+    UNIQUE (estudiante_id, tipo, clave),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_practica_estudiante_materia ON practica(estudiante_id, materia_id);
 CREATE INDEX IF NOT EXISTS idx_matricula_estudiante ON matricula(estudiante_id);
 CREATE INDEX IF NOT EXISTS idx_matricula_materia ON matricula(materia_id);
@@ -209,3 +251,4 @@ CREATE INDEX IF NOT EXISTS idx_evento_estudiante ON evento(estudiante_id);
 CREATE INDEX IF NOT EXISTS idx_entrega_estudiante ON entrega(estudiante_id);
 CREATE INDEX IF NOT EXISTS idx_horario_materia ON horario(materia_id);
 CREATE INDEX IF NOT EXISTS idx_extraccion_estudiante ON sesion_extraccion(estudiante_id);
+CREATE INDEX IF NOT EXISTS idx_alerta_estudiante ON alerta(estudiante_id, vista_en);

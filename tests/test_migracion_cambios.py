@@ -41,7 +41,7 @@ def test_aplicar_dos_veces_es_inocuo(ruta_bd):
     init_db()
     c = get_connection()
     assert c.execute("select count(*) from foto_estado").fetchone()[0] == 1
-    assert [r["version"] for r in c.execute("select version from schema_version order by 1")] == [1, 2, 3, 4]
+    assert [r["version"] for r in c.execute("select version from schema_version order by 1")] == list(range(1, max(m[0] for m in MIGRACIONES) + 1))
     c.close()
 
 
