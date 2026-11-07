@@ -183,9 +183,9 @@ def test_el_usuario_del_bot_se_pregunta_a_telegram_y_los_errores_se_explican(app
         assert T.usuario_bot(None, "TOK") == "UnemIABot" and ll.call_args.args[1] == "getMe"
     T._estado["usuario_bot"] = None
     sesion = {"estudiante_id": EST, "nombre": "X", "moodle_token": "m", "sga_access_token": "x", "sga_refresh_token": None}
-    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "TOK"); monkeypatch.delenv("TELEGRAM_BOT_USERNAME", raising=False)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:SECRETO"); monkeypatch.delenv("TELEGRAM_BOT_USERNAME", raising=False)
     with mock.patch.object(app_web, "get_session", return_value=("s", sesion)), \
          mock.patch.object(T, "_llamar", side_effect=T.TelegramError("Telegram rechazó la petición (401)", 401)):
         r = app_web.app.test_client().post("/api/telegram/vincular")
-    assert r.status_code == 400 and "401" in r.get_json()["error"] and "TOK" not in r.get_data(as_text=True)
+    assert r.status_code == 400 and "401" in r.get_json()["error"] and "SECRETO" not in r.get_data(as_text=True)
     T._estado["usuario_bot"] = None
