@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from moodle.client import MoodleClient, extraer_token_moodle
-from sga.client import SGAClient, segundos_para_vencer
+from sga.client import SGAClient, segundos_para_vencer, decodificar_jwt
 from core.assistant import AssistantLLM
 from core.sync_all import sync as sync_estudiante
 from db.setup import get_connection, init_db
@@ -211,12 +211,16 @@ def api_foto():
     sid, sesion = get_session()
     if not sesion:
         return jsonify({"error": "Sesión no válida."}), 401
-    url = sesion.get("foto_url") or ""
-    if not url:
-        return ("", 404)
-    datos, tipo, motivo = foto.descargar(url, sesion["moodle_token"])
+    datos = tipo = None
+    motivo = "sin foto"
+    if sesion.get("foto_erp_url"):     # la foto oficial del ERP tiene prioridad
+        datos, tipo, motivo = foto.descargar_erp(sesion["foto_erp_url"], sesion.get("sga_access_token", ""),
+                                                 os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec"))
+    if datos is None and sesion.get("foto_url"):
+        datos, tipo, motivo = foto.descargar(sesion["foto_url"], sesion["moodle_token"])
     if datos is None:
-        print(f"[foto] No se mostró la foto de perfil: {motivo}")
+        if sesion.get("foto_erp_url") or sesion.get("foto_url"):
+            print(f"[foto] No se mostró la foto de perfil: {motivo}")
         return ("", 404)
     return Response(datos, mimetype=tipo)   # /api/* ya sale con Cache-Control: no-store
 
@@ -232,7 +236,7 @@ def index():
     if aviso:
         sessions_store.guardar(sid, sesion)
     return render_template("index.html", nombre=sesion.get("nombre", ""), aviso=aviso,
-                           tiene_foto=bool(sesion.get("foto_url")))
+                           tiene_foto=bool(sesion.get("foto_url") or sesion.get("foto_erp_url")))
 
 
 @app.route("/login", methods=["GET"])
@@ -359,11 +363,18 @@ def login_submit():
             moodle_base_url=moodle_base_url,
         ), 503
 
+    try:
+        sga_base = os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec")
+        foto_erp_url = foto.buscar_en_sga(decodificar_jwt(sga.access_token), sga_base)
+    except Exception:
+        foto_erp_url = ""
+
     sid = sessions_store.crear({
         "aviso_sync": " ".join(avisos),
         "estudiante_id": estudiante_id,
         "nombre": nombre,
         "foto_url": foto.url_valida(info.get("userpictureurl"), moodle_base_url),
+        "foto_erp_url": foto_erp_url,
         "moodle_token": moodle_token,            # token de sesion; NO se guarda ninguna contraseña
         "sga_access_token": sga.access_token,   # ya actualizado si hubo cambio de perfil
         "sga_refresh_token": sga.refresh_token,  # idem

@@ -194,3 +194,19 @@ def test_foto_prueba_la_segunda_ruta_y_no_sigue_redirecciones_ajenas():
         datos, _, motivo = foto.descargar(url, "tok")
     assert datos is None and "otro sitio" in motivo
     assert all("malo.example" not in c.args[0] for c in g.call_args_list)
+
+
+def test_foto_del_erp_se_busca_solo_en_unemi_y_manda_el_token_solo_al_erp():
+    from core import foto
+    base = "https://sga.unemi.edu.ec"
+    jwt = {"nombre": "X", "perfilprincipal": {"id": 1, "persona": {"foto": "/media/fotos/a.jpg"}}}
+    assert foto.buscar_en_sga(jwt, base) == base + "/media/fotos/a.jpg"
+    assert foto.buscar_en_sga({"foto": "https://malo.com/a.jpg"}, base) == ""
+    assert foto.buscar_en_sga({"foto": "https://sga.unemi.edu.ec/x.txt"}, base) == ""
+    with mock.patch.object(foto.requests, "get", return_value=_Resp()) as g:
+        assert foto.descargar_erp(base + "/m/a.jpg", "TOK", base)[0] == b"JPG"
+        assert g.call_args.kwargs["headers"] == {"Authorization": "Bearer TOK"}
+    with mock.patch.object(foto.requests, "get", return_value=_Resp()) as g:
+        foto.descargar_erp("https://archivos.unemi.edu.ec/a.jpg", "TOK", base)
+        assert g.call_args.kwargs["headers"] == {}          # otro subdominio: sin token
+    assert foto.descargar_erp("https://malo.com/a.jpg", "TOK", base)[0] is None

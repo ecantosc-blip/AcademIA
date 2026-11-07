@@ -74,3 +74,66 @@ def descargar(url: str, token: str):
             continue
         return datos, tipo, "ok"
     return None, None, motivo
+
+
+# ------------------------------------------------------------------ foto del ERP (SGA)
+import re
+
+_CLAVE_FOTO = re.compile(r"foto|avatar|imagen|image|picture|png|jpg", re.I)
+_ES_IMAGEN = re.compile(r"\.(jpe?g|png|webp|gif)(\?|$)", re.I)
+
+
+def buscar_en_sga(obj, base_url: str, _prof: int = 0) -> str:
+    """Busca dentro de un JSON del ERP un valor que sea una foto: clave tipo foto/avatar/imagen
+    y valor con extension de imagen. Devuelve la URL https del propio ERP o ''."""
+    if _prof > 5:
+        return ""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if isinstance(v, str) and _CLAVE_FOTO.search(str(k)) and _ES_IMAGEN.search(v):
+                u = urljoin(base_url.rstrip("/") + "/", v)
+                if url_valida_erp(u, base_url):
+                    return u
+        for v in obj.values():
+            r = buscar_en_sga(v, base_url, _prof + 1)
+            if r:
+                return r
+    elif isinstance(obj, list):
+        for v in obj[:20]:
+            r = buscar_en_sga(v, base_url, _prof + 1)
+            if r:
+                return r
+    return ""
+
+
+def url_valida_erp(url, base_url: str) -> str:
+    """Solo https y dentro de unemi.edu.ec (la foto del ERP puede estar en otro subdominio)."""
+    try:
+        u = urlparse(url or "")
+    except ValueError:
+        return ""
+    h = u.hostname or ""
+    if u.scheme != "https" or not (h == "unemi.edu.ec" or h.endswith(".unemi.edu.ec")):
+        return ""
+    return url
+
+
+def descargar_erp(url: str, access_token: str, base_url: str):
+    """Pide la foto al ERP. El token (Bearer) solo se envia al host del propio ERP."""
+    if not url_valida_erp(url, base_url):
+        return None, None, "dirección fuera de unemi.edu.ec"
+    mismo = urlparse(url).hostname == urlparse(base_url).hostname
+    try:
+        r = requests.get(url, headers={"Authorization": f"Bearer {access_token}"} if mismo else {},
+                         timeout=8, allow_redirects=False, stream=True)
+    except requests.RequestException:
+        return None, None, "error de red al pedir la foto"
+    tipo = (r.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+    if r.status_code != 200:
+        return None, None, f"el ERP respondió {r.status_code}"
+    if tipo not in TIPOS_OK:
+        return None, None, f"el ERP no devolvió una imagen (tipo: {tipo or 'vacío'})"
+    datos = r.raw.read(MAX_BYTES + 1, decode_content=True)
+    if len(datos) > MAX_BYTES:
+        return None, None, "la imagen es demasiado grande"
+    return datos, tipo, "ok"
