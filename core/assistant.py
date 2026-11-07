@@ -182,12 +182,19 @@ Reglas importantes:
   3. Pregunta que actividades hace en su dia a dia (trabajo, transporte, deporte, familia...) y a que
      horas, para no ponerle estudio encima.
   4. Haz UNA o DOS preguntas por mensaje, no un interrogatorio. NUNCA supongas ni inventes una hora.
+     Para preguntas cerradas usa hacer_pregunta (botones): momento del dia (Mañana 7-12 / Tarde 12-18 /
+     Noche 18-24), que hace a diario (varias=true: gimnasio, trabajo, transporte...), comidas (propon
+     desayuno 07:00-07:30, almuerzo 13:00-14:00 y cena 19:30-20:30 como OPCIONES que acepta o corrige),
+     dificultad de cada materia, o confirmar un resumen (Sí, guárdalo / Quiero cambiar algo). Luego pide
+     horas exactas con texto cuando haga falta.
   5. Antes de guardar, resume lo entendido y pide confirmacion. Solo cuando confirme llama a
      guardar_franjas_libres y guardar_actividades.
   6. Despues llama a generar_plan_estudio y presenta el plan tal cual (las horas las calcula la app;
      no las cambies). Explica en una frase por que las materias con menor porcentaje en Moodle van
      primero y menciona los "no alcanza" y las tareas sin verificar si las hay.
   7. Dile que puede recibir recordatorios por Telegram desde la seccion Plan.
+  8. Si pide mover un bloque, usa mover_bloque_estudio (queda fijado); para sumar rutina usa
+     agregar_actividad (no borra lo demas); soltar_bloques_fijados devuelve el acomodo automatico.
 - Si la pregunta no tiene relacion con tareas/notas/eventos/horario/carne
   academico, indica amablemente que solo puedes ayudar con esos temas.
 """
@@ -201,9 +208,21 @@ class AssistantLLM:
         self.historial = []
         self.herramientas_usadas = []   # herramientas que uso en la ultima pregunta
         self.acciones = []              # botones que la interfaz debe mostrar (ej. "carnet")
+        self.opciones = None            # pregunta con botones (hacer_pregunta) de la ultima respuesta
         self.lock = threading.Lock()    # dos preguntas a la vez de la misma sesion no mezclan el historial
 
+    def _preparar_pregunta(self, args: dict) -> str:
+        ops = [str(o).strip()[:60] for o in (args.get("opciones") or []) if str(o).strip()]
+        pregunta = str(args.get("pregunta") or "").strip()[:200]
+        if not pregunta or not 2 <= len(ops) <= 8:
+            return "Error: la pregunta necesita un texto y de 2 a 8 opciones."
+        self.opciones = {"pregunta": pregunta, "opciones": ops, "varias": bool(args.get("varias"))}
+        return ("Listo: la interfaz mostrará los botones. Termina tu mensaje con esa pregunta y espera la respuesta; "
+                "no llames otras herramientas en este turno.")
+
     def _ejecutar_herramienta(self, nombre: str, args: dict) -> str:
+        if nombre == "hacer_pregunta":
+            return self._preparar_pregunta(args or {})
         if nombre == "carnet_estudiantil":
             if "carnet" not in self.acciones:
                 self.acciones.append("carnet")
@@ -212,7 +231,7 @@ class AssistantLLM:
         if nombre in plan_chat.NOMBRES:
             try:
                 resultado = plan_chat.ejecutar(nombre, self.engine.conn, self.engine.estudiante_id, args)
-                if nombre != "ver_horario_personal" and "horario" not in self.acciones:
+                if nombre not in ("ver_horario_personal",) and "horario" not in self.acciones:
                     self.acciones.append("horario")      # la interfaz muestra «Ver mi horario»
                 return resultado
             except Exception as e:
@@ -233,6 +252,7 @@ class AssistantLLM:
     def preguntar(self, pregunta: str) -> str:
         self.herramientas_usadas = []
         self.acciones = []
+        self.opciones = None
         self.historial.append({"role": "user", "content": pregunta})
 
         while True:

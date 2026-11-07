@@ -148,7 +148,7 @@ def test_rutas_web_de_telegram(app_web, monkeypatch):
         assert c.post("/api/telegram/desvincular").get_json()["vinculado"] is False
         r = c.post("/api/agenda", json={"franjas": [{"dia": "sabado", "inicio": "09:00", "fin": "11:00"}],
                                         "actividades": []}).get_json()
-        assert r["agenda"]["franjas"] == [{"dia": "sabado", "inicio": "09:00", "fin": "11:00"}]
+        assert [{k: v for k, v in f.items() if k != "id"} for f in r["agenda"]["franjas"]] == [{"dia": "sabado", "inicio": "09:00", "fin": "11:00"}]
         assert c.post("/api/agenda", json={"franjas": [{"dia": "x", "inicio": "1", "fin": "2"}]}).status_code == 400
 
 
@@ -162,7 +162,7 @@ def test_mis_datos_incluye_lo_nuevo_y_borra_todo_en_cascada(conn):
     mis_datos.borrar(EST)
     c = get_connection()
     try:
-        for t in ("franja_libre", "actividad", "telegram_vinculo", "recordatorio_enviado"):
+        for t in ("franja_libre", "actividad", "telegram_vinculo", "recordatorio_enviado", "bloque_fijo"):
             assert c.execute(f"SELECT COUNT(*) FROM {t} WHERE estudiante_id=77").fetchone()[0] == 0
     finally:
         c.close()

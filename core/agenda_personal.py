@@ -102,10 +102,63 @@ def listar(conn, est) -> dict:
     orden = "CASE dia " + " ".join(f"WHEN '{d}' THEN {i}" for i, d in enumerate(DIAS)) + " END, inicio"
     return {
         "franjas": [dict(r) for r in conn.execute(
-            f"SELECT dia, inicio, fin FROM franja_libre WHERE estudiante_id = ? ORDER BY {orden}", (est,))],
+            f"SELECT id, dia, inicio, fin FROM franja_libre WHERE estudiante_id = ? ORDER BY {orden}", (est,))],
         "actividades": [dict(r) for r in conn.execute(
-            f"SELECT dia, inicio, fin, nombre FROM actividad WHERE estudiante_id = ? ORDER BY {orden}", (est,))],
+            f"SELECT id, dia, inicio, fin, nombre FROM actividad WHERE estudiante_id = ? ORDER BY {orden}", (est,))],
     }
+
+
+_TABLAS = {"franja": ("franja_libre", False), "actividad": ("actividad", True)}
+
+
+def _filas_como_items(conn, est, tabla, con_nombre):
+    cols = "dia, inicio, fin" + (", nombre" if con_nombre else "")
+    return [dict(r) for r in conn.execute(f"SELECT id, {cols} FROM {tabla} WHERE estudiante_id = ? ORDER BY id", (est,))]
+
+
+def _guardar(conn, est, tabla, con_nombre, items):
+    limpios = [{k: v for k, v in i.items() if k != "id"} for i in items]
+    return (guardar_actividades if con_nombre else guardar_franjas)(conn, est, limpios)
+
+
+def agregar(conn, est, tipo: str, items) -> int:
+    """Agrega sin borrar lo anterior (si algo no es valido no se guarda nada). tipo: 'franja' | 'actividad'."""
+    tabla, con_nombre = _tabla(tipo)
+    if not isinstance(items, list):
+        raise ValueError("Se esperaba una lista.")
+    return _guardar(conn, est, tabla, con_nombre, _filas_como_items(conn, est, tabla, con_nombre) + items)
+
+
+def editar(conn, est, tipo: str, id_, item) -> int:
+    tabla, con_nombre = _tabla(tipo)
+    filas = _filas_como_items(conn, est, tabla, con_nombre)
+    if not any(f["id"] == id_ for f in filas):
+        raise ValueError("Ese elemento ya no existe.")
+    return _guardar(conn, est, tabla, con_nombre, [item if f["id"] == id_ else f for f in filas])
+
+
+def borrar(conn, est, tipo: str, id_) -> int:
+    tabla, con_nombre = _tabla(tipo)
+    filas = _filas_como_items(conn, est, tabla, con_nombre)
+    if not any(f["id"] == id_ for f in filas):
+        raise ValueError("Ese elemento ya no existe.")
+    return _guardar(conn, est, tabla, con_nombre, [f for f in filas if f["id"] != id_])
+
+
+def _tabla(tipo):
+    if tipo not in _TABLAS:
+        raise ValueError("Tipo no válido.")
+    return _TABLAS[tipo]
+
+
+def ocupado_por_dia(conn, est) -> dict:
+    """{dia: [(ini, fin, nombre)]} con clases del ERP y actividades de la persona (para detectar choques)."""
+    res = {d: [] for d in DIAS}
+    for c in clases_detalle(conn, est):
+        res[c["dia"]].append((a_minutos(c["inicio"]), a_minutos(c["fin"]), c["materia"]))
+    for r in conn.execute("SELECT dia, inicio, fin, nombre FROM actividad WHERE estudiante_id = ?", (est,)):
+        res[r["dia"]].append((a_minutos(r["inicio"]), a_minutos(r["fin"]), r["nombre"]))
+    return res
 
 
 def _clases(conn, est) -> dict:

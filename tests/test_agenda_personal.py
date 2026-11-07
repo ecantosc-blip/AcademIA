@@ -7,6 +7,10 @@ from db.setup import get_connection
 EST = 77
 
 
+def _sin_id(filas):
+    return [{k: v for k, v in f.items() if k != "id"} for f in filas]
+
+
 @pytest.fixture
 def conn(app_web):
     c = get_connection()
@@ -28,8 +32,8 @@ def test_franjas_se_reemplazan_se_unen_y_se_validan_antes_de_guardar(conn):
                                       {"dia": "lunes", "inicio": "18:30", "fin": "20:00"},
                                       {"dia": "sabado", "inicio": "09:00", "fin": "11:00"}])
     assert n == 2
-    assert A.listar(conn, EST)["franjas"] == [{"dia": "lunes", "inicio": "18:00", "fin": "20:00"},
-                                              {"dia": "sabado", "inicio": "09:00", "fin": "11:00"}]
+    assert _sin_id(A.listar(conn, EST)["franjas"]) == [{"dia": "lunes", "inicio": "18:00", "fin": "20:00"},
+                                                       {"dia": "sabado", "inicio": "09:00", "fin": "11:00"}]
     # una lista con un error no toca lo guardado
     with pytest.raises(ValueError):
         A.guardar_franjas(conn, EST, [{"dia": "lunes", "inicio": "10:00", "fin": "10:05"}])

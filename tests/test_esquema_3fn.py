@@ -102,6 +102,7 @@ def test_toda_herramienta_del_chat_tiene_metodo(bd_demo):
     e = QueryEngine(77)
     # el carne lo maneja el asistente (boton de descarga), no el motor de consultas
     from core.plan_chat import NOMBRES as DEL_PLAN   # las del plan viven en core/plan_chat.py
+    DEL_PLAN = DEL_PLAN | {"hacer_pregunta"}          # los botones los maneja el asistente
     nombres = [t["name"] for t in TOOLS if t["name"] != "carnet_estudiantil" and t["name"] not in DEL_PLAN]
     faltan = [n for n in nombres if not hasattr(e, n)]
     assert not faltan, faltan

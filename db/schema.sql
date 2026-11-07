@@ -300,3 +300,16 @@ CREATE TABLE IF NOT EXISTS recordatorio_enviado (
     PRIMARY KEY (estudiante_id, clave),
     FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
 );
+
+-- bloque_fijo: bloques de estudio que la persona movio o fijo a mano (a una fecha y hora exactas).
+-- El plan los respeta y reacomoda lo demas alrededor. clave: 't:<tarea>', 'e:<evento>' o 'r:<materia>' (refuerzo).
+CREATE TABLE IF NOT EXISTS bloque_fijo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    estudiante_id INTEGER NOT NULL,
+    clave TEXT NOT NULL,
+    fecha TEXT NOT NULL,
+    inicio TEXT NOT NULL,
+    fin TEXT NOT NULL,
+    UNIQUE (estudiante_id, clave, fecha, inicio),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);

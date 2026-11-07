@@ -135,6 +135,11 @@ def _migracion_6_plan_conversacional(conn):
     pass
 
 
+def _migracion_7_bloques_fijos(conn):
+    # La tabla bloque_fijo se crea en schema.sql (CREATE TABLE IF NOT EXISTS): sin tocar datos.
+    pass
+
+
 MIGRACIONES = [
     (1, "Esquema normalizado 3FN (sin finanzas ni carne)", _migracion_1_esquema_3fn),
     (2, "Espacio de estudio: tabla practica", _migracion_2_practica),
@@ -142,6 +147,7 @@ MIGRACIONES = [
     (4, "Detector de cambios: tablas foto_estado y cambio", _migracion_4_detector_de_cambios),
     (5, "Plan de estudio y alertas: preferencia, dificultad_materia, plan_excluido, alerta", _migracion_5_plan_y_alertas),
     (6, "Plan conversacional y recordatorios: franja_libre, actividad, telegram_vinculo, recordatorio_enviado", _migracion_6_plan_conversacional),
+    (7, "Bloques de estudio fijados por la persona: bloque_fijo", _migracion_7_bloques_fijos),
 ]
 
 

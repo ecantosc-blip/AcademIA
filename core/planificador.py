@@ -23,7 +23,7 @@ usa esas horas menos sus clases y actividades, y cada bloque trae hora de inicio
   * Cada bloque trae una recomendacion de estudio fija (no la inventa un modelo).
 """
 import re
-from datetime import timedelta
+from datetime import date as _date, timedelta
 
 from core import agenda_personal as AP
 from core import notas_moodle
@@ -34,6 +34,7 @@ from core.tiempo import ahora_iso, iso_a_datetime
 
 DIAS_PLAN = 7
 BLOQUE_MIN = 15
+MIN_TROZO = 30        # (solo en el plan con horas) al partir un elemento entre ventanas no se dejan trozos de menos de 30 min (salvo el ultimo)
 FACTOR = {1: 0.75, 2: 1.0, 3: 1.5}
 NOMBRE_DIFICULTAD = {1: "fácil", 2: "media", 3: "difícil"}
 VENTANA_SIN_VERIFICAR = 30
@@ -101,7 +102,7 @@ def _asignar(ventanas, falta, expone_horas):
             break
         libre = v[1] - v[0]
         toma = min(falta, libre)
-        if toma < BLOQUE_MIN and toma < falta:
+        if toma < (MIN_TROZO if expone_horas else BLOQUE_MIN) and toma < falta:
             continue
         if toma <= 0:
             continue
@@ -176,9 +177,43 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
 
     bloques = {d: [] for d in calendario}
     no_alcanza, sin_espacio = [], []
+
+    # Bloques que la persona movio o fijo a mano: se colocan primero, exactamente donde los puso.
+    fijados, refuerzo_fijo = {}, set()
+    if con_horas:
+        por_clave = {e["clave"]: e for e in en_plan}
+        nombres_m = {r["id"]: r["nombre"] for r in conn.execute("SELECT id, nombre FROM materia")}
+        for pin in conn.execute("SELECT clave, fecha, inicio, fin FROM bloque_fijo WHERE estudiante_id = ? ORDER BY fecha, inicio", (estudiante_id,)):
+            try:
+                d = _date.fromisoformat(pin["fecha"])
+                ini, fin = AP.a_minutos(pin["inicio"]), AP.a_minutos(pin["fin"])
+            except ValueError:
+                continue
+            if d not in bloques:
+                continue                                  # fuera de la semana del plan: se ignora
+            e = por_clave.get(pin["clave"])
+            if pin["clave"].startswith("r:"):
+                try:
+                    mid = int(pin["clave"][2:])
+                except ValueError:
+                    continue
+                item, materia, tipo, motivo = f"Refuerzo: {nombres_m.get(mid, 'materia')}", None, "refuerzo", "Lo fijaste tú en este horario."
+                refuerzo_fijo.add(d)
+            elif e is not None:
+                item, materia, tipo, motivo = e["nombre"], e["materia"], e["tipo"], "Lo fijaste tú en este horario. " + _motivo(e)
+                fijados[e["clave"]] = fijados.get(e["clave"], 0) + (fin - ini)
+            else:
+                continue                                  # el elemento ya no esta en el plan (p. ej. ya lo entregaste)
+            ventanas[d] = [list(v) for v in AP._restar([tuple(v) for v in ventanas[d]], [(ini, fin)])]
+            bloques[d].append({"clave": pin["clave"], "item": item, "materia": materia, "minutos": fin - ini, "tipo": tipo,
+                               "motivo": motivo, "inicio": pin["inicio"], "fin": pin["fin"], "fijado": True,
+                               "recomendacion": RECOMENDACION[tipo]})
+
     if configurado:
         for e in en_plan:
-            falta, lim = e["minutos"], limite(e)
+            falta, lim = max(0, e["minutos"] - fijados.get(e["clave"], 0)), limite(e)
+            if falta == 0:
+                continue
             for d in calendario:
                 if falta <= 0:
                     break
@@ -188,7 +223,8 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
                 for ini, fin, toma in trozos:
                     bloques[d].append({"clave": e["clave"], "item": e["nombre"], "materia": e["materia"],
                                        "minutos": toma, "tipo": e["tipo"], "motivo": _motivo(e),
-                                       "inicio": ini, "fin": fin, "recomendacion": RECOMENDACION[e["tipo"]]})
+                                       "inicio": ini, "fin": fin, "fijado": False,
+                                       "recomendacion": RECOMENDACION[e["tipo"]]})
             if falta > 0:
                 dato = {"clave": e["clave"], "item": e["nombre"], "materia": e["materia"], "fecha": e["fecha"],
                         "faltan_min": falta, "total_min": e["minutos"]}
@@ -200,7 +236,7 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
         puestos_dados = 0
         for d in calendario:
             hueco = next((v for v in ventanas[d] if v[1] - v[0] >= 30), None)
-            if not debiles or hueco is None:
+            if not debiles or hueco is None or d in refuerzo_fijo:
                 continue
             mid = debiles[puestos_dados % len(debiles)]     # alterna empezando por la de menor porcentaje
             puestos_dados += 1
@@ -208,7 +244,7 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
             for ini, fin, toma in trozos:
                 bloques[d].append({
                     "clave": f"r:{mid}", "item": f"Refuerzo: {nombres.get(mid, 'materia')}", "materia": None,
-                    "minutos": toma, "tipo": "refuerzo", "inicio": ini, "fin": fin,
+                    "minutos": toma, "tipo": "refuerzo", "inicio": ini, "fin": fin, "fijado": False,
                     "motivo": (f"Te sobra tiempo y en Moodle llevas {promedios[mid]:.0f} % en esta materia, "
                                f"una de las más bajas de las que cursas."),
                     "recomendacion": RECOMENDACION["refuerzo"]})

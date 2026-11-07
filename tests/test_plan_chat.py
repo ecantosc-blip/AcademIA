@@ -69,3 +69,64 @@ def test_el_asistente_despacha_las_herramientas_del_plan(app_web):
         assert out.startswith("No se guardó nada")
     finally:
         a.engine.conn.close()
+
+
+# ----------------------------------------------------------------- Plan v2: botones y bloques
+def _asistente(c):
+    a = assistant.AssistantLLM.__new__(assistant.AssistantLLM)
+    a.acciones, a.opciones = [], None
+    a.engine = mock.Mock(estudiante_id=EST)
+    a.engine.conn = c
+    return a
+
+
+def test_hacer_pregunta_prepara_botones_y_valida(app_web):
+    a = _asistente(get_connection())
+    out = a._ejecutar_herramienta("hacer_pregunta", {"pregunta": "¿Cuándo prefieres estudiar?",
+                                  "opciones": ["Mañana", "Tarde", "Noche"], "varias": False})
+    assert out.startswith("Listo") and a.opciones == {"pregunta": "¿Cuándo prefieres estudiar?", "opciones": ["Mañana", "Tarde", "Noche"], "varias": False}
+    a.opciones = None
+    assert a._ejecutar_herramienta("hacer_pregunta", {"pregunta": "x", "opciones": ["solo una"]}).startswith("Error")
+    assert a._ejecutar_herramienta("hacer_pregunta", {"pregunta": "", "opciones": ["a", "b"]}).startswith("Error")
+    assert a._ejecutar_herramienta("hacer_pregunta", {"pregunta": "x", "opciones": [str(i) for i in range(9)]}).startswith("Error")
+    assert a.opciones is None and "hacer_pregunta" not in plan_chat.NOMBRES and "hacer_pregunta" in [t["name"] for t in assistant.TOOLS]
+
+
+def test_agregar_y_quitar_actividad_por_chat(app_web):
+    c = get_connection()
+    try:
+        assert "Listo" in plan_chat.ejecutar("agregar_actividad", c, EST, {"nombre": "Almuerzo", "dias": ["Lunes", "martes"], "inicio": "13:00", "fin": "14:00"})
+        assert "Listo" in plan_chat.ejecutar("agregar_actividad", c, EST, {"nombre": "Gimnasio", "dias": ["lunes"], "inicio": "17:00", "fin": "18:00"})
+        assert plan_chat.ejecutar("agregar_actividad", c, EST, {"nombre": "x", "dias": [], "inicio": "1", "fin": "2"}).startswith("No se guardó")
+        assert len(AP_listar(c)) == 3
+        assert "Listo" in plan_chat.ejecutar("quitar_actividad", c, EST, {"nombre": "almuerzo", "dia": "lunes"})
+        assert sorted((a["dia"], a["nombre"]) for a in AP_listar(c)) == [("lunes", "Gimnasio"), ("martes", "Almuerzo")]
+        plan_chat.ejecutar("quitar_actividad", c, EST, {"nombre": "ALMUERZO"})
+        assert plan_chat.ejecutar("quitar_actividad", c, EST, {"nombre": "inexistente"}).startswith("No encontré")
+    finally:
+        c.close()
+
+
+def AP_listar(c):
+    from core import agenda_personal
+    return agenda_personal.listar(c, EST)["actividades"]
+
+
+def test_mover_bloque_por_chat_pide_aclarar_si_hay_duda_y_fija_si_es_claro(app_web):
+    c = get_connection()
+    try:
+        c.execute("DELETE FROM tarea"); c.execute("DELETE FROM evento")
+        c.execute("INSERT INTO tarea(materia_id, moodle_assign_id, nombre, fecha_entrega) VALUES (1, 701, 'Informe de redes', ?)", (__import__("core.tiempo", fromlist=["x"]).ahora_iso("seconds", days=4),))
+        c.execute("INSERT INTO entrega(tarea_id, estudiante_id, estado, verificada_en) SELECT id,77,'sin_entregar','x' FROM tarea")
+        c.commit()
+        from core import agenda_personal
+        agenda_personal.guardar_franjas(c, EST, [{"dia": d, "inicio": "07:00", "fin": "24:00".replace("24", "23")} for d in
+                                                 ("lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo")])
+        assert plan_chat.ejecutar("mover_bloque_estudio", c, EST, {"texto": "inexistente", "dia": "lunes", "inicio": "09:00"}) == "No encontré ese bloque en el plan."
+        r = plan_chat.ejecutar("mover_bloque_estudio", c, EST, {"texto": "informe", "dia": "xx", "inicio": "09:00"})
+        assert r.startswith("No se movió") and "no es un día válido" in r
+        r = plan_chat.ejecutar("mover_bloque_estudio", c, EST, {"texto": "informe", "dia": "jueves", "inicio": "10:00"})
+        assert "fijado" in r or "No se movió" in r            # depende de la hora real del reloj; no debe fallar con error interno
+        assert plan_chat.ejecutar("soltar_bloques_fijados", c, EST, {}).startswith(("Listo", "No había"))
+    finally:
+        c.close()

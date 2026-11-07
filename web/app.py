@@ -576,6 +576,57 @@ def api_agenda():
     return _con_estudiante(guardar)
 
 
+@app.route("/api/agenda/agregar", methods=["POST"])
+def api_agenda_agregar():
+    """Agrega rutina (actividades) u horas libres (franjas) sin borrar lo anterior."""
+    def hacer(conn, est, d):
+        from core import agenda_personal
+        for tipo, clave in (("actividad", "actividades"), ("franja", "franjas")):
+            if clave in d:
+                agenda_personal.agregar(conn, est, tipo, d[clave])
+        return _vista_plan(conn, est)
+    return _con_estudiante(hacer)
+
+
+@app.route("/api/agenda/editar", methods=["POST"])
+def api_agenda_editar():
+    def hacer(conn, est, d):
+        from core import agenda_personal
+        agenda_personal.editar(conn, est, d.get("tipo"), d.get("id"), d.get("item"))
+        return _vista_plan(conn, est)
+    return _con_estudiante(hacer)
+
+
+@app.route("/api/agenda/borrar", methods=["POST"])
+def api_agenda_borrar():
+    def hacer(conn, est, d):
+        from core import agenda_personal
+        agenda_personal.borrar(conn, est, d.get("tipo"), d.get("id"))
+        return _vista_plan(conn, est)
+    return _con_estudiante(hacer)
+
+
+@app.route("/api/plan/mover", methods=["POST"])
+def api_plan_mover():
+    """Mueve y fija un bloque de estudio: {clave, desde:{fecha, inicio}, fecha, inicio}."""
+    def hacer(conn, est, d):
+        from core import bloques_fijos
+        desde = d.get("desde") if isinstance(d.get("desde"), dict) else {}
+        bloques_fijos.mover(conn, est, d.get("clave"), desde.get("fecha"), desde.get("inicio"), d.get("fecha"), d.get("inicio"))
+        return _vista_plan(conn, est)
+    return _con_estudiante(hacer)
+
+
+@app.route("/api/plan/soltar", methods=["POST"])
+def api_plan_soltar():
+    """Quita fijados (uno con clave+fecha+inicio, o todos si el cuerpo viene vacio)."""
+    def hacer(conn, est, d):
+        from core import bloques_fijos
+        bloques_fijos.soltar(conn, est, d.get("clave"), d.get("fecha"), d.get("inicio"))
+        return _vista_plan(conn, est)
+    return _con_estudiante(hacer)
+
+
 @app.route("/api/telegram/vincular", methods=["POST"])
 def api_telegram_vincular():
     def crear(conn, est, _d):
@@ -800,9 +851,11 @@ def chat():
             respuesta = asistente.preguntar(pregunta)
             usadas = list(asistente.herramientas_usadas)
             acciones = list(getattr(asistente, "acciones", []))
+            opciones = getattr(asistente, "opciones", None)
         return jsonify({
             "respuesta": respuesta,
             "acciones": acciones,   # ej. ["carnet"]: la interfaz muestra el boton de descarga
+            "opciones": opciones,   # pregunta con botones (o None)
             # De donde salieron los datos de esta respuesta (y cuando se sincronizaron).
             "fuentes": panel.fuentes_de(usadas, sesion["estudiante_id"]),
         })
