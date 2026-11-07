@@ -261,7 +261,7 @@
     .cols2{grid-template-columns:1fr}
   }
   @media (max-width: 860px){
-    .app{grid-template-columns:1fr}
+    .app{grid-template-columns:minmax(0,1fr)}
     .lateral{position:fixed; top:auto; bottom:0; left:0; right:0; height:auto; flex-direction:row; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); border-right:0; border-top:1px solid var(--line); z-index:40; gap:0}
     .lateral .brand,.lateral-pie{display:none}
     .menu{display:flex; width:100%; justify-content:space-around; gap:0}
@@ -360,6 +360,58 @@
     :root[data-lateral="plegada"] .menu a{padding:6px 8px}
   }
   @media (prefers-reduced-motion: reduce){ .app,.plegar svg{transition:none} }
+
+  /* ---- Plan v2: pestañas, chat grande y cuadrícula semanal ---- */
+  .punto[hidden],.fab[hidden]{display:none}
+  .principal,.vista,#pan-conv,#pan-hor{min-width:0}
+  .pestanas{display:flex; gap:6px; border-bottom:1px solid var(--line); margin:14px 0 18px}
+  .pestanas button{background:none; border:0; border-bottom:3px solid transparent; padding:10px 16px; font:inherit; font-weight:600; color:var(--muted); cursor:pointer; position:relative; margin-bottom:-1px; width:auto}
+  .pestanas button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--orange)}
+  .pestanas button:focus-visible{outline:2px solid var(--orange); outline-offset:-2px}
+  .punto{display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--orange); margin-left:7px; vertical-align:middle}
+  .chat.grande{position:static; width:100%; max-width:860px; margin:0 auto; height:calc(100vh - 270px); min-height:460px; max-height:760px; box-shadow:none}
+  .chat.grande .log{padding:22px clamp(16px,4vw,40px)}
+  .chat.grande .burbuja{font-size:1rem}
+  .chat.grande .pregunta{padding:12px clamp(16px,4vw,40px) 16px}
+  .chat.grande .sugerencias{padding:0 clamp(16px,4vw,40px) 10px}
+  .hor-cab{display:flex; gap:16px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap}
+  .hor-cab .sub{flex:1 1 20rem; margin:0 0 10px}
+  .pop{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:0 14px; margin:0 0 14px}
+  .pop > summary{cursor:pointer; padding:10px 0; font-weight:600; color:var(--ink); list-style-position:inside}
+  .pop[open] > summary{border-bottom:1px solid var(--line); margin-bottom:10px}
+  .pop-ajustes{margin-top:14px; padding-bottom:6px}
+  .pop-ajustes .card{border:0; box-shadow:none; padding:0}
+  .alerta-hor{background:var(--orange-bg); color:var(--orange-ink); border:1px solid var(--orange); border-radius:10px; padding:10px 14px; margin:0 0 10px; font-size:.92rem}
+  .leyenda{display:flex; gap:14px; flex-wrap:wrap; font-size:.82rem; color:var(--muted); margin:6px 0 10px}
+  .leyenda span{display:inline-flex; align-items:center; gap:6px}
+  .lg{display:inline-block; width:14px; height:14px; border-radius:4px}
+  .cuadricula-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--surface); margin-bottom:14px}
+  .cuadricula{display:grid; grid-template-columns:48px repeat(7, minmax(104px, 1fr)); min-width:820px}
+  .cab-esq,.cab-dia{position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--line); padding:8px 6px; text-align:center; z-index:2}
+  .cab-dia{display:flex; flex-direction:column; border-left:1px solid var(--line); text-transform:capitalize}
+  .cab-dia small{color:var(--muted)}
+  .eje{position:relative}
+  .eje span{position:absolute; right:6px; transform:translateY(-50%); font-size:.7rem; color:var(--muted)}
+  .col-dia{position:relative; border-left:1px solid var(--line);
+    background-image:repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent 48px)}
+  .bq{position:absolute; left:3px; right:3px; border-radius:6px; padding:2px 5px; overflow:hidden; font-size:.74rem; line-height:1.25; display:flex; flex-direction:column; border:1px solid transparent}
+  .bq b{font-weight:600; overflow:hidden; text-overflow:ellipsis}
+  .bq small{opacity:.85}
+  .bq.corto b{white-space:nowrap}
+  .eje span:first-child{transform:none; margin-top:3px}
+  .b-libre{background:rgba(46,158,91,.10); border:1px dashed rgba(46,158,91,.55); z-index:0}
+  .b-clase{background:var(--brand); color:#fff; z-index:1}
+  .b-rutina{background:var(--accent-bg); color:var(--ink); border-color:var(--accent); z-index:1}
+  .b-estudio{background:var(--orange-bg); color:var(--ink); border-color:var(--orange); border-left:4px solid var(--orange); z-index:2; cursor:pointer}
+  .b-refuerzo{background:transparent; color:var(--ink); border:1px dashed var(--orange); border-left:4px solid var(--orange); z-index:2; cursor:pointer}
+  .bq[data-bq]:hover,.bq[data-bq]:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  .leyenda .b-estudio{border-left-width:1px}
+  .leyenda .b-refuerzo{border-left-width:1px}
+  a.enlace-btn{display:inline-flex; align-items:center; text-decoration:none; padding:10px 16px; border-radius:10px; font-weight:600; width:auto}
+  #detalle-bloque h3{margin:0 0 4px}
+  @media (max-width:860px){
+    .chat.grande{height:calc(100vh - 330px); min-height:420px}
+  }
   @media (max-width:860px){
     .lateral{background:var(--side); border-top:3px solid var(--orange)}
     .menu a[aria-current="page"]{box-shadow:none; background:transparent; color:#fff}
@@ -494,19 +546,31 @@
     <!-- PLAN -->
     <section class="vista" id="v-plan" aria-labelledby="t-plan" hidden>
       <h1 id="t-plan">Plan de estudio</h1>
-      <p class="sub">Un plan de 7 días armado con reglas simples y con lo que tú indicas. Cada bloque dice por qué está ahí.</p>
-      <div class="col">
-        <section class="card" aria-labelledby="h-plan-asis">
-          <h2 id="h-plan-asis">Arma tu plan conversando</h2>
-          <p class="sub">El asistente te pregunta en qué horas puedes estudiar de lunes a domingo y qué haces en tu día a día. Con eso arma un horario con las horas libres, dando prioridad a las materias donde llevas menos porcentaje en Moodle.</p>
-          <div class="botones"><button type="button" class="btn-p" id="plan-asistente">Planear con el asistente</button></div>
-          <div id="plan-agenda"></div>
-        </section>
+      <p class="sub">Conversa con el asistente para armar tu horario. Cada bloque dice por qué está ahí.</p>
+      <div class="pestanas" role="tablist" aria-label="Plan de estudio">
+        <button type="button" role="tab" id="tab-conv" aria-selected="true" aria-controls="pan-conv">Conversación</button>
+        <button type="button" role="tab" id="tab-hor" aria-selected="false" aria-controls="pan-hor">Horario<span class="punto" id="punto-hor" hidden aria-label="Hay cambios"></span></button>
+      </div>
+      <div id="pan-conv" role="tabpanel" aria-labelledby="tab-conv"><div id="plan-chat-slot"></div></div>
+      <div id="pan-hor" role="tabpanel" aria-labelledby="tab-hor" hidden>
+        <div class="hor-cab">
+          <p class="sub" id="hor-resumen"></p>
+          <details class="pop" id="pop-calculo"><summary>ⓘ Cómo se calcula</summary><ul id="plan-sup" class="lista"></ul></details>
+        </div>
+        <div id="hor-avisos"></div>
+        <div class="leyenda" aria-label="Leyenda">
+          <span><i class="lg b-clase"></i>Clases (ERP)</span><span><i class="lg b-rutina"></i>Tu rutina</span>
+          <span><i class="lg b-estudio"></i>Estudio</span><span><i class="lg b-refuerzo"></i>Refuerzo</span><span><i class="lg b-libre"></i>Hora libre</span>
+        </div>
+        <div class="cuadricula-wrap"><div class="cuadricula" id="cuadricula"></div></div>
+        <section class="card" id="detalle-bloque" hidden aria-live="polite"></section>
+        <details class="pop pop-otros" id="hor-otros-det" hidden><summary id="hor-otros-sum">Otros pendientes</summary><div id="hor-otros"></div></details>
         <section class="card" aria-labelledby="h-plan-tg">
           <h2 id="h-plan-tg">Recordatorios por Telegram</h2>
           <div id="plan-telegram"><p class="vacio">Cargando…</p></div>
         </section>
-        <section class="card" aria-labelledby="h-plan-cfg">
+        <details class="pop pop-ajustes"><summary>Ajustes avanzados</summary>
+          <section class="card" aria-labelledby="h-plan-cfg">
           <h2 id="h-plan-cfg">Tus datos para el plan</h2>
           <form id="f-plan" novalidate>
             <fieldset class="grupo"><legend>¿Cuántos minutos puedes estudiar cada día? <small>(solo si no usas el asistente: si indicaste horas libres, se usan esas)</small></legend>
@@ -523,19 +587,8 @@
             <div class="botones"><button type="submit" class="btn-p" id="p-guardar">Guardar y recalcular</button></div>
             <p class="sub" id="p-msg" role="status"></p>
           </form>
-        </section>
-        <section class="card" aria-labelledby="h-plan-dias">
-          <h2 id="h-plan-dias">Tu semana</h2>
-          <div id="plan-dias"><p class="vacio">Cargando…</p></div>
-        </section>
-        <section class="card" id="card-plan-avisos" aria-labelledby="h-plan-av" hidden>
-          <h2 id="h-plan-av">Lo que no entró en el plan</h2>
-          <div id="plan-avisos"></div>
-        </section>
-        <section class="card" aria-labelledby="h-plan-sup">
-          <h2 id="h-plan-sup">Cómo se calcula</h2>
-          <ul id="plan-sup" class="lista"></ul>
-        </section>
+          </section>
+        </details>
       </div>
     </section>
 
@@ -708,6 +761,7 @@
     document.title = {inicio:'Inicio', materias:'Materias', agenda:'Agenda', novedades:'Novedades', plan:'Plan', datos:'Mis datos'}[v] + ' — AcademIA';
     if(v === 'datos') cargarMisDatos();
     if(v === 'novedades') cargarNovedades();
+    montarChat(v === 'plan');
     if(v === 'plan') cargarPlan();
     window.scrollTo(0, 0);
   }
@@ -1005,57 +1059,81 @@
   function filaItem(texto, boton){
     return el('div', {class:'plan-item'}, el('span', {text:texto}), boton || null);
   }
-  function pintarPlan(d){
-    const pl = d.plan, cont = $('plan-dias'); cont.replaceChildren();
-    if(!pl.configurado){
-      cont.append(el('p', {class:'vacio', text:'Cuéntale tu horario al asistente (botón de arriba) o indica abajo cuántos minutos puedes estudiar cada día. Sin eso no armo el plan: no supongo tu tiempo.'}));
-      if(pl.por_planificar.length){
-        cont.append(el('p', {class:'sub', text:'Esto es lo que habría que planificar (' + mins(pl.total_necesario_min) + ' en total):'}));
-        pl.por_planificar.forEach(x => cont.append(filaItem(x.item + ' · ' + x.materia + ' — ' + mins(x.minutos))));
-      }
-    }else{
-      cont.append(el('p', {class:'sub', text:'Necesitas ' + mins(pl.total_necesario_min) + ' y tienes ' + mins(pl.total_disponible_min) + ' disponibles esta semana.'}));
-      if(pl.prioridad_moodle && pl.prioridad_moodle.length)
-        cont.append(el('p', {class:'sub', text:'Prioridad por Moodle (menor porcentaje primero): ' + pl.prioridad_moodle.map(x => x.materia + ' ' + x.porcentaje + ' %').join(' · ')}));
-      pl.dias.forEach(dia => {
-        const f = new Date(dia.fecha + 'T00:00:00');
-        const cab = el('h3', {}, (NOM_DIA[dia.dia] || dia.dia) + ' ' + f.toLocaleDateString('es-EC',{day:'numeric',month:'short'}),
-                       el('small', {text:mins(dia.usado_min) + ' de ' + mins(dia.disponible_min)}));
-        const b = el('div', {class:'dia'}, cab);
-        if(!dia.bloques.length) b.append(el('p', {class:'vacio', text: dia.disponible_min ? 'Libre.' : 'Sin tiempo indicado.'}));
-        dia.bloques.forEach(bl => b.append(el('div', {class:'bloque'},
-          el('div', {class:'t'}, el('div', {text:(bl.inicio ? bl.inicio + '–' + bl.fin + ' · ' : '') + bl.item + ' — ' + mins(bl.minutos)}),
-             el('div', {class:'m', text:bl.materia}),
-             el('details', {class:'pq'}, el('summary', {text:'¿Por qué? y ¿cómo estudiarlo?'}),
-                el('div', {class:'m', text:bl.motivo}), el('div', {class:'m', text:'Cómo estudiarlo: ' + bl.recomendacion}))),
-          el('div', {class:'acc'}, bl.tipo === 'refuerzo' ? null : el('button', {type:'button', class:'btn-o', text:'Quitar', 'data-quitar':bl.clave})))));
-        cont.append(b);
-      });
+
+  // ---- Horario semanal (cuadrícula 07:00–24:00) ----
+  const H_INI = 7*60, H_FIN = 24*60, PPM = 0.8;
+  const tmin = t => { const [h, m] = t.split(':').map(Number); return h*60 + m; };
+  const hm = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+  let bloquesPlan = {};
+
+  function bloqueEl(clase, ini, fin, titulo, id){
+    const a = Math.max(ini, H_INI), b = Math.min(fin, H_FIN); if(b <= a) return null;
+    const e = el('div', {class:'bq ' + clase, style:'top:' + ((a-H_INI)*PPM) + 'px;height:' + ((b-a)*PPM) + 'px',
+                         title: titulo + ' · ' + hm(ini) + '–' + hm(fin)});
+    if((b-a) < 60) e.classList.add('corto');
+    if(clase !== 'b-libre'){
+      e.append(el('b', {text:titulo}));
+      if((b-a) >= 60) e.append(el('small', {text:hm(ini) + '–' + hm(fin)}));
     }
-    const av = $('plan-avisos'); av.replaceChildren(); let hay = false;
-    const seccion = (titulo, filas) => { if(!filas.length) return; hay = true; av.append(el('h3', {text:titulo})); filas.forEach(f => av.append(f)); };
-    seccion('No alcanza el tiempo', pl.no_alcanza.map(x => filaItem(x.item + ' · ' + x.materia + ' — faltan ' + mins(x.faltan_min) + (x.fecha ? ' (entrega ' + cuando(x.fecha).join(', ') + ')' : ''))));
+    if(id){ e.dataset.bq = id; e.tabIndex = 0; e.setAttribute('role', 'button'); }
+    return e;
+  }
+
+  function pintarGrilla(d){
+    const pl = d.plan, ag = d.agenda || {franjas:[], actividades:[], clases:[]};
+    bloquesPlan = {};
+    const res = $('hor-resumen');
+    if(!pl.configurado) res.textContent = 'Todavía no hay horas libres para estudiar. Cuéntale tu horario al asistente (pestaña Conversación) y arma tu plan.';
+    else res.textContent = 'Necesitas ' + mins(pl.total_necesario_min) + ' y tienes ' + mins(pl.total_disponible_min) + ' libres esta semana.'
+      + (pl.prioridad_moodle && pl.prioridad_moodle.length ? ' Prioridad por Moodle: ' + pl.prioridad_moodle.slice(0,2).map(x => x.materia + ' (' + x.porcentaje + ' %)').join(', ') + '.' : '');
+
+    const av = $('hor-avisos'); av.replaceChildren();
+    pl.no_alcanza.forEach(x => av.append(el('div', {class:'alerta-hor', role:'status'},
+      el('b', {text:'No alcanza el tiempo: '}), (x.item) + ' — faltan ' + mins(x.faltan_min) + (x.fecha ? ' antes de ' + cuando(x.fecha).join(', ') : '') + '. Pídele al asistente que agregue una franja.')));
+
+    const cu = $('cuadricula'); cu.replaceChildren();
+    cu.append(el('div', {class:'cab-esq'}));
+    pl.dias.forEach(dia => {
+      const f = new Date(dia.fecha + 'T00:00:00');
+      cu.append(el('div', {class:'cab-dia'}, el('b', {text:(NOM_DIA[dia.dia] || dia.dia).slice(0,3)}), el('small', {text:f.toLocaleDateString('es-EC',{day:'numeric',month:'short'})})));
+    });
+    const eje = el('div', {class:'eje', style:'height:' + ((H_FIN-H_INI)*PPM) + 'px'});
+    for(let h = H_INI/60; h < H_FIN/60; h++) eje.append(el('span', {style:'top:' + ((h*60-H_INI)*PPM) + 'px', text:hm(h*60)}));
+    cu.append(eje);
+    pl.dias.forEach((dia, di) => {
+      const col = el('div', {class:'col-dia', style:'height:' + ((H_FIN-H_INI)*PPM) + 'px'});
+      ag.franjas.filter(f => f.dia === dia.dia).forEach(f => col.append(bloqueEl('b-libre', tmin(f.inicio), tmin(f.fin), 'Libre')));
+      ag.clases.filter(c => c.dia === dia.dia).forEach(c => col.append(bloqueEl('b-clase', tmin(c.inicio), tmin(c.fin), c.materia)));
+      ag.actividades.filter(a => a.dia === dia.dia).forEach(a => col.append(bloqueEl('b-rutina', tmin(a.inicio), tmin(a.fin), a.nombre)));
+      dia.bloques.filter(b => b.inicio).forEach((b, bi) => {
+        const id = di + '-' + bi; bloquesPlan[id] = Object.assign({fecha:dia.fecha, dia:dia.dia}, b);
+        col.append(bloqueEl(b.tipo === 'refuerzo' ? 'b-refuerzo' : 'b-estudio', tmin(b.inicio), tmin(b.fin), b.item, id));
+      });
+      cu.append(col);
+    });
+    $('detalle-bloque').hidden = true;
+
+    const otros = $('hor-otros'); otros.replaceChildren(); let n = 0;
+    const seccion = (titulo, filas) => { if(!filas.length) return; n += filas.length; otros.append(el('h3', {text:titulo})); filas.forEach(f => otros.append(f)); };
     seccion('Sin espacio esta semana', pl.sin_espacio.map(x => filaItem(x.item + ' · ' + x.materia + ' — faltan ' + mins(x.faltan_min))));
-    seccion('Fuera de los 7 días', pl.fuera_del_plan.map(x => filaItem(x.item + (x.fecha ? ' — ' + cuando(x.fecha).join(', ') : ''))));
+    seccion('Próximamente (fuera de los 7 días)', pl.fuera_del_plan.map(x => filaItem(x.item + (x.fecha ? ' — ' + cuando(x.fecha).join(', ') : ''))));
     seccion('Sin verificar (no entran al plan; revísalas en Moodle)', pl.sin_verificar.map(x => filaItem(x.item + ' · ' + x.materia)));
     seccion('Quitados por ti', pl.quitados.map(x => filaItem(x.item, el('button', {type:'button', class:'btn-o', text:'Volver a incluir', 'data-incluir':x.clave}))));
-    $('card-plan-avisos').hidden = !hay;
+    $('hor-otros-det').hidden = !n; $('hor-otros-sum').textContent = 'Otros pendientes (' + n + ')';
     const sup = $('plan-sup'); sup.replaceChildren(); pl.supuestos.forEach(t => sup.append(el('li', {text:t})));
   }
 
-  function pintarAgenda(d){
-    const cont = $('plan-agenda'); cont.replaceChildren();
-    const ag = d.agenda || {franjas:[], actividades:[]};
-    if(!ag.franjas.length && !ag.actividades.length) return;
-    cont.append(el('h3', {text:'Tu horario guardado'}));
-    d.dias.forEach(dia => {
-      const fr = ag.franjas.filter(f => f.dia === dia).map(f => f.inicio + '–' + f.fin);
-      const ac = ag.actividades.filter(a => a.dia === dia).map(a => a.inicio + '–' + a.fin + ' ' + a.nombre);
-      if(!fr.length && !ac.length) return;
-      cont.append(filaItem((NOM_DIA[dia] || dia) + ': libre ' + (fr.join(', ') || '—') + (ac.length ? ' · ocupado: ' + ac.join(', ') : '')));
-    });
-    cont.append(el('p', {class:'sub', text:'Tus clases del ERP se descuentan solas. Para cambiar algo, díselo al asistente.'}));
+  function abrirDetalle(id){
+    const b = bloquesPlan[id]; if(!b) return;
+    const c = $('detalle-bloque'); c.replaceChildren(
+      el('h3', {text:b.item}),
+      el('p', {class:'sub', text:(NOM_DIA[b.dia] || b.dia) + ' ' + b.inicio + '–' + b.fin + ' · ' + mins(b.minutos) + (b.materia ? ' · ' + b.materia : '')}),
+      el('p', {text:'¿Por qué? ' + b.motivo}), el('p', {text:'Cómo estudiarlo: ' + b.recomendacion}),
+      b.tipo === 'refuerzo' ? null : el('div', {class:'botones'}, el('button', {type:'button', class:'btn-o', text:'Quitar del plan', 'data-quitar':b.clave})));
+    c.hidden = false; c.scrollIntoView({block:'nearest', behavior:'smooth'});
   }
+  $('cuadricula').addEventListener('click', e => { const q = e.target.closest('[data-bq]'); if(q) abrirDetalle(q.dataset.bq); });
+  $('cuadricula').addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ const q = e.target.closest('[data-bq]'); if(q){ e.preventDefault(); abrirDetalle(q.dataset.bq); } } });
 
   function pintarTelegram(d){
     const t = d.telegram, cont = $('plan-telegram'); cont.replaceChildren();
@@ -1078,19 +1156,15 @@
       el('div', {class:'botones'}, el('button', {type:'button', class:'btn-o', id:'tg-desvincular', text:'Desconectar Telegram'})),
       el('p', {class:'sub', id:'tg-msg', role:'status'}), nota);
   }
-
-  $('plan-asistente').addEventListener('click', () => {
-    if($('chat').hidden) $('fab').click();
-    preguntar('Quiero armar mi plan de estudio');
-  });
   $('plan-telegram').addEventListener('click', async e => {
     try{
       if(e.target.closest('#tg-vincular')){
         const d = await postPlan('/api/telegram/vincular', {});
-        const box = $('tg-enlace'); box.replaceChildren(
+        $('tg-enlace').replaceChildren(
           el('p', {class:'sub', text:'Abre este enlace, pulsa «Iniciar» en Telegram y vuelve aquí (el código vence en ' + d.vence_min + ' minutos).'}),
-          el('a', {href:d.enlace, target:'_blank', rel:'noopener noreferrer', class:'btn-o', text:'Abrir Telegram'}), ' ',
-          el('button', {type:'button', class:'btn-o', id:'tg-listo', text:'Ya lo conecté'}));
+          el('div', {class:'botones'},
+            el('a', {href:d.enlace, target:'_blank', rel:'noopener noreferrer', class:'btn-p enlace-btn', text:'Abrir Telegram'}),
+            el('button', {type:'button', class:'btn-o', id:'tg-listo', text:'Ya lo conecté'})));
       }else if(e.target.closest('#tg-listo')){ cargarPlan(); }
       else if(e.target.closest('#tg-desvincular')){
         if(!confirm('¿Desconectar Telegram? Dejarás de recibir recordatorios.')) return;
@@ -1105,14 +1179,51 @@
       planDatos.telegram = t; $('tg-msg').textContent = 'Guardado.';
     }catch(err){ mostrarAviso(err.message, true); }
   });
-  function pintarTodoPlan(d, conConfig){ planDatos = d; if(conConfig) pintarConfigPlan(d); pintarPlan(d); pintarAgenda(d); pintarTelegram(d); }
+
+  // ---- Pestañas Conversación | Horario ----
+  function mostrarPestana(cual){
+    const conv = cual === 'conv';
+    $('tab-conv').setAttribute('aria-selected', String(conv)); $('tab-hor').setAttribute('aria-selected', String(!conv));
+    $('pan-conv').hidden = !conv; $('pan-hor').hidden = conv;
+    if(!conv) $('punto-hor').hidden = true;
+  }
+  $('tab-conv').addEventListener('click', () => mostrarPestana('conv'));
+  $('tab-hor').addEventListener('click', () => mostrarPestana('hor'));
+  window.irAHorario = function(){ location.hash = '#plan'; mostrarPestana('hor'); };
+
+  // ---- El chat vive flotante, pero en Plan se muestra grande dentro de la pestaña ----
+  const SUG_BASE = ['¿Qué tareas tengo pendientes?', '¿Qué nota tengo en cada materia?', '¿Qué clases tengo esta semana?', 'Quiero descargar mi carné'];
+  const SUG_PLAN = ['Quiero armar mi plan de estudio', 'Agregar mi rutina (desayuno, almuerzo, gym…)', 'Cambiar mis horas libres', '¿Qué estudio hoy?'];
+  let chatEnPlan = false;
+  function setSugerencias(lista){
+    const box = $('sugerencias'); box.replaceChildren();
+    lista.forEach(t => box.append(el('button', {class:'sug', type:'button', text:t, onclick:'preguntar(this.textContent)'})));
+  }
+  function montarChat(enPlan){
+    const chat = $('chat');
+    if(enPlan === chatEnPlan) return;
+    chatEnPlan = enPlan;
+    if(enPlan){
+      $('plan-chat-slot').append(chat); chat.classList.add('grande'); chat.hidden = false; $('fab').hidden = true;
+      chat.querySelector('h2').textContent = 'Planifica con tu asistente';
+      chat.querySelector('header p').textContent = 'Te pregunto tus horas libres y tu rutina, y armo tu horario.';
+      setSugerencias(SUG_PLAN);
+    }else{
+      $('dlg-borrar').before(chat); chat.classList.remove('grande'); chat.hidden = true; $('fab').hidden = false;
+      $('fab').setAttribute('aria-expanded', 'false');
+      chat.querySelector('h2').textContent = 'Pregúntame lo que quieras';
+      chat.querySelector('header p').textContent = 'Te respondo con lo que leí de Moodle y del ERP.';
+      setSugerencias(SUG_BASE);
+    }
+  }
+  function pintarTodoPlan(d, conConfig){ planDatos = d; if(conConfig) pintarConfigPlan(d); pintarGrilla(d); pintarTelegram(d); }
 
   async function cargarPlan(){
     try{
       const r = await fetch('/api/plan');
       if(r.status === 401){ location = '/login'; return; }
       pintarTodoPlan(await r.json(), true);
-    }catch(e){ $('plan-dias').replaceChildren(el('p', {class:'vacio', text:'No se pudo cargar: ' + e.message})); }
+    }catch(e){ $('hor-resumen').textContent = 'No se pudo cargar: ' + e.message; }
   }
   async function postPlan(ruta, cuerpo){
     const r = await fetch(ruta, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cuerpo)});
@@ -1256,6 +1367,9 @@
     if(acciones && acciones.includes('carnet')){
       m.append(el('button', {type:'button', class:'btn-p btn-carnet', text:'Descargar carné', onclick:'descargarCarnet(this)'}));
     }
+    if(acciones && acciones.includes('horario')){
+      m.append(el('button', {type:'button', class:'btn-p btn-carnet', text:'Ver mi horario', onclick:'irAHorario()'}));
+    }
     if(fuentes && fuentes.length){
       const f = el('div', {class:'fuentes'});
       for(const x of fuentes) f.append(el('span', {class:'fuente', title:'De dónde salió este dato', text: x.fuente + (x.hora ? ' · leído a las ' + x.hora : '')}));
@@ -1277,7 +1391,10 @@
       const d = await r.json();
       esc.remove();
       if(d.error) agregar('ia', el('div', {class:'burbuja err', text:d.error}));
-      else agregar('ia', el('div', {class:'burbuja'}, textoRico(d.respuesta)), d.fuentes, d.acciones);
+      else{
+        agregar('ia', el('div', {class:'burbuja'}, textoRico(d.respuesta)), d.fuentes, d.acciones);
+        if((d.acciones || []).includes('horario')){ cargarPlan(); if($('pan-hor').hidden) $('punto-hor').hidden = false; }
+      }
     }catch(e){
       esc.remove(); agregar('ia', el('div', {class:'burbuja err', text:'No se pudo contactar al servidor: ' + e.message}));
     }
@@ -1310,7 +1427,7 @@
     if(abrir) $('entrada').focus();
   });
   document.addEventListener('keydown', ev => {
-    if(ev.key === 'Escape' && !$('chat').hidden){ $('chat').hidden = true; $('fab').setAttribute('aria-expanded','false'); $('fab').focus(); }
+    if(ev.key === 'Escape' && !$('chat').hidden && !$('chat').classList.contains('grande')){ $('chat').hidden = true; $('fab').setAttribute('aria-expanded','false'); $('fab').focus(); }
   });
 
   irA();

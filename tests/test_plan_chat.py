@@ -64,7 +64,7 @@ def test_el_asistente_despacha_las_herramientas_del_plan(app_web):
     a.engine.conn = get_connection()
     try:
         out = a._ejecutar_herramienta("guardar_franjas_libres", {"franjas": [{"dia": "viernes", "inicio": "19:00", "fin": "21:00"}]})
-        assert "1 franja" in out
+        assert "1 franja" in out and a.acciones == ["horario"]       # la interfaz mostrara «Ver mi horario»
         out = a._ejecutar_herramienta("guardar_franjas_libres", {"franjas": "no es lista"})
         assert out.startswith("No se guardó nada")
     finally:

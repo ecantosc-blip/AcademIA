@@ -63,3 +63,9 @@ def test_hora_libre_descuenta_clases_y_actividades(conn):
 def test_sin_franjas_no_hay_ventanas_ni_se_supone_nada(conn):
     assert not A.hay_franjas(conn, EST)
     assert all(v == [] for v in A.ventanas_efectivas(conn, EST).values())
+
+
+def test_clases_detalle_para_mostrar_en_el_horario(conn):
+    cl = A.clases_detalle(conn, EST)
+    assert {"dia": "lunes", "inicio": "18:00", "fin": "20:00", "materia": "SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL"} in cl
+    assert [c["dia"] for c in cl] == sorted((c["dia"] for c in cl), key=A.DIAS.index)

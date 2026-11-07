@@ -544,7 +544,7 @@ def _vista_plan(conn, est, _cuerpo=None):
     from core import agenda_personal, telegram
     return {"plan": planificador.generar(conn, est), "preferencias": preferencias.obtener(conn, est),
             "materias": materias, "dias": preferencias.DIAS,
-            "agenda": agenda_personal.listar(conn, est),
+            "agenda": dict(agenda_personal.listar(conn, est), clases=agenda_personal.clases_detalle(conn, est)),
             "telegram": dict(telegram.estado(conn, est), configurado=bool(os.getenv("TELEGRAM_BOT_TOKEN")))}
 
 

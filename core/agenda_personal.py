@@ -123,6 +123,22 @@ def _clases(conn, est) -> dict:
     return por_dia
 
 
+def clases_detalle(conn, est) -> list:
+    """Clases del ERP para mostrarlas en el horario: [{dia, inicio, fin, materia}] (solo lectura)."""
+    salida = []
+    for r in conn.execute("""
+            SELECT DISTINCT h.dia, h.hora_inicio, h.hora_fin, m.nombre FROM horario h
+            JOIN materia m ON m.id = h.materia_id
+            JOIN matricula mat ON mat.materia_id = h.materia_id AND mat.estudiante_id = ?""", (est,)):
+        try:
+            dia, ini, fin = normalizar_dia(r["dia"]), a_minutos(r["hora_inicio"]), a_minutos(r["hora_fin"])
+        except ValueError:
+            continue
+        if fin > ini:
+            salida.append({"dia": dia, "inicio": a_texto(ini), "fin": a_texto(fin), "materia": r["nombre"]})
+    return sorted(salida, key=lambda c: (DIAS.index(c["dia"]), c["inicio"]))
+
+
 def _restar(libres, ocupados):
     resultado = []
     for ini, fin in libres:

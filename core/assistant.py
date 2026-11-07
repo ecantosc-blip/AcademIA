@@ -211,7 +211,10 @@ class AssistantLLM:
                     "Dile al estudiante que lo pulse para bajar su carne en PDF.")
         if nombre in plan_chat.NOMBRES:
             try:
-                return plan_chat.ejecutar(nombre, self.engine.conn, self.engine.estudiante_id, args)
+                resultado = plan_chat.ejecutar(nombre, self.engine.conn, self.engine.estudiante_id, args)
+                if nombre != "ver_horario_personal" and "horario" not in self.acciones:
+                    self.acciones.append("horario")      # la interfaz muestra «Ver mi horario»
+                return resultado
             except Exception as e:
                 print(f"[ERROR en herramienta del plan '{nombre}']: {type(e).__name__}")
                 return f"Error ejecutando {nombre}: {type(e).__name__}"
