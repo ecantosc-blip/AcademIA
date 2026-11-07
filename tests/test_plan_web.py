@@ -129,3 +129,53 @@ def test_assets_de_marca_y_csp_locales():
     assert c.get("/static/fonts/poppins-latin-400-normal.woff2").status_code == 200
     csp = c.get("/login").headers.get("Content-Security-Policy", "")
     assert "font-src 'self'" in csp and "fonts.googleapis" not in csp
+
+
+# ------------------------------------------------------------ foto de perfil
+BASE = "https://aula.unemi.edu.ec"
+
+
+def test_url_de_foto_solo_del_mismo_sitio_y_https(app_web):
+    f = app_web._url_foto_valida
+    ok = BASE + "/pluginfile.php/5/user/icon/f1"
+    assert f(ok, BASE) == ok
+    assert f("http://aula.unemi.edu.ec/pluginfile.php/5/user/icon/f1", BASE) == ""
+    assert f("https://otro-sitio.com/pluginfile.php/5/user/icon/f1", BASE) == ""
+    assert f(BASE + "/theme/image.php/boost/core/1/u/f1", BASE) == ""
+    assert f(None, BASE) == "" and f("no es url", BASE) == ""
+
+
+class _Resp:
+    def __init__(self, status=200, tipo="image/jpeg", datos=b"JPG"):
+        self.status_code, self.headers = status, {"Content-Type": tipo}
+        self.raw = mock.Mock(read=mock.Mock(return_value=datos))
+
+
+def _foto(app_web, resp, foto_url=BASE + "/pluginfile.php/5/user/icon/f1"):
+    ses = dict(SESION, foto_url=foto_url)
+    with mock.patch.object(app_web, "get_session", return_value=("s", ses)), \
+         mock.patch.object(app_web.requests, "get", return_value=resp) as g:
+        r = app_web.app.test_client().get("/api/foto")
+    return r, g
+
+
+def test_foto_se_reenvia_con_el_token_solo_en_el_servidor(app_web):
+    r, g = _foto(app_web, _Resp())
+    assert r.status_code == 200 and r.data == b"JPG" and r.mimetype == "image/jpeg"
+    assert r.headers["Cache-Control"] == "no-store"
+    url = g.call_args.args[0]
+    assert "/webservice/pluginfile.php/" in url and g.call_args.kwargs["params"] == {"token": "m"}
+    assert g.call_args.kwargs["allow_redirects"] is False
+
+
+def test_foto_rechaza_lo_que_no_es_imagen_o_es_enorme(app_web):
+    assert _foto(app_web, _Resp(tipo="text/html"))[0].status_code == 404
+    assert _foto(app_web, _Resp(tipo="image/svg+xml"))[0].status_code == 404
+    assert _foto(app_web, _Resp(status=303))[0].status_code == 404
+    assert _foto(app_web, _Resp(datos=b"x" * (app_web.FOTO_MAX_BYTES + 1)))[0].status_code == 404
+    assert _foto(app_web, _Resp(), foto_url="")[0].status_code == 404
+
+
+def test_foto_sin_sesion_da_401(app_web):
+    with mock.patch.object(app_web, "get_session", return_value=(None, None)):
+        assert app_web.app.test_client().get("/api/foto").status_code == 401

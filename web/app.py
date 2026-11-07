@@ -199,6 +199,55 @@ def get_asistente_para(sid: str, estudiante_id: int) -> AssistantLLM:
     return ASSISTANTS[sid]
 
 
+
+def _url_foto_valida(url, base_url: str) -> str:
+    """Devuelve la URL de la foto de perfil solo si es https y del mismo sitio de Moodle.
+
+    Se guarda sin token. Que sea del mismo host evita que el servidor pida una dirección
+    ajena (SSRF) o envíe el token de Moodle a otro sitio.
+    """
+    try:
+        u, b = urlparse(url or ""), urlparse(base_url or "")
+    except ValueError:
+        return ""
+    if u.scheme != "https" or not u.hostname or u.hostname != b.hostname:
+        return ""
+    if "/theme/image.php" in u.path:   # imagen genérica de Moodle: mejor mostrar las iniciales
+        return ""
+    return url
+
+
+FOTO_MAX_BYTES = 2 * 1024 * 1024
+
+
+@app.route("/api/foto")
+def api_foto():
+    """Foto de perfil del propio estudiante, pedida a Moodle desde el servidor.
+
+    El token de Moodle nunca llega al navegador. La foto no se guarda en la base de datos:
+    solo se reenvía, y como todo /api/ sale sin caché.
+    """
+    sid, sesion = get_session()
+    if not sesion:
+        return jsonify({"error": "Sesión no válida."}), 401
+    url = sesion.get("foto_url") or ""
+    if not url:
+        return ("", 404)
+    pedido = url.replace("/pluginfile.php/", "/webservice/pluginfile.php/", 1)
+    try:
+        r = requests.get(pedido, params={"token": sesion["moodle_token"]}, timeout=8,
+                         allow_redirects=False, stream=True)
+        tipo = (r.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        if r.status_code != 200 or not tipo.startswith("image/") or tipo == "image/svg+xml":
+            return ("", 404)
+        datos = r.raw.read(FOTO_MAX_BYTES + 1, decode_content=True)
+        if len(datos) > FOTO_MAX_BYTES:
+            return ("", 404)
+    except requests.RequestException:
+        return ("", 404)
+    return Response(datos, mimetype=tipo)   # /api/* ya sale con Cache-Control: no-store
+
+
 @app.route("/")
 def index():
     sid, sesion = get_session()
@@ -209,7 +258,8 @@ def index():
     aviso = sesion.pop("aviso_sync", None)
     if aviso:
         sessions_store.guardar(sid, sesion)
-    return render_template("index.html", nombre=sesion.get("nombre", ""), aviso=aviso)
+    return render_template("index.html", nombre=sesion.get("nombre", ""), aviso=aviso,
+                           tiene_foto=bool(sesion.get("foto_url")))
 
 
 @app.route("/login", methods=["GET"])
@@ -340,6 +390,7 @@ def login_submit():
         "aviso_sync": " ".join(avisos),
         "estudiante_id": estudiante_id,
         "nombre": nombre,
+        "foto_url": _url_foto_valida(info.get("userpictureurl"), moodle_base_url),
         "moodle_token": moodle_token,            # token de sesion; NO se guarda ninguna contraseña
         "sga_access_token": sga.access_token,   # ya actualizado si hubo cambio de perfil
         "sga_refresh_token": sga.refresh_token,  # idem
