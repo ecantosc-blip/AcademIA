@@ -197,15 +197,17 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
         # Refuerzo: un bloque diario en las materias con menor porcentaje de Moodle, solo con el tiempo que sobra.
         debiles = sorted((m for m, pu in puestos.items() if pu <= REFUERZO_MAX_MATERIAS), key=lambda m: puestos[m])
         nombres = {r["id"]: r["nombre"] for r in conn.execute("SELECT id, nombre FROM materia")}
-        for i, d in enumerate(calendario):
+        puestos_dados = 0
+        for d in calendario:
             hueco = next((v for v in ventanas[d] if v[1] - v[0] >= 30), None)
             if not debiles or hueco is None:
                 continue
-            mid = debiles[i % len(debiles)]
+            mid = debiles[puestos_dados % len(debiles)]     # alterna empezando por la de menor porcentaje
+            puestos_dados += 1
             trozos, _ = _asignar([hueco], min(REFUERZO_MIN, hueco[1] - hueco[0]), con_horas)
             for ini, fin, toma in trozos:
                 bloques[d].append({
-                    "clave": f"r:{mid}", "item": f"Refuerzo: {nombres.get(mid, 'materia')}", "materia": nombres.get(mid),
+                    "clave": f"r:{mid}", "item": f"Refuerzo: {nombres.get(mid, 'materia')}", "materia": None,
                     "minutos": toma, "tipo": "refuerzo", "inicio": ini, "fin": fin,
                     "motivo": (f"Te sobra tiempo y en Moodle llevas {promedios[mid]:.0f} % en esta materia, "
                                f"una de las más bajas de las que cursas."),

@@ -541,8 +541,11 @@ def _vista_plan(conn, est, _cuerpo=None):
     dif = preferencias.dificultades(conn, est)
     for m in materias:
         m["dificultad"] = dif.get(m["id"])
+    from core import agenda_personal, telegram
     return {"plan": planificador.generar(conn, est), "preferencias": preferencias.obtener(conn, est),
-            "materias": materias, "dias": preferencias.DIAS}
+            "materias": materias, "dias": preferencias.DIAS,
+            "agenda": agenda_personal.listar(conn, est),
+            "telegram": dict(telegram.estado(conn, est), configurado=bool(os.getenv("TELEGRAM_BOT_TOKEN")))}
 
 
 @app.route("/api/plan")
@@ -557,6 +560,52 @@ def api_plan_preferencias():
         preferencias.guardar_todo(conn, est, d)
         return _vista_plan(conn, est)
     return _con_estudiante(guardar)
+
+
+# ---------------------------------------------------------------- horario personal y Telegram
+@app.route("/api/agenda", methods=["POST"])
+def api_agenda():
+    """Guarda a mano las franjas libres y/o las actividades (el asistente usa las mismas funciones)."""
+    def guardar(conn, est, d):
+        from core import agenda_personal
+        if "franjas" in d:
+            agenda_personal.guardar_franjas(conn, est, d["franjas"])
+        if "actividades" in d:
+            agenda_personal.guardar_actividades(conn, est, d["actividades"])
+        return _vista_plan(conn, est)
+    return _con_estudiante(guardar)
+
+
+@app.route("/api/telegram/vincular", methods=["POST"])
+def api_telegram_vincular():
+    def crear(conn, est, _d):
+        from core import telegram
+        if not os.getenv("TELEGRAM_BOT_TOKEN"):
+            raise ValueError("Los recordatorios por Telegram no están activados en este servidor.")
+        bot = telegram.usuario_bot(os.getenv("TELEGRAM_BOT_USERNAME"))
+        if not bot:
+            raise ValueError("El bot de Telegram todavía no está listo. Inténtalo en unos segundos.")
+        codigo = telegram.crear_codigo(conn, est)
+        return {"enlace": f"https://t.me/{bot}?start={codigo}", "bot": bot, "vence_min": telegram.CODIGO_VIGENCIA_MIN}
+    return _con_estudiante(crear)
+
+
+@app.route("/api/telegram/preferencias", methods=["POST"])
+def api_telegram_preferencias():
+    def guardar(conn, est, d):
+        from core import telegram
+        telegram.guardar_preferencias(conn, est, d.get("activo"), d.get("avisar_min"))
+        return _vista_plan(conn, est)["telegram"]
+    return _con_estudiante(guardar)
+
+
+@app.route("/api/telegram/desvincular", methods=["POST"])
+def api_telegram_desvincular():
+    def borrar(conn, est, _d):
+        from core import telegram
+        telegram.desvincular(conn, est)
+        return _vista_plan(conn, est)["telegram"]
+    return _con_estudiante(borrar)
 
 
 @app.route("/api/plan/excluir", methods=["POST"])
@@ -857,9 +906,21 @@ def chat_limpiar():
     return jsonify({"ok": True})
 
 
+def _iniciar_recordatorios():
+    """Hilo del bot de Telegram (solo si hay TELEGRAM_BOT_TOKEN; con recarga de debug, solo en el proceso hijo)."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not token:
+        return
+    if os.getenv("FLASK_DEBUG") == "1" and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        return
+    from core.trabajador import Trabajador
+    Trabajador(token).start()
+
+
 if __name__ == "__main__":
     puerto = int(os.getenv("PORT", "5000"))
     host = os.getenv("HOST", "127.0.0.1")
+    _iniciar_recordatorios()
 
     if os.getenv("FLASK_DEBUG") == "1":
         # Solo para desarrollo: recarga sola al editar codigo. NUNCA en un

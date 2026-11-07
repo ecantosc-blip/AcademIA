@@ -496,10 +496,20 @@
       <h1 id="t-plan">Plan de estudio</h1>
       <p class="sub">Un plan de 7 días armado con reglas simples y con lo que tú indicas. Cada bloque dice por qué está ahí.</p>
       <div class="col">
+        <section class="card" aria-labelledby="h-plan-asis">
+          <h2 id="h-plan-asis">Arma tu plan conversando</h2>
+          <p class="sub">El asistente te pregunta en qué horas puedes estudiar de lunes a domingo y qué haces en tu día a día. Con eso arma un horario con las horas libres, dando prioridad a las materias donde llevas menos porcentaje en Moodle.</p>
+          <div class="botones"><button type="button" class="btn-p" id="plan-asistente">Planear con el asistente</button></div>
+          <div id="plan-agenda"></div>
+        </section>
+        <section class="card" aria-labelledby="h-plan-tg">
+          <h2 id="h-plan-tg">Recordatorios por Telegram</h2>
+          <div id="plan-telegram"><p class="vacio">Cargando…</p></div>
+        </section>
         <section class="card" aria-labelledby="h-plan-cfg">
           <h2 id="h-plan-cfg">Tus datos para el plan</h2>
           <form id="f-plan" novalidate>
-            <fieldset class="grupo"><legend>¿Cuántos minutos puedes estudiar cada día?</legend>
+            <fieldset class="grupo"><legend>¿Cuántos minutos puedes estudiar cada día? <small>(solo si no usas el asistente: si indicaste horas libres, se usan esas)</small></legend>
               <div class="rejilla" id="p-disp"></div></fieldset>
             <fieldset class="grupo"><legend>Estimaciones</legend>
               <label class="campo">Minutos por tarea <input type="number" min="15" max="720" step="15" id="p-tarea"></label>
@@ -998,13 +1008,15 @@
   function pintarPlan(d){
     const pl = d.plan, cont = $('plan-dias'); cont.replaceChildren();
     if(!pl.configurado){
-      cont.append(el('p', {class:'vacio', text:'Indica arriba cuántos minutos puedes estudiar cada día y guarda. Sin eso no armo el plan: no supongo tu tiempo.'}));
+      cont.append(el('p', {class:'vacio', text:'Cuéntale tu horario al asistente (botón de arriba) o indica abajo cuántos minutos puedes estudiar cada día. Sin eso no armo el plan: no supongo tu tiempo.'}));
       if(pl.por_planificar.length){
         cont.append(el('p', {class:'sub', text:'Esto es lo que habría que planificar (' + mins(pl.total_necesario_min) + ' en total):'}));
         pl.por_planificar.forEach(x => cont.append(filaItem(x.item + ' · ' + x.materia + ' — ' + mins(x.minutos))));
       }
     }else{
       cont.append(el('p', {class:'sub', text:'Necesitas ' + mins(pl.total_necesario_min) + ' y tienes ' + mins(pl.total_disponible_min) + ' disponibles esta semana.'}));
+      if(pl.prioridad_moodle && pl.prioridad_moodle.length)
+        cont.append(el('p', {class:'sub', text:'Prioridad por Moodle (menor porcentaje primero): ' + pl.prioridad_moodle.map(x => x.materia + ' ' + x.porcentaje + ' %').join(' · ')}));
       pl.dias.forEach(dia => {
         const f = new Date(dia.fecha + 'T00:00:00');
         const cab = el('h3', {}, (NOM_DIA[dia.dia] || dia.dia) + ' ' + f.toLocaleDateString('es-EC',{day:'numeric',month:'short'}),
@@ -1012,9 +1024,11 @@
         const b = el('div', {class:'dia'}, cab);
         if(!dia.bloques.length) b.append(el('p', {class:'vacio', text: dia.disponible_min ? 'Libre.' : 'Sin tiempo indicado.'}));
         dia.bloques.forEach(bl => b.append(el('div', {class:'bloque'},
-          el('div', {class:'t'}, el('div', {text:bl.item + ' — ' + mins(bl.minutos)}), el('div', {class:'m', text:bl.materia}),
-             el('details', {class:'pq'}, el('summary', {text:'¿Por qué?'}), el('div', {class:'m', text:bl.motivo}))),
-          el('div', {class:'acc'}, el('button', {type:'button', class:'btn-o', text:'Quitar', 'data-quitar':bl.clave})))));
+          el('div', {class:'t'}, el('div', {text:(bl.inicio ? bl.inicio + '–' + bl.fin + ' · ' : '') + bl.item + ' — ' + mins(bl.minutos)}),
+             el('div', {class:'m', text:bl.materia}),
+             el('details', {class:'pq'}, el('summary', {text:'¿Por qué? y ¿cómo estudiarlo?'}),
+                el('div', {class:'m', text:bl.motivo}), el('div', {class:'m', text:'Cómo estudiarlo: ' + bl.recomendacion}))),
+          el('div', {class:'acc'}, bl.tipo === 'refuerzo' ? null : el('button', {type:'button', class:'btn-o', text:'Quitar', 'data-quitar':bl.clave})))));
         cont.append(b);
       });
     }
@@ -1028,7 +1042,70 @@
     $('card-plan-avisos').hidden = !hay;
     const sup = $('plan-sup'); sup.replaceChildren(); pl.supuestos.forEach(t => sup.append(el('li', {text:t})));
   }
-  function pintarTodoPlan(d, conConfig){ planDatos = d; if(conConfig) pintarConfigPlan(d); pintarPlan(d); }
+
+  function pintarAgenda(d){
+    const cont = $('plan-agenda'); cont.replaceChildren();
+    const ag = d.agenda || {franjas:[], actividades:[]};
+    if(!ag.franjas.length && !ag.actividades.length) return;
+    cont.append(el('h3', {text:'Tu horario guardado'}));
+    d.dias.forEach(dia => {
+      const fr = ag.franjas.filter(f => f.dia === dia).map(f => f.inicio + '–' + f.fin);
+      const ac = ag.actividades.filter(a => a.dia === dia).map(a => a.inicio + '–' + a.fin + ' ' + a.nombre);
+      if(!fr.length && !ac.length) return;
+      cont.append(filaItem((NOM_DIA[dia] || dia) + ': libre ' + (fr.join(', ') || '—') + (ac.length ? ' · ocupado: ' + ac.join(', ') : '')));
+    });
+    cont.append(el('p', {class:'sub', text:'Tus clases del ERP se descuentan solas. Para cambiar algo, díselo al asistente.'}));
+  }
+
+  function pintarTelegram(d){
+    const t = d.telegram, cont = $('plan-telegram'); cont.replaceChildren();
+    const nota = el('p', {class:'sub', text:'El aviso lleva la hora, los minutos y el nombre de la tarea. Telegram no cifra de extremo a extremo los mensajes de los bots. Puedes desconectarte cuando quieras (también con /stop en el chat del bot).'});
+    if(!t.configurado){
+      cont.append(el('p', {class:'vacio', text:'Los recordatorios por Telegram no están activados en este servidor.'}), nota); return;
+    }
+    if(!t.vinculado){
+      cont.append(el('p', {class:'sub', text:'Recibe un mensaje unos minutos antes de cada bloque de estudio de tu plan.'}),
+        el('div', {class:'botones'}, el('button', {type:'button', class:'btn-p', id:'tg-vincular', text:'Conectar Telegram'})),
+        el('div', {id:'tg-enlace'}), nota);
+      return;
+    }
+    const sel = el('select', {id:'tg-min'});
+    [5,10,15,30].forEach(x => sel.append(el('option', {value:x, text:x + ' minutos antes'})));
+    sel.value = t.avisar_min;
+    const act = el('input', {type:'checkbox', id:'tg-activo'}); act.checked = t.activo;
+    cont.append(el('p', {class:'sub', text:'Telegram conectado.'}),
+      el('label', {class:'campo'}, 'Avisarme', sel), el('label', {class:'chk'}, act, 'Recibir recordatorios'),
+      el('div', {class:'botones'}, el('button', {type:'button', class:'btn-o', id:'tg-desvincular', text:'Desconectar Telegram'})),
+      el('p', {class:'sub', id:'tg-msg', role:'status'}), nota);
+  }
+
+  $('plan-asistente').addEventListener('click', () => {
+    if($('chat').hidden) $('fab').click();
+    preguntar('Quiero armar mi plan de estudio');
+  });
+  $('plan-telegram').addEventListener('click', async e => {
+    try{
+      if(e.target.closest('#tg-vincular')){
+        const d = await postPlan('/api/telegram/vincular', {});
+        const box = $('tg-enlace'); box.replaceChildren(
+          el('p', {class:'sub', text:'Abre este enlace, pulsa «Iniciar» en Telegram y vuelve aquí (el código vence en ' + d.vence_min + ' minutos).'}),
+          el('a', {href:d.enlace, target:'_blank', rel:'noopener noreferrer', class:'btn-o', text:'Abrir Telegram'}), ' ',
+          el('button', {type:'button', class:'btn-o', id:'tg-listo', text:'Ya lo conecté'}));
+      }else if(e.target.closest('#tg-listo')){ cargarPlan(); }
+      else if(e.target.closest('#tg-desvincular')){
+        if(!confirm('¿Desconectar Telegram? Dejarás de recibir recordatorios.')) return;
+        const t = await postPlan('/api/telegram/desvincular', {}); planDatos.telegram = t; pintarTelegram(planDatos);
+      }
+    }catch(err){ mostrarAviso(err.message, true); }
+  });
+  $('plan-telegram').addEventListener('change', async e => {
+    if(!e.target.closest('#tg-min, #tg-activo')) return;
+    try{
+      const t = await postPlan('/api/telegram/preferencias', {avisar_min:Number($('tg-min').value), activo:$('tg-activo').checked});
+      planDatos.telegram = t; $('tg-msg').textContent = 'Guardado.';
+    }catch(err){ mostrarAviso(err.message, true); }
+  });
+  function pintarTodoPlan(d, conConfig){ planDatos = d; if(conConfig) pintarConfigPlan(d); pintarPlan(d); pintarAgenda(d); pintarTelegram(d); }
 
   async function cargarPlan(){
     try{

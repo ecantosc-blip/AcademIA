@@ -347,3 +347,21 @@ La interfaz usa los colores del manual de marca de la UNEMI (azul #002E45 y
 naranja #FF6900) y la tipografía Poppins, alojada en `web/static/fonts/` (sin
 CDN). El tigre de `web/static/` se usa recortado, sin deformar ni recolorear.
 Es un proyecto académico de titulación, no un sitio oficial de la UNEMI.
+
+## Plan conversacional y recordatorios por Telegram
+
+**Plan con el asistente.** En *Plan* > «Planear con el asistente», el chatbot pregunta en qué horas
+puedes estudiar de lunes a domingo y qué haces en tu día a día, te resume lo entendido y, solo cuando
+confirmas, lo guarda. El plan lo calcula el código (no el modelo): horas libres = tus franjas − clases
+del ERP − tus actividades. Las dos materias con menor porcentaje **en Moodle** se adelantan unos días
+(nunca pasan por encima de lo vencido) y, si sobra tiempo, hay un refuerzo diario de 45 min. Si Moodle
+no informa el porcentaje de una materia, no se supone nada. Tablas nuevas: `franja_libre`, `actividad`.
+
+**Recordatorios por Telegram (opcional).**
+1. En Telegram habla con `@BotFather`, envía `/newbot` y copia el token.
+2. Ponlo en `.env` como `TELEGRAM_BOT_TOKEN=...` (nunca lo subas a GitHub) y reinicia la app.
+3. En *Plan* > «Conectar Telegram» pulsa el enlace, luego «Iniciar» en Telegram. Listo.
+
+El aviso llega unos minutos antes de cada bloque, una sola vez; `/stop` o «Desconectar» lo borran.
+El mensaje lleva hora, minutos y nombre de la tarea (Telegram no cifra de extremo a extremo los bots).
+Limitaciones: los avisos solo salen mientras la app está encendida y usan lo último que sincronizaste.
