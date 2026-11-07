@@ -14,10 +14,19 @@ Como funciona (todo visible para el estudiante, nada de modelos ocultos):
   4. Se reparte lo mas urgente primero, dia a dia, sin pasar de la fecha limite. Si algo no cabe antes
      de vencer, se dice cuantos minutos faltan en vez de esconderlo.
   5. Cada bloque trae su "motivo". Lo que la persona quita del plan se puede volver a incluir.
+
+Plan con horas (Fase 4): si la persona dijo en que franjas puede estudiar (con el asistente), el plan
+usa esas horas menos sus clases y actividades, y cada bloque trae hora de inicio y fin. Ademas:
+  * Las dos materias con menor porcentaje en MOODLE se adelantan hasta 2 y 1 dias en el orden (un
+    empujon suave: nunca pasa por encima de algo ya vencido ni cambia las fechas limite).
+  * Si sobra tiempo, se agrega un bloque de refuerzo diario (45 min como maximo) en esas materias.
+  * Cada bloque trae una recomendacion de estudio fija (no la inventa un modelo).
 """
 import re
 from datetime import timedelta
 
+from core import agenda_personal as AP
+from core import notas_moodle
 from core import preferencias as P
 from core.cambios import _fecha_humana
 from core.tareas import clasificar_tareas
@@ -68,10 +77,48 @@ def _elementos(conn, est, ahora, prefs, dif, grupos):
     return elementos, sin_verificar
 
 
+REFUERZO_MIN = 45
+REFUERZO_MAX_MATERIAS = 2
+RECOMENDACION = {
+    "tarea": "Lee la consigna completa, divide el trabajo en partes y empieza por la más difícil. Haz una pausa de 5 minutos cada 25-50.",
+    "evaluacion": "Repasa tus apuntes y resuelve ejercicios sin mirar la respuesta; al final explica el tema en voz alta como si se lo enseñaras a alguien.",
+    "refuerzo": "Revisa el tema que menos te quedó claro en clase, haz 3 a 5 ejercicios y anota tus dudas para preguntarlas.",
+}
+
+
+def _aplicar_clip(ventanas, ahora_dt):
+    """Hoy no se puede estudiar en el pasado: se recorta lo que ya paso (redondeado a 5 min)."""
+    hoy_min = ahora_dt.hour * 60 + ahora_dt.minute
+    hoy_min += (-hoy_min) % 5
+    return [[max(i, hoy_min), f] for i, f in ventanas if f - max(i, hoy_min) >= BLOQUE_MIN]
+
+
+def _asignar(ventanas, falta, expone_horas):
+    """Toma hasta `falta` minutos de las ventanas de un dia, en orden. Devuelve [(inicio|None, fin|None, minutos)]."""
+    trozos = []
+    for v in ventanas:
+        if falta <= 0:
+            break
+        libre = v[1] - v[0]
+        toma = min(falta, libre)
+        if toma < BLOQUE_MIN and toma < falta:
+            continue
+        if toma <= 0:
+            continue
+        ini = v[0]
+        v[0] += toma
+        falta -= toma
+        trozos.append((AP.a_texto(ini) if expone_horas else None, AP.a_texto(ini + toma) if expone_horas else None, toma))
+    ventanas[:] = [v for v in ventanas if v[1] - v[0] >= BLOQUE_MIN]
+    return trozos, falta
+
+
 def _motivo(e):
     dificultad = (f"dificultad {NOMBRE_DIFICULTAD[e['nivel']]}" if e["indicada"]
                   else "dificultad media (no la indicaste)")
     estimado = f"Estimado: {e['minutos']} min ({e['base']} min base, {dificultad})."
+    if e.get("empujon"):
+        estimado += " Se adelantó porque en Moodle es una de tus materias con menor porcentaje."
     if e["vencida"]:
         return f"Ya venció y Moodle la indica sin entregar; conviene resolverla primero. {estimado}"
     if e["tipo"] == "evaluacion":
@@ -88,10 +135,23 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
     elementos, sin_verificar = _elementos(conn, estudiante_id, ahora, prefs, dif, grupos)
 
     hoy = _fecha(ahora)
+    ahora_dt = iso_a_datetime(ahora)
     calendario = [hoy + timedelta(days=i) for i in range(dias)]
-    capacidad = {d: prefs["disponibilidad"].get(P.DIAS[d.weekday()], 0) for d in calendario}
-    disponible = dict(capacidad)
+    con_horas = AP.hay_franjas(conn, estudiante_id)
+    if con_horas:
+        efectivas = AP.ventanas_efectivas(conn, estudiante_id)
+        ventanas = {d: [list(v) for v in efectivas[P.DIAS[d.weekday()]]] for d in calendario}
+        ventanas[hoy] = _aplicar_clip(ventanas[hoy], ahora_dt)
+    else:
+        ventanas = {d: ([[0, prefs["disponibilidad"].get(P.DIAS[d.weekday()], 0)]]
+                        if prefs["disponibilidad"].get(P.DIAS[d.weekday()], 0) else []) for d in calendario}
+    capacidad = {d: sum(f - i for i, f in ventanas[d]) for d in calendario}
     configurado = any(capacidad.values())
+
+    puestos = notas_moodle.prioridad(conn, estudiante_id)
+    promedios = notas_moodle.promedios(conn, estudiante_id)
+    for e in elementos:
+        e["empujon"] = 2 if puestos.get(e["materia_id"]) == 1 else (1 if puestos.get(e["materia_id"]) == 2 else 0)
 
     quitados = [e for e in elementos if e["clave"] in excluidos]
     activos = [e for e in elementos if e["clave"] not in excluidos]
@@ -110,7 +170,8 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
 
     def orden(e):
         grupo = 0 if e["vencida"] else (2 if not e["fecha"] else 1)
-        return (grupo, e["fecha"] or "", e["nombre"])
+        urgencia = ((iso_a_datetime(e["fecha"]) - ahora_dt).total_seconds() / 86400 - e["empujon"]) if grupo == 1 else 0
+        return (grupo, urgencia, e["fecha"] or "", e["nombre"])
     en_plan.sort(key=orden)
 
     bloques = {d: [] for d in calendario}
@@ -123,24 +184,40 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
                     break
                 if lim is not None and d > lim:
                     break
-                toma = min(falta, disponible[d])
-                if toma < BLOQUE_MIN and toma < falta:
-                    continue
-                if toma <= 0:
-                    continue
-                disponible[d] -= toma
-                falta -= toma
-                bloques[d].append({"clave": e["clave"], "item": e["nombre"], "materia": e["materia"],
-                                   "minutos": toma, "tipo": e["tipo"], "motivo": _motivo(e)})
+                trozos, falta = _asignar(ventanas[d], falta, con_horas)
+                for ini, fin, toma in trozos:
+                    bloques[d].append({"clave": e["clave"], "item": e["nombre"], "materia": e["materia"],
+                                       "minutos": toma, "tipo": e["tipo"], "motivo": _motivo(e),
+                                       "inicio": ini, "fin": fin, "recomendacion": RECOMENDACION[e["tipo"]]})
             if falta > 0:
                 dato = {"clave": e["clave"], "item": e["nombre"], "materia": e["materia"], "fecha": e["fecha"],
                         "faltan_min": falta, "total_min": e["minutos"]}
                 (no_alcanza if e["fecha"] or e["vencida"] else sin_espacio).append(dato)
 
+        # Refuerzo: un bloque diario en las materias con menor porcentaje de Moodle, solo con el tiempo que sobra.
+        debiles = sorted((m for m, pu in puestos.items() if pu <= REFUERZO_MAX_MATERIAS), key=lambda m: puestos[m])
+        nombres = {r["id"]: r["nombre"] for r in conn.execute("SELECT id, nombre FROM materia")}
+        for i, d in enumerate(calendario):
+            hueco = next((v for v in ventanas[d] if v[1] - v[0] >= 30), None)
+            if not debiles or hueco is None:
+                continue
+            mid = debiles[i % len(debiles)]
+            trozos, _ = _asignar([hueco], min(REFUERZO_MIN, hueco[1] - hueco[0]), con_horas)
+            for ini, fin, toma in trozos:
+                bloques[d].append({
+                    "clave": f"r:{mid}", "item": f"Refuerzo: {nombres.get(mid, 'materia')}", "materia": nombres.get(mid),
+                    "minutos": toma, "tipo": "refuerzo", "inicio": ini, "fin": fin,
+                    "motivo": (f"Te sobra tiempo y en Moodle llevas {promedios[mid]:.0f} % en esta materia, "
+                               f"una de las más bajas de las que cursas."),
+                    "recomendacion": RECOMENDACION["refuerzo"]})
+        if con_horas:
+            for d in calendario:
+                bloques[d].sort(key=lambda b: b["inicio"] or "")
+
     return {
         "configurado": configurado,
         "dias": [{"fecha": d.isoformat(), "dia": P.DIAS[d.weekday()], "disponible_min": capacidad[d],
-                  "usado_min": capacidad[d] - disponible[d], "bloques": bloques[d]} for d in calendario],
+                  "usado_min": sum(b["minutos"] for b in bloques[d]), "bloques": bloques[d]} for d in calendario],
         "no_alcanza": no_alcanza,
         "sin_espacio": sin_espacio,
         "por_planificar": [{"clave": e["clave"], "item": e["nombre"], "materia": e["materia"], "minutos": e["minutos"]}
@@ -148,6 +225,10 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
         "fuera_del_plan": [{"clave": e["clave"], "item": e["nombre"], "fecha": e["fecha"]} for e in fuera],
         "sin_verificar": [{"item": t["tarea"], "materia": t["materia"], "fecha": t["fecha"]} for t in sin_verificar],
         "quitados": [{"clave": e["clave"], "item": e["nombre"], "fecha": e["fecha"]} for e in quitados],
+        "con_horas": con_horas,
+        "prioridad_moodle": [{"materia": nombres_m, "porcentaje": round(promedios[m], 1), "puesto": pu}
+                             for m, pu in sorted(puestos.items(), key=lambda kv: kv[1])
+                             for nombres_m in [conn.execute("SELECT nombre FROM materia WHERE id = ?", (m,)).fetchone()[0]]],
         "total_necesario_min": sum(e["minutos"] for e in en_plan),
         "total_disponible_min": sum(capacidad.values()),
         "supuestos": [
@@ -155,5 +236,9 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
             "ajustados por la dificultad que indicaste (fácil ×0,75, media ×1, difícil ×1,5). Son estimaciones tuyas, no mediciones.",
             "Solo se planifica lo que Moodle confirma como sin entregar y las evaluaciones del calendario; las tareas sin verificar no entran.",
             "Un evento cuenta como evaluación si su nombre lo parece (examen, prueba, parcial…); puedes quitar del plan cualquier elemento.",
-        ],
+        ] + ([
+            "Las horas salen de las franjas que indicaste, menos tus clases del ERP y tus actividades; lo que ya pasó hoy no se usa.",
+            "La prioridad por notas usa solo el porcentaje de Moodle de tus materias y solo cambia el orden unos días; "
+            "si Moodle no informa el total de una materia, no se supone nada.",
+        ] if con_horas else []),
     }

@@ -18,6 +18,7 @@ import threading
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.query_engine import QueryEngine
+from core import plan_chat
 
 import anthropic
 
@@ -155,6 +156,8 @@ TOOLS = [
     },
 ]
 
+TOOLS = TOOLS + plan_chat.HERRAMIENTAS
+
 SYSTEM_PROMPT = """Eres AcademIA, un asistente academico para estudiantes universitarios.
 Respondes preguntas sobre tareas, notas, calificaciones, eventos y horario,
 usando UNICAMENTE los datos que obtienes de las herramientas disponibles.
@@ -172,6 +175,19 @@ Reglas importantes:
 - Si el estudiante pide su carne, usa la herramienta carnet_estudiantil y dile
   que pulse el boton "Descargar carne" que aparece debajo de tu mensaje. No
   describas el contenido del carne ni inventes sus datos.
+- PLAN DE ESTUDIO (cuando el estudiante quiera organizar su tiempo, armar su plan u horario de estudio):
+  1. Llama primero a ver_horario_personal para no repetir lo que ya sabes.
+  2. Pregunta, de lunes a domingo, en que franjas PUEDE estudiar (pide horas exactas, ej. "de 18:00 a
+     20:00"; si dice "en las tardes", pide el rango). Sus clases del ERP ya se descuentan solas.
+  3. Pregunta que actividades hace en su dia a dia (trabajo, transporte, deporte, familia...) y a que
+     horas, para no ponerle estudio encima.
+  4. Haz UNA o DOS preguntas por mensaje, no un interrogatorio. NUNCA supongas ni inventes una hora.
+  5. Antes de guardar, resume lo entendido y pide confirmacion. Solo cuando confirme llama a
+     guardar_franjas_libres y guardar_actividades.
+  6. Despues llama a generar_plan_estudio y presenta el plan tal cual (las horas las calcula la app;
+     no las cambies). Explica en una frase por que las materias con menor porcentaje en Moodle van
+     primero y menciona los "no alcanza" y las tareas sin verificar si las hay.
+  7. Dile que puede recibir recordatorios por Telegram desde la seccion Plan.
 - Si la pregunta no tiene relacion con tareas/notas/eventos/horario/carne
   academico, indica amablemente que solo puedes ayudar con esos temas.
 """
@@ -193,6 +209,12 @@ class AssistantLLM:
                 self.acciones.append("carnet")
             return ("Listo: la interfaz mostrara un boton 'Descargar carne' debajo de tu mensaje. "
                     "Dile al estudiante que lo pulse para bajar su carne en PDF.")
+        if nombre in plan_chat.NOMBRES:
+            try:
+                return plan_chat.ejecutar(nombre, self.engine.conn, self.engine.estudiante_id, args)
+            except Exception as e:
+                print(f"[ERROR en herramienta del plan '{nombre}']: {type(e).__name__}")
+                return f"Error ejecutando {nombre}: {type(e).__name__}"
         metodo = getattr(self.engine, nombre, None)
         if not metodo:
             return f"Error: herramienta '{nombre}' no existe."
@@ -213,7 +235,7 @@ class AssistantLLM:
         while True:
             response = self.client.messages.create(
                 model=self.model,
-                max_tokens=1024,
+                max_tokens=2048,
                 system=SYSTEM_PROMPT,
                 tools=TOOLS,
                 messages=self.historial,

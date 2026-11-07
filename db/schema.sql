@@ -252,3 +252,51 @@ CREATE INDEX IF NOT EXISTS idx_entrega_estudiante ON entrega(estudiante_id);
 CREATE INDEX IF NOT EXISTS idx_horario_materia ON horario(materia_id);
 CREATE INDEX IF NOT EXISTS idx_extraccion_estudiante ON sesion_extraccion(estudiante_id);
 CREATE INDEX IF NOT EXISTS idx_alerta_estudiante ON alerta(estudiante_id, vista_en);
+
+-- Plan conversacional y recordatorios (Fase 4).
+-- franja_libre: ventanas en que la propia persona dice que PUEDE estudiar (dia + hora de inicio y fin).
+-- actividad: lo que hace en su dia a dia (trabajo, transporte, deporte...). Se descuenta de las
+-- franjas libres y de las clases del horario para saber la hora realmente disponible.
+CREATE TABLE IF NOT EXISTS franja_libre (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    estudiante_id INTEGER NOT NULL,
+    dia TEXT NOT NULL CHECK(dia IN ('lunes','martes','miercoles','jueves','viernes','sabado','domingo')),
+    inicio TEXT NOT NULL,
+    fin TEXT NOT NULL,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS actividad (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    estudiante_id INTEGER NOT NULL,
+    dia TEXT NOT NULL CHECK(dia IN ('lunes','martes','miercoles','jueves','viernes','sabado','domingo')),
+    inicio TEXT NOT NULL,
+    fin TEXT NOT NULL,
+    nombre TEXT NOT NULL,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_franja_estudiante ON franja_libre(estudiante_id, dia);
+CREATE INDEX IF NOT EXISTS idx_actividad_estudiante ON actividad(estudiante_id, dia);
+
+-- telegram_vinculo: opt-in de recordatorios. El codigo de enlace se guarda SOLO como hash, vence a
+-- los 10 minutos y se usa una vez. chat_id es unico: un chat de Telegram pertenece a una sola persona.
+CREATE TABLE IF NOT EXISTS telegram_vinculo (
+    estudiante_id INTEGER PRIMARY KEY,
+    chat_id TEXT UNIQUE,
+    codigo_hash TEXT,
+    codigo_vence TEXT,
+    avisar_min INTEGER NOT NULL DEFAULT 10 CHECK(avisar_min IN (5, 10, 15, 30)),
+    activo INTEGER NOT NULL DEFAULT 1,
+    vinculado_en TEXT,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
+
+-- recordatorio_enviado: evita mandar dos veces el mismo aviso (clave = fecha|hora|bloque).
+CREATE TABLE IF NOT EXISTS recordatorio_enviado (
+    estudiante_id INTEGER NOT NULL,
+    clave TEXT NOT NULL,
+    enviado_en TEXT NOT NULL,
+    PRIMARY KEY (estudiante_id, clave),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id) ON DELETE CASCADE
+);
