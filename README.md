@@ -340,3 +340,10 @@ Vista **Plan** (`#plan`) y tarjeta **Alertas** en Inicio. Todo se calcula con re
 - **Alertas** (sin duplicados): vence pronto, vencida sin entregar, lectura fallida y asistencia bajo un mínimo que tú fijas. Se pueden desactivar por tipo y descartar; una alerta descartada no reaparece.
 - Rutas: `GET /api/plan`, `POST /api/plan/preferencias|excluir|incluir`, `GET /api/alertas`, `POST /api/alertas/vistas`.
 - Estos datos aparecen en **Mis datos**, se exportan y se borran con tu cuenta.
+
+## Identidad visual
+
+La interfaz usa los colores del manual de marca de la UNEMI (azul #002E45 y
+naranja #FF6900) y la tipografía Poppins, alojada en `web/static/fonts/` (sin
+CDN). El tigre de `web/static/` se usa recortado, sin deformar ni recolorear.
+Es un proyecto académico de titulación, no un sitio oficial de la UNEMI.

@@ -4,29 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mi panel — AcademIA</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%2314213D%27/%3E%3Cpath d=%27M9 23 16 8l7 15M12 19h8%27 stroke=%27%23fff%27 stroke-width=%273%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/static/tiger-avatar.png">
 <style>
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:400; font-display:swap; src:url('/static/fonts/poppins-latin-400-normal.woff2') format('woff2')}
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:600; font-display:swap; src:url('/static/fonts/poppins-latin-600-normal.woff2') format('woff2')}
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:700; font-display:swap; src:url('/static/fonts/poppins-latin-700-normal.woff2') format('woff2')}
   :root{
-    --canvas:#EEF1F5; --surface:#FFFFFF; --ink:#14213D; --muted:#566074; --line:#D5DBE3;
-    --accent:#2447D6; --accent-ink:#FFFFFF; --accent-bg:#E6EBFB;
+    /* Paleta oficial UNEMI (Manual de identidad corporativa V1): azul oscuro #002E45, naranja #FF6900 */
+    --brand:#002E45; --orange:#FF6900; --orange-bg:#FFF0E5; --orange-ink:#8A3A00;
+    --canvas:#F2F5F8; --surface:#FFFFFF; --ink:#002E45; --muted:#4F6676; --line:#D3DEE6;
+    --accent:#335F7F; --accent-ink:#FFFFFF; --accent-bg:#E4EEF5;
     --ok:#1B7F4B; --ok-bg:#E3F3EA; --warn:#8F5600; --warn-bg:#FCEFD6; --bad:#B3261E; --bad-bg:#FBE4E2;
-    --stub:#14213D; --stub-ink:#E8ECF5; --stub-muted:#A9B4CB;
+    --stub:#002E45; --stub-ink:#E8F0F5; --stub-muted:#A9C0CF;
+    --side:#002E45; --side-ink:#FFFFFF; --side-muted:#B5C9D6; --side-line:#264763; --side-hover:rgba(255,255,255,.1);
   }
   :root[data-theme="dark"]{
-    --canvas:#16191F; --surface:#1E2229; --ink:#E3E5E9; --muted:#9097A3; --line:#303641;
-    --accent:#8EA3D8; --accent-ink:#14171C; --accent-bg:#262D3D;
+    --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
+    --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
+    --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
     --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-    --stub:#101318; --stub-ink:#E3E5E9; --stub-muted:#9097A3;
+    --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
+    --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --canvas:#16191F; --surface:#1E2229; --ink:#E3E5E9; --muted:#9097A3; --line:#303641;
-      --accent:#8EA3D8; --accent-ink:#14171C; --accent-bg:#262D3D;
+      --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
+      --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
+      --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
       --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-      --stub:#101318; --stub-ink:#E3E5E9; --stub-muted:#9097A3;
+      --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
+      --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
     }
   }
 
@@ -42,9 +50,9 @@
   .enlace:hover{border-color:var(--accent)}
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
-  body{margin:0; background:var(--canvas); color:var(--ink); font-family:'Public Sans',system-ui,sans-serif; font-size:16px; line-height:1.5}
+  body{margin:0; background:var(--canvas); color:var(--ink); font-family:'Poppins',Arial,system-ui,sans-serif; font-size:16px; line-height:1.5}
   :focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px}
-  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  .mono{font-family:ui-monospace,Consolas,monospace}
   .num{font-variant-numeric:tabular-nums}
   button{font:inherit; cursor:pointer}
 
@@ -175,7 +183,7 @@
   .burbuja ul{margin:4px 0 8px; padding-left:1.1rem}
   .burbuja.err{background:var(--bad-bg); border-color:var(--bad); color:var(--bad)}
   .fuentes{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap}
-  .fuente{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:1px 7px}
+  .fuente{font-family:ui-monospace,Consolas,monospace; font-size:.72rem; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:1px 7px}
   .sugerencias{display:flex; flex-wrap:wrap; gap:8px; padding:0 20px 12px}
   .sugerencias[hidden]{display:none}
   .btn-carnet{margin-top:8px; padding:9px 14px}
@@ -272,6 +280,58 @@
     .vista > h1{font-size:1.45rem}
   }
   @media (prefers-reduced-motion: reduce){ .esc i{animation:none; opacity:.7} .riel i{transition:none} }
+
+  /* ---- Tema UNEMI ---- */
+  :focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+  .tigre{width:44px; height:44px; border-radius:50%; background:#fff; border:2px solid var(--orange); object-fit:cover; flex:none; display:block}
+
+  .msg.ia{display:grid; grid-template-columns:30px minmax(0,1fr); column-gap:8px; align-items:start; max-width:96%}
+  .msg.ia::before{content:""; grid-column:1; grid-row:1; width:30px; height:30px; border-radius:50%; background:#fff url('/static/tiger-avatar.png') center/cover no-repeat; border:1.5px solid var(--orange)}
+  .msg.ia > *{grid-column:2}
+  .msg.yo{background:var(--brand); color:#fff}
+  :root[data-theme="dark"] .msg.yo{background:var(--accent); color:var(--accent-ink)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .msg.yo{background:var(--accent); color:var(--accent-ink)} }
+  .fuente{font-family:ui-monospace,Consolas,monospace}
+
+  .lateral{background:var(--side); color:var(--side-ink); border-right:0}
+  .marca{display:flex; align-items:center; gap:12px; padding:0 6px}
+  .marca .brand{color:#fff; padding:0; line-height:1.1}
+  .marca small{display:block; color:var(--side-muted); font-size:.7rem; font-weight:500; letter-spacing:.02em; margin-top:2px}
+  .menu a{color:var(--side-muted)}
+  .menu a:hover{background:var(--side-hover); color:#fff}
+  .menu a[aria-current="page"]{background:var(--side-hover); color:#fff; box-shadow:inset 3px 0 0 var(--orange)}
+  .menu a[aria-current="page"] svg{stroke:var(--orange)}
+  .quien{color:var(--side-muted)}
+  .lateral .icono{background:transparent; border-color:var(--side-line); color:#fff}
+  .lateral .icono:hover{border-color:var(--orange)}
+  .oficial{margin:0; padding:0 6px; color:var(--side-muted); font-size:.68rem; line-height:1.4}
+  .insignia{background:var(--orange); color:var(--brand)}
+  .vista > h1{border-left:5px solid var(--orange); padding-left:12px}
+  .barra .pista i{background:var(--orange)}
+  .btn-p:hover{filter:brightness(1.12)}
+  .kpi{border-top:3px solid var(--brand)}
+  :root[data-theme="dark"] .kpi{border-top-color:var(--orange)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kpi{border-top-color:var(--orange)} }
+  .topm{background:var(--side); margin:-18px calc(-1 * clamp(18px,4vw,56px)) 18px; padding:10px clamp(18px,4vw,56px); border-bottom:3px solid var(--orange)}
+  .topm .brand{color:#fff}
+  .topm .marca .tigre{width:36px; height:36px}
+  .topm .icono{background:transparent; border-color:var(--side-line); color:#fff}
+  .fab{background:var(--orange); color:var(--brand); padding:7px 20px 7px 7px; gap:10px}
+  .fab .tigre{width:42px; height:42px; border-width:0}
+  .chat-cab{display:flex; align-items:center; gap:12px; background:var(--brand); color:#fff; border-bottom:3px solid var(--orange)}
+  .chat-cab > div{flex:1; min-width:0}
+  .chat-cab h2{color:#fff; font-size:1rem}
+  .chat header.chat-cab p{color:var(--side-muted)}
+  .chat-cab .icono{background:transparent; border-color:var(--side-line); color:#fff}
+  .chat-cab .tigre{width:42px; height:42px}
+  .pregunta .btn-p{background:var(--orange); color:var(--brand)}
+  .sug:hover{border-color:var(--orange)}
+  @media (max-width:860px){
+    .lateral{background:var(--side); border-top:3px solid var(--orange)}
+    .menu a[aria-current="page"]{box-shadow:none; background:transparent; color:#fff}
+    .fab{padding:7px}
+    .lateral .oficial{display:none}
+  }
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
@@ -281,7 +341,7 @@
 <div class="app">
 
   <aside class="lateral" aria-label="Navegación">
-    <p class="brand">AcademIA</p>
+    <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="44" height="44"><div><p class="brand">AcademIA</p><small>Asistente académico UNEMI</small></div></div>
     <nav class="menu" id="menu">
       <a href="#inicio" data-vista="inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>Inicio</a>
       <a href="#materias" data-vista="materias"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3zM4 16a3 3 0 0 1 3-3h11"/></svg>Materias</a>
@@ -291,6 +351,7 @@
       <a href="/estudio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l10 5-10 5L2 9zM6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg>Estudio</a>
       <a href="#datos" data-vista="datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.3 8-8 9-4.7-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Mis datos</a>
     </nav>
+    <p class="oficial">Proyecto académico de titulación. No es un sitio oficial de la UNEMI.</p>
     <div class="lateral-pie">
       <span class="quien">{{ nombre }}</span>
       <button class="icono" type="button" id="tema" aria-label="Cambiar tema"></button>
@@ -299,7 +360,7 @@
 
   <main class="principal">
     <div class="topm">
-      <p class="brand">AcademIA</p>
+      <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="36" height="36"><p class="brand">AcademIA</p></div>
       <button class="icono" type="button" id="tema-m" aria-label="Cambiar tema"></button>
     </div>
 
@@ -496,10 +557,11 @@
 
   <!-- Chat flotante: el asistente es un complemento disponible en todas las pantallas -->
   <button class="fab" type="button" id="fab" aria-expanded="false" aria-controls="chat">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Pregunta</span>
+    <img class="tigre" src="/static/tiger-avatar.png" alt="" width="42" height="42"><span>Pregunta</span>
   </button>
   <section class="card chat" id="chat" aria-label="Asistente" hidden>
     <header class="chat-cab">
+      <img class="tigre" src="/static/tiger-avatar.png" alt="" width="42" height="42">
       <div>
         <h2>Pregúntame lo que quieras</h2>
         <p>Te respondo con lo que leí de Moodle y del ERP.</p>

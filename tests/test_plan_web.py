@@ -119,3 +119,13 @@ def test_no_se_pueden_descartar_alertas_de_otra_persona(app_web):
     con = get_connection()
     assert con.execute("select vista_en from alerta where id=?", (ajena,)).fetchone()[0] is None
     con.close()
+
+
+def test_assets_de_marca_y_csp_locales():
+    """El tema UNEMI sirve tigre y fuentes desde el propio sitio (sin CDN)."""
+    from web.app import app
+    c = app.test_client()
+    assert c.get("/static/tiger-avatar.png").status_code == 200
+    assert c.get("/static/fonts/poppins-latin-400-normal.woff2").status_code == 200
+    csp = c.get("/login").headers.get("Content-Security-Policy", "")
+    assert "font-src 'self'" in csp and "fonts.googleapis" not in csp

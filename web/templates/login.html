@@ -4,29 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conectar — AcademIA</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%2314213D%27/%3E%3Cpath d=%27M9 23 16 8l7 15M12 19h8%27 stroke=%27%23fff%27 stroke-width=%273%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/static/tiger-avatar.png">
 <style>
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:400; font-display:swap; src:url('/static/fonts/poppins-latin-400-normal.woff2') format('woff2')}
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:600; font-display:swap; src:url('/static/fonts/poppins-latin-600-normal.woff2') format('woff2')}
+  @font-face{font-family:'Poppins'; font-style:normal; font-weight:700; font-display:swap; src:url('/static/fonts/poppins-latin-700-normal.woff2') format('woff2')}
   :root{
-    --canvas:#EEF1F5; --surface:#FFFFFF; --ink:#14213D; --muted:#566074; --line:#D5DBE3;
-    --accent:#2447D6; --accent-ink:#FFFFFF; --accent-bg:#E6EBFB;
+    /* Paleta oficial UNEMI (Manual de identidad corporativa V1): azul oscuro #002E45, naranja #FF6900 */
+    --brand:#002E45; --orange:#FF6900; --orange-bg:#FFF0E5; --orange-ink:#8A3A00;
+    --canvas:#F2F5F8; --surface:#FFFFFF; --ink:#002E45; --muted:#4F6676; --line:#D3DEE6;
+    --accent:#335F7F; --accent-ink:#FFFFFF; --accent-bg:#E4EEF5;
     --ok:#1B7F4B; --ok-bg:#E3F3EA; --warn:#8F5600; --warn-bg:#FCEFD6; --bad:#B3261E; --bad-bg:#FBE4E2;
-    --side:#14213D; --side-ink:#E8ECF5; --side-muted:#A9B4CB; --side-line:#2C3A5C;
+    --stub:#002E45; --stub-ink:#E8F0F5; --stub-muted:#A9C0CF;
+    --side:#002E45; --side-ink:#FFFFFF; --side-muted:#B5C9D6; --side-line:#264763; --side-hover:rgba(255,255,255,.1);
   }
   :root[data-theme="dark"]{
-    --canvas:#16191F; --surface:#1E2229; --ink:#E3E5E9; --muted:#9097A3; --line:#303641;
-    --accent:#8EA3D8; --accent-ink:#14171C; --accent-bg:#262D3D;
+    --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
+    --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
+    --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
     --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-    --side:#0A0F1D; --side-ink:#E8ECF5; --side-muted:#9AA6BC; --side-line:#222C47;
+    --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
+    --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --canvas:#16191F; --surface:#1E2229; --ink:#E3E5E9; --muted:#9097A3; --line:#303641;
-      --accent:#8EA3D8; --accent-ink:#14171C; --accent-bg:#262D3D;
+      --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
+      --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
+      --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
       --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-      --side:#0A0F1D; --side-ink:#E8ECF5; --side-muted:#9AA6BC; --side-line:#222C47;
+      --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
+      --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
     }
   }
 
@@ -42,7 +50,7 @@
   html{-webkit-text-size-adjust:100%}
   body{
     margin:0; min-height:100vh; background:var(--canvas); color:var(--ink);
-    font-family:'Public Sans',system-ui,sans-serif; font-size:16px; line-height:1.55;
+    font-family:'Poppins',Arial,system-ui,sans-serif; font-size:16px; line-height:1.55;
     display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr);
   }
   :focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px}
@@ -89,7 +97,7 @@
   .hint code{white-space:nowrap; word-break:normal}
   input[type=text]{
     width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--surface);
-    color:var(--ink); font-family:'IBM Plex Mono',ui-monospace,monospace; font-size:.85rem;
+    color:var(--ink); font-family:ui-monospace,Consolas,monospace; font-size:.85rem;
   }
   input[type=text]::placeholder{color:var(--muted)}
   input[type=text]:focus{border-color:var(--accent)}
@@ -100,7 +108,7 @@
   details ol{margin:10px 0 0; padding-left:1.2rem; color:var(--muted)}
   details li{margin-bottom:6px}
   code{
-    font-family:'IBM Plex Mono',monospace; font-size:.8rem; background:var(--accent-bg); color:var(--ink);
+    font-family:ui-monospace,Consolas,monospace; font-size:.8rem; background:var(--accent-bg); color:var(--ink);
     padding:1px 5px; border-radius:4px; word-break:break-all;
   }
   .opcional{margin-top:12px}
@@ -131,6 +139,22 @@
     .contract div{grid-template-columns:6.5rem 1fr}
     .main{padding:28px 20px 40px}
   }
+
+  /* ---- Tema UNEMI ---- */
+  :focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+  .tigre{width:44px; height:44px; border-radius:50%; background:#fff; border:2px solid var(--orange); object-fit:cover; flex:none; display:block}
+
+  .side{border-right:6px solid var(--orange)}
+  .side .marca{display:flex; align-items:center; gap:14px}
+  .side .marca .tigre{width:56px; height:56px}
+  .side .marca small{display:block; color:var(--side-muted); font-size:.78rem; margin-top:2px}
+  .side .mascota{width:min(240px,50%); height:auto; align-self:flex-start; margin:0 0 -8px}
+  .enviar{background:var(--orange); color:var(--brand)}
+  .enviar:hover:not(:disabled){filter:brightness(1.08)}
+  .num{background:var(--orange-bg); color:var(--orange-ink)}
+  summary{color:var(--accent)}
+  .oficial{color:var(--side-muted); font-size:.78rem; margin:0; max-width:46ch}
+  @media (max-width:900px){ .side .mascota{display:none} }
 </style>
 <script>
   // Aplica el tema guardado antes de pintar (evita parpadeo). Si el navegador
@@ -141,7 +165,7 @@
 <body>
 
 <aside class="side">
-  <p class="brand">AcademIA</p>
+  <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="56" height="56"><div><p class="brand">AcademIA</p><small>Asistente académico para estudiantes de la UNEMI</small></div></div>
   <div>
     <h1>Entras con un permiso, no con tu contraseña.</h1>
     <p class="lead">AcademIA usa tokens de sesión que tú mismo copias de Moodle y del ERP. Sirven para leer tus datos, vencen solos y puedes cerrarlos cuando quieras.</p>
@@ -151,7 +175,9 @@
       <div><dt>Se guarda</dt><dd>Tus tokens, cifrados, durante esta sesión. Al cerrar el acceso se borran.</dd></div>
     </dl>
   </div>
+  <img class="mascota" src="/static/tiger-logo.png" alt="" width="240" height="240">
   <p class="foot">Proyecto de titulación · Ingeniería de Software, UNEMI</p>
+  <p class="oficial">Proyecto académico. No es un sitio oficial de la UNEMI y no sustituye a Moodle ni al ERP.</p>
 </aside>
 
 <main class="main">
