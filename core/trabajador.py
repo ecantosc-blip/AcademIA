@@ -33,12 +33,14 @@ class Trabajador(threading.Thread):
             conn.close()
 
     def run(self):
-        try:
-            usuario = telegram.preparar_bot(self.token)
-            print(f"[telegram] Recordatorios activos con el bot @{usuario}.")
-        except telegram.TelegramError as e:
-            print(f"[telegram] No se pudo iniciar el bot ({e}). Revisa TELEGRAM_BOT_TOKEN.")
-            return
+        while not self.parar.is_set():       # si no hay red o el token falla, reintenta cada 30 s
+            try:
+                usuario = telegram.preparar_bot(self.token)
+                print(f"[telegram] Recordatorios activos con el bot @{usuario}.")
+                break
+            except telegram.TelegramError as e:
+                print(f"[telegram] No se pudo iniciar el bot ({e}). Revisa TELEGRAM_BOT_TOKEN; reintento en 30 s.")
+                self.parar.wait(30)
         while not self.parar.is_set():
             try:
                 self.un_ciclo()

@@ -71,7 +71,11 @@ def preparar_bot(token: str) -> str:
     return _estado["usuario_bot"]
 
 
-def usuario_bot(entorno_usuario: str = None):
+def usuario_bot(entorno_usuario: str = None, token: str = None):
+    """Usuario del bot: el que ya se conoce, el del .env o, si hay token, se le pregunta a Telegram (getMe).
+    Lanza TelegramError si Telegram rechaza el token o no hay red."""
+    if not _estado["usuario_bot"] and not entorno_usuario and token:
+        _estado["usuario_bot"] = _llamar(token, "getMe").get("username")
     return _estado["usuario_bot"] or (entorno_usuario or "").lstrip("@") or None
 
 

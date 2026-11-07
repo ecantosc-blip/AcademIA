@@ -582,9 +582,12 @@ def api_telegram_vincular():
         from core import telegram
         if not os.getenv("TELEGRAM_BOT_TOKEN"):
             raise ValueError("Los recordatorios por Telegram no están activados en este servidor.")
-        bot = telegram.usuario_bot(os.getenv("TELEGRAM_BOT_USERNAME"))
+        try:
+            bot = telegram.usuario_bot(os.getenv("TELEGRAM_BOT_USERNAME"), os.getenv("TELEGRAM_BOT_TOKEN"))
+        except telegram.TelegramError as e:
+            raise ValueError(f"No pude hablar con Telegram: {e}. Revisa TELEGRAM_BOT_TOKEN en el .env y tu conexión.") from None
         if not bot:
-            raise ValueError("El bot de Telegram todavía no está listo. Inténtalo en unos segundos.")
+            raise ValueError("El bot de Telegram todavía no está listo. Revisa la terminal del servidor.")
         codigo = telegram.crear_codigo(conn, est)
         return {"enlace": f"https://t.me/{bot}?start={codigo}", "bot": bot, "vence_min": telegram.CODIGO_VIGENCIA_MIN}
     return _con_estudiante(crear)

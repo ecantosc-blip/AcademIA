@@ -175,3 +175,17 @@ def test_un_bloque_no_se_vuelve_a_avisar_con_otra_hora_cuando_pasa_el_tiempo(con
     # a las 09:05 el plan "normal" recortaria el bloque a 09:05; el aviso usa el plan estable del dia
     assert T.enviar_pendientes(conn, "TOK", "2030-01-07T09:05:00", enviar_fn=env) == 0
     assert env.call_count == 1
+
+
+def test_el_usuario_del_bot_se_pregunta_a_telegram_y_los_errores_se_explican(app_web, monkeypatch):
+    T._estado["usuario_bot"] = None
+    with mock.patch.object(T, "_llamar", return_value={"username": "UnemIABot"}) as ll:
+        assert T.usuario_bot(None, "TOK") == "UnemIABot" and ll.call_args.args[1] == "getMe"
+    T._estado["usuario_bot"] = None
+    sesion = {"estudiante_id": EST, "nombre": "X", "moodle_token": "m", "sga_access_token": "x", "sga_refresh_token": None}
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "TOK"); monkeypatch.delenv("TELEGRAM_BOT_USERNAME", raising=False)
+    with mock.patch.object(app_web, "get_session", return_value=("s", sesion)), \
+         mock.patch.object(T, "_llamar", side_effect=T.TelegramError("Telegram rechazó la petición (401)", 401)):
+        r = app_web.app.test_client().post("/api/telegram/vincular")
+    assert r.status_code == 400 and "401" in r.get_json()["error"] and "TOK" not in r.get_data(as_text=True)
+    T._estado["usuario_bot"] = None
