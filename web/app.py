@@ -38,6 +38,7 @@ from core.sync_all import sync as sync_estudiante
 from db.setup import get_connection, init_db
 from core.privacidad import depurar
 from core.tiempo import ahora_iso
+from core import foto
 
 # Crea las tablas (y aplica migraciones) si la base no existe todavia.
 # Es idempotente: si ya existen, no toca los datos.
@@ -200,26 +201,6 @@ def get_asistente_para(sid: str, estudiante_id: int) -> AssistantLLM:
 
 
 
-def _url_foto_valida(url, base_url: str) -> str:
-    """Devuelve la URL de la foto de perfil solo si es https y del mismo sitio de Moodle.
-
-    Se guarda sin token. Que sea del mismo host evita que el servidor pida una dirección
-    ajena (SSRF) o envíe el token de Moodle a otro sitio.
-    """
-    try:
-        u, b = urlparse(url or ""), urlparse(base_url or "")
-    except ValueError:
-        return ""
-    if u.scheme != "https" or not u.hostname or u.hostname != b.hostname:
-        return ""
-    if "/theme/image.php" in u.path:   # imagen genérica de Moodle: mejor mostrar las iniciales
-        return ""
-    return url
-
-
-FOTO_MAX_BYTES = 2 * 1024 * 1024
-
-
 @app.route("/api/foto")
 def api_foto():
     """Foto de perfil del propio estudiante, pedida a Moodle desde el servidor.
@@ -233,17 +214,9 @@ def api_foto():
     url = sesion.get("foto_url") or ""
     if not url:
         return ("", 404)
-    pedido = url.replace("/pluginfile.php/", "/webservice/pluginfile.php/", 1)
-    try:
-        r = requests.get(pedido, params={"token": sesion["moodle_token"]}, timeout=8,
-                         allow_redirects=False, stream=True)
-        tipo = (r.headers.get("Content-Type") or "").split(";")[0].strip().lower()
-        if r.status_code != 200 or not tipo.startswith("image/") or tipo == "image/svg+xml":
-            return ("", 404)
-        datos = r.raw.read(FOTO_MAX_BYTES + 1, decode_content=True)
-        if len(datos) > FOTO_MAX_BYTES:
-            return ("", 404)
-    except requests.RequestException:
+    datos, tipo, motivo = foto.descargar(url, sesion["moodle_token"])
+    if datos is None:
+        print(f"[foto] No se mostró la foto de perfil: {motivo}")
         return ("", 404)
     return Response(datos, mimetype=tipo)   # /api/* ya sale con Cache-Control: no-store
 
@@ -390,7 +363,7 @@ def login_submit():
         "aviso_sync": " ".join(avisos),
         "estudiante_id": estudiante_id,
         "nombre": nombre,
-        "foto_url": _url_foto_valida(info.get("userpictureurl"), moodle_base_url),
+        "foto_url": foto.url_valida(info.get("userpictureurl"), moodle_base_url),
         "moodle_token": moodle_token,            # token de sesion; NO se guarda ninguna contraseña
         "sga_access_token": sga.access_token,   # ya actualizado si hubo cambio de perfil
         "sga_refresh_token": sga.refresh_token,  # idem

@@ -136,7 +136,7 @@ BASE = "https://aula.unemi.edu.ec"
 
 
 def test_url_de_foto_solo_del_mismo_sitio_y_https(app_web):
-    f = app_web._url_foto_valida
+    f = __import__("core.foto",fromlist=["x"]).url_valida
     ok = BASE + "/pluginfile.php/5/user/icon/f1"
     assert f(ok, BASE) == ok
     assert f("http://aula.unemi.edu.ec/pluginfile.php/5/user/icon/f1", BASE) == ""
@@ -172,10 +172,25 @@ def test_foto_rechaza_lo_que_no_es_imagen_o_es_enorme(app_web):
     assert _foto(app_web, _Resp(tipo="text/html"))[0].status_code == 404
     assert _foto(app_web, _Resp(tipo="image/svg+xml"))[0].status_code == 404
     assert _foto(app_web, _Resp(status=303))[0].status_code == 404
-    assert _foto(app_web, _Resp(datos=b"x" * (app_web.FOTO_MAX_BYTES + 1)))[0].status_code == 404
+    assert _foto(app_web, _Resp(datos=b"x" * (__import__("core.foto",fromlist=["x"]).MAX_BYTES + 1)))[0].status_code == 404
     assert _foto(app_web, _Resp(), foto_url="")[0].status_code == 404
 
 
 def test_foto_sin_sesion_da_401(app_web):
     with mock.patch.object(app_web, "get_session", return_value=(None, None)):
         assert app_web.app.test_client().get("/api/foto").status_code == 401
+
+
+def test_foto_prueba_la_segunda_ruta_y_no_sigue_redirecciones_ajenas():
+    from core import foto
+    url = BASE + "/pluginfile.php/5/user/icon/f1"
+    # la ruta de webservice falla (404) y la normal funciona
+    with mock.patch.object(foto.requests, "get", side_effect=[_Resp(404), _Resp()]) as g:
+        datos, tipo, motivo = foto.descargar(url, "tok")
+    assert datos == b"JPG" and motivo == "ok" and g.call_count == 2
+    # redireccion a otro sitio: no se sigue (el token no sale de Moodle)
+    r = _Resp(302); r.headers["Location"] = "https://malo.example/x.jpg"
+    with mock.patch.object(foto.requests, "get", return_value=r) as g:
+        datos, _, motivo = foto.descargar(url, "tok")
+    assert datos is None and "otro sitio" in motivo
+    assert all("malo.example" not in c.args[0] for c in g.call_args_list)
