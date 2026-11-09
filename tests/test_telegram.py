@@ -114,10 +114,36 @@ def test_los_avisos_viejos_se_limpian(conn):
 # ----------------------------------------------------------------- API y trabajador
 def test_la_api_de_telegram_no_filtra_el_token_en_los_errores():
     import requests
-    with mock.patch.object(T.requests, "post", side_effect=requests.ConnectionError("fallo en https://api.telegram.org/botSECRETO/sendMessage")):
+    with mock.patch.object(T.requests, "post", side_effect=requests.ConnectionError("fallo en https://api.telegram.org/botSECRETO/sendMessage")), \
+         mock.patch.object(T, "_por_curl", return_value=None):
         with pytest.raises(T.TelegramError) as e:
             T.enviar("SECRETO", 1, "hola")
     assert "SECRETO" not in str(e.value) and e.value.__cause__ is None
+
+
+def test_si_python_no_sale_se_usa_curl_y_el_token_no_va_en_los_argumentos():
+    import requests
+    llamadas = []
+    def falso(cmd, input=None, **kw):
+        llamadas.append((cmd, input))
+        return mock.Mock(returncode=0, stdout='{"ok": true, "result": {"username": "UnemIABot"}}')
+    with mock.patch.object(T.requests, "post", side_effect=requests.ConnectTimeout("x")), \
+         mock.patch.object(T.shutil, "which", return_value="/usr/bin/curl"), \
+         mock.patch.object(T.subprocess, "run", side_effect=falso):
+        assert T._llamar("SECRETO", "getMe", {"a": 'b"c'}) == {"username": "UnemIABot"}
+    cmd, entrada = llamadas[0]
+    assert "SECRETO" not in " ".join(cmd) and "SECRETO" in entrada      # por stdin, no visible en procesos
+    assert '\\"' in entrada                                              # las comillas del cuerpo van escapadas
+
+
+def test_el_respaldo_con_curl_tambien_oculta_el_token_si_falla():
+    import requests
+    with mock.patch.object(T.requests, "post", side_effect=requests.ConnectTimeout("x")), \
+         mock.patch.object(T.shutil, "which", return_value="/usr/bin/curl"), \
+         mock.patch.object(T.subprocess, "run", return_value=mock.Mock(returncode=28, stdout="")):
+        with pytest.raises(T.TelegramError) as e:
+            T._llamar("SECRETO", "getMe")
+    assert "SECRETO" not in str(e.value)
 
 
 def test_el_trabajador_responde_al_start_y_envia_avisos(conn, monkeypatch):

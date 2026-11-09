@@ -15,7 +15,10 @@ de extremo a extremo los mensajes de los bots. El token del bot (TELEGRAM_BOT_TO
 NUNCA se imprime: las direcciones de la API lo contienen, por eso los errores no incluyen la URL.
 """
 import hashlib
+import json
 import secrets
+import shutil
+import subprocess
 from datetime import timedelta
 
 import requests
@@ -39,17 +42,37 @@ class TelegramError(Exception):
 
 
 # ------------------------------------------------------------------ API de Telegram
+def _por_curl(url: str, datos: dict, timeout: int):
+    """Respaldo: algunos antivirus/firewalls dejan salir a curl pero no a Python. La URL (lleva el token) y
+    el cuerpo se pasan por la entrada estandar, nunca como argumentos visibles en la lista de procesos."""
+    exe = shutil.which("curl.exe") or shutil.which("curl")
+    if not exe:
+        return None
+    esc = lambda t: t.replace("\\", "\\\\").replace('"', '\\"')
+    config = (f'url = "{esc(url)}"\nheader = "Content-Type: application/json"\n'
+              f'data = "{esc(json.dumps(datos))}"\nsilent\nmax-time = {int(timeout)}\n')
+    try:
+        r = subprocess.run([exe, "--config", "-"], input=config, capture_output=True, text=True, timeout=timeout + 5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return r.stdout if r.returncode == 0 and r.stdout else None
+
+
 def _llamar(token: str, metodo: str, datos: dict = None, timeout: int = 15):
+    url = f"{API}/bot{token}/{metodo}"
     try:
-        r = requests.post(f"{API}/bot{token}/{metodo}", json=datos or {}, timeout=timeout)
+        r = requests.post(url, json=datos or {}, timeout=timeout)
+        cuerpo, codigo = r.text, r.status_code
     except requests.RequestException:
-        raise TelegramError("error de red con Telegram") from None      # sin URL: lleva el token
+        cuerpo, codigo = _por_curl(url, datos or {}, timeout), None
+        if cuerpo is None:
+            raise TelegramError("error de red con Telegram") from None      # sin URL: lleva el token
     try:
-        j = r.json()
+        j = json.loads(cuerpo)
     except ValueError:
-        raise TelegramError(f"respuesta no válida de Telegram ({r.status_code})", r.status_code) from None
+        raise TelegramError(f"respuesta no válida de Telegram ({codigo})", codigo) from None
     if not j.get("ok"):
-        raise TelegramError(f"Telegram rechazó la petición ({j.get('error_code', r.status_code)})", j.get("error_code"))
+        raise TelegramError(f"Telegram rechazó la petición ({j.get('error_code', codigo)})", j.get("error_code"))
     return j["result"]
 
 
