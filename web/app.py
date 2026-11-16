@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from moodle.client import MoodleClient, extraer_token_moodle
-from sga.client import SGAClient, segundos_para_vencer, decodificar_jwt
+from sga.client import SGAClient, segundos_para_vencer, decodificar_jwt, PerfilSinRefreshError
 from core.assistant import AssistantLLM
 from core.sync_all import sync as sync_estudiante
 from db.setup import get_connection, init_db
@@ -332,12 +332,19 @@ def login_submit():
             )
             sga_alumno_id_final = ""
 
+            aviso_perfil = ""
             if tiene_erp:
                 # Si la cuenta tiene mas de un perfil de carrera (ej. Nivelacion + Grado), se cambia
                 # al perfil regular ("Grado"), que es el que tiene horario/notas/registro completos.
                 try:
                     if sga.cambiar_a_perfil_regular():
                         print("[login] Varios perfiles de carrera: cambiado al de tipo 'Grado'.")
+                except PerfilSinRefreshError:
+                    aviso_perfil = ("Tu cuenta del ERP tiene otra carrera además de la que está activa, pero "
+                                    "para cambiarme a ella automáticamente necesito también tu token de "
+                                    "renovación (\"refresh\"). Agrégalo (es el campo opcional, debajo del "
+                                    "token del ERP) y vuelve a entrar para ver el horario y las notas de esa carrera.")
+                    print("[login] Aviso: hay otra carrera de Grado pero falta el refresh para cambiarse.")
                 except Exception as e:
                     print(f"[login] Aviso: no se pudo verificar/cambiar el perfil de carrera: {depurar(e)}")
                 # El ID de alumno se extrae solo; el campo del formulario permite forzarlo a mano.
@@ -356,6 +363,8 @@ def login_submit():
                 print(f"[login] Aviso: la sincronizacion inicial tuvo problemas: {depurar(e)}")
 
             avisos = avisos_de_sincronizacion(estudiante_id, inicio_sync)
+            if aviso_perfil:
+                avisos.append(aviso_perfil)
             if not tiene_erp:
                 avisos.append("Entraste solo con Moodle: no tendrás horario de clases ni foto del ERP. "
                               "Puedes conectar el ERP al volver a entrar (opcional).")

@@ -7,23 +7,27 @@ function formatoEdad(ms) {
   return `hace ${Math.round(min / 60)} h`;
 }
 
-chrome.storage.local.get(["sga_access_token", "sga_capturado_en"], (d) => {
-  const estado = $("estado");
-  if (!d.sga_access_token) {
-    estado.className = "estado falta";
+chrome.storage.local.get(
+  ["sga_access_token", "sga_capturado_en", "sga_refresh_token", "sga_refresh_capturado_en"],
+  (d) => {
+    const estado = $("estado");
+    if (!d.sga_access_token) {
+      estado.className = "estado falta";
+      estado.textContent =
+        "Todavía no he visto tu token. Abre el ERP, inicia sesión y navega un momento por él.";
+      return;
+    }
+    const edadMs = Date.now() - (d.sga_capturado_en || 0);
+    const viejo = edadMs > 90 * 60 * 1000; // el ERP suele vencer ~2h: a partir de 90 min, aviso
+    estado.className = "estado ok";
     estado.textContent =
-      "Todavía no he visto tu token. Abre el ERP, inicia sesión y navega un momento por él.";
-    return;
+      `Token detectado, capturado ${formatoEdad(edadMs)}.` +
+      (d.sga_refresh_token ? " También tengo el de renovación: útil si tu cuenta tiene más de una carrera." : "") +
+      (viejo ? " Puede estar por vencer: si falla, vuelve a abrir el ERP un momento." : "");
+    $("rellenar").disabled = false;
+    $("copiar").disabled = false;
   }
-  const edadMs = Date.now() - (d.sga_capturado_en || 0);
-  const viejo = edadMs > 90 * 60 * 1000; // el ERP suele vencer ~2h: a partir de 90 min, aviso
-  estado.className = "estado ok";
-  estado.textContent =
-    `Token detectado, capturado ${formatoEdad(edadMs)}.` +
-    (viejo ? " Puede estar por vencer: si falla, vuelve a abrir el ERP un momento." : "");
-  $("rellenar").disabled = false;
-  $("copiar").disabled = false;
-});
+);
 
 $("copiar").addEventListener("click", async () => {
   const { sga_access_token: token } = await chrome.storage.local.get("sga_access_token");
@@ -34,7 +38,10 @@ $("copiar").addEventListener("click", async () => {
 });
 
 $("rellenar").addEventListener("click", async () => {
-  const { sga_access_token: token } = await chrome.storage.local.get("sga_access_token");
+  const { sga_access_token: token, sga_refresh_token: refresh } = await chrome.storage.local.get([
+    "sga_access_token",
+    "sga_refresh_token",
+  ]);
   if (!token) return;
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !tab.id) return;
@@ -42,17 +49,22 @@ $("rellenar").addEventListener("click", async () => {
   try {
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: (valor) => {
+      func: (valor, valorRefresh) => {
         const campo = document.getElementById("sga_access_token");
         if (!campo) return "sin_campo";
         const detalle = campo.closest("details");
         if (detalle) detalle.open = true; // el campo del ERP esta plegado por ser opcional
         campo.value = valor;
         campo.dispatchEvent(new Event("input", { bubbles: true })); // dispara la validacion del login
+        const campoRefresh = document.getElementById("sga_refresh_token");
+        if (valorRefresh && campoRefresh) {
+          campoRefresh.value = valorRefresh;
+          campoRefresh.dispatchEvent(new Event("input", { bubbles: true }));
+        }
         campo.scrollIntoView({ block: "center", behavior: "smooth" });
         return "ok";
       },
-      args: [token],
+      args: [token, refresh || ""],
     });
     const estado = $("estado");
     if (result === "sin_campo") {

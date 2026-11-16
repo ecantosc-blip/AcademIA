@@ -22,6 +22,11 @@ import base64
 import requests
 
 
+class PerfilSinRefreshError(Exception):
+    """La cuenta tiene otro perfil de carrera (de Grado) pero no se puede cambiar a el sin el
+    token de renovacion (ver SGAClient.cambiar_a_perfil_regular)."""
+
+
 def decodificar_jwt(token: str) -> dict:
     """
     Decodifica el 'payload' de un JWT SIN verificar la firma (no tenemos
@@ -261,6 +266,17 @@ class SGAClient:
         )
         if not perfil_grado:
             return False
+
+        # Este endpoint necesita el refresh_token para emitir el nuevo access_token del otro
+        # perfil. Sin el (ej. si solo se conecto el ERP con el token de acceso, por la extension
+        # de navegador o pegando solo "access"), la peticion SIEMPRE responde 400 Bad Request:
+        # no tiene sentido intentarla, y antes quedaba un error confuso en el registro.
+        if not self.refresh_token:
+            raise PerfilSinRefreshError(
+                "la cuenta tiene otra carrera (de Grado), pero falta el token de renovacion "
+                "('refresh') para cambiarse a ella automaticamente; con solo el de acceso, el "
+                "ERP sigue mostrando los datos del perfil actualmente activo."
+            )
 
         url = f"{self.base_url}/api/1.0/jwt/token/change/career"
         resp = self.session.post(

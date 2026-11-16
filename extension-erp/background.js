@@ -48,3 +48,26 @@ chrome.webRequest.onSendHeaders.addListener(
   { urls: DOMINIOS_ERP.map((d) => `https://${d}/*`) },
   ["requestHeaders", "extraHeaders"]
 );
+
+// El token de renovacion ("refresh") solo aparece en el CUERPO de la respuesta del login,
+// que esta extension no lee (eso pediria un permiso mas invasivo). Lo que SI se puede leer sin
+// pedir nada nuevo es el cuerpo de las peticiones que el propio ERP envia a SU endpoint de
+// renovacion cuando decide refrescar su sesion solo: ese cuerpo lleva el refresh que el ERP
+// ya tenia guardado. Es un "si cae, cae": solo se captura si el ERP llega a renovarse mientras
+// la persona esta navegando con la extension activa, no esta garantizado en cada visita.
+chrome.webRequest.onBeforeRequest.addListener(
+  (detalle) => {
+    if (!esDominioErp(detalle.url) || !detalle.url.includes("/jwt/token/refresh")) return;
+    const bruto = detalle.requestBody && detalle.requestBody.raw && detalle.requestBody.raw[0];
+    if (!bruto || !bruto.bytes) return;
+    try {
+      const texto = new TextDecoder("utf-8").decode(bruto.bytes);
+      const refresh = JSON.parse(texto).refresh;
+      if (refresh) chrome.storage.local.set({ sga_refresh_token: refresh, sga_refresh_capturado_en: Date.now() });
+    } catch (e) {
+      /* cuerpo con otro formato: se ignora, no es grave (el refresh sigue siendo opcional) */
+    }
+  },
+  { urls: DOMINIOS_ERP.map((d) => `https://${d}/*`) },
+  ["requestBody"]
+);

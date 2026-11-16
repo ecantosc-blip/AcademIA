@@ -7,6 +7,13 @@ en tu navegador, pasando su verificación como cualquier persona), la extensión
 que tu propio navegador ya envía y lo guarda. Luego, con un clic, lo escribe en el campo
 "Token del ERP" del login de AcademIA.
 
+De paso, si el propio ERP llega a renovar su sesión mientras navegas, la extensión también
+intenta capturar el **token de renovación**. Esto no está garantizado en cada visita (depende
+de que el ERP decida renovarse justo en ese momento): si tu cuenta tiene más de una carrera
+(por ejemplo, nivelación y una carrera de grado), ese token es el que permite cambiarte
+automáticamente a la carrera de grado para ver su horario y sus notas. Si no se capturó, puedes
+seguir pegándolo a mano, como ya era opcional antes.
+
 **Qué NO hace.**
 - No inicia sesión por ti en el ERP ni toca su formulario de usuario/contraseña.
 - No ve ni guarda tu contraseña del ERP.
