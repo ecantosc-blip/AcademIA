@@ -217,6 +217,30 @@
   .principal{padding:32px clamp(18px,4vw,56px) 120px; max-width:1120px; width:100%; margin:0 auto}
   .topm{display:none}
   .vista[hidden]{display:none}
+
+  /* ---- Pie de página: créditos y enlaces de la app (no tapa el inicio, va al fondo) ---- */
+  .pie-app{margin:48px 0 0; padding-top:28px; border-top:1px solid var(--line)}
+  .pie-top{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:28px}
+  .pie-logo{display:flex; align-items:center; gap:10px}
+  .pie-brand{font-weight:700; font-size:1.1rem; letter-spacing:-.01em; margin:0; color:var(--ink)}
+  .pie-eslogan{margin:10px 0 0; color:var(--muted); font-size:.88rem; max-width:26ch}
+  .pie-col h3{margin:0 0 10px; font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+  .pie-col{display:flex; flex-direction:column; gap:8px}
+  .pie-col a, .pie-enlace{color:var(--ink); text-decoration:none; font-size:.92rem; background:none; border:none; padding:0; text-align:left; font-family:inherit; cursor:pointer}
+  .pie-col a:hover, .pie-enlace:hover{color:var(--accent); text-decoration:underline}
+  .pie-credito{margin:0; display:flex; flex-direction:column; gap:1px}
+  .pie-nombre{font-size:.92rem; color:var(--ink)}
+  .pie-rol{font-size:.78rem; color:var(--muted)}
+  .pie-bottom{margin-top:28px; padding-top:16px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--muted); font-size:.78rem}
+  .pie-bottom p{margin:0}
+  .pie-ficha{display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; margin:0 0 16px; padding:14px; background:var(--canvas); border-radius:10px}
+  .pie-ficha dt{font-size:.74rem; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:0}
+  .pie-ficha dd{margin:2px 0 0; font-size:.92rem; color:var(--ink); font-weight:500}
+  .pie-hr{border:none; border-top:1px solid var(--line); margin:4px 0 16px}
+  @media (max-width:760px){
+    .pie-top{grid-template-columns:1fr 1fr; gap:24px}
+    .pie-ficha{grid-template-columns:1fr}
+  }
   .vista > h1{margin:0 0 4px; font-size:1.7rem; letter-spacing:-.02em; line-height:1.2}
   .vista > .sub{margin:0 0 28px; color:var(--muted)}
   .cols2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; align-items:start}
@@ -688,7 +712,59 @@
         </div>
       </div>
     </section>
+
+    <footer class="pie-app">
+      <div class="pie-top">
+        <div class="pie-marca">
+          <div class="pie-logo"><img src="/static/tiger-avatar.png" alt="" width="36" height="36"><p class="pie-brand">AcademIA</p></div>
+          <p class="pie-eslogan">Conectando tu vida académica con inteligencia artificial.</p>
+        </div>
+        <nav class="pie-col" aria-labelledby="pc-plat">
+          <h3 id="pc-plat">Plataforma</h3>
+          <a href="#inicio">Inicio</a>
+          <button type="button" class="pie-enlace" id="pie-asistente">Asistente IA</button>
+          <a href="#plan">Plan de estudio</a>
+          <a href="#materias">Mis materias</a>
+        </nav>
+        <nav class="pie-col" aria-labelledby="pc-info">
+          <h3 id="pc-info">Información</h3>
+          <button type="button" class="pie-enlace" id="pie-acerca">Acerca de AcademIA</button>
+          <a href="#datos">Privacidad y seguridad</a>
+          <button type="button" class="pie-enlace" id="pie-ayuda">Ayuda</button>
+        </nav>
+        <div class="pie-col">
+          <h3>Créditos</h3>
+          <p class="pie-credito"><span class="pie-nombre">Erick Isaac Cantos Chevez</span><span class="pie-rol">Desarrollador</span></p>
+          <p class="pie-credito"><span class="pie-nombre">Josué Guadalupe</span><span class="pie-rol">Desarrollador</span></p>
+        </div>
+      </div>
+      <div class="pie-bottom">
+        <p>Proyecto académico de titulación · Ingeniería de Software</p>
+        <p>Universidad Estatal de Milagro · 2026</p>
+        <p>© 2026 AcademIA. Todos los derechos reservados.</p>
+      </div>
+    </footer>
   </main>
+
+  <dialog id="dlg-acerca" aria-labelledby="ac-t">
+    <h2 id="ac-t">Acerca de AcademIA</h2>
+    <p>AcademIA es un asistente académico que conecta Moodle y el sistema académico (SGA/ERP)
+      de la UNEMI para ayudarte a ver tus materias, tareas, horario y avance en un solo lugar,
+      con ayuda de inteligencia artificial.</p>
+    <dl class="pie-ficha">
+      <div><dt>Autores</dt><dd>Erick Isaac Cantos Chevez y Josué Guadalupe</dd></div>
+      <div><dt>Universidad</dt><dd>Universidad Estatal de Milagro (UNEMI)</dd></div>
+      <div><dt>Carrera</dt><dd>Ingeniería de Software</dd></div>
+      <div><dt>Año de desarrollo</dt><dd>2026</dd></div>
+    </dl>
+    <p class="sub">Proyecto académico de titulación. No es un sitio oficial de la UNEMI.</p>
+    <hr class="pie-hr">
+    <h3 id="ay-t">¿Necesitas ayuda?</h3>
+    <p>Para dudas sobre tus materias, tareas, horario o tu carné, pregúntale al asistente (el
+      botón «Pregunta» flotante). Si encuentras un error técnico, repórtalo a los autores del
+      proyecto.</p>
+    <div class="botones"><button type="button" class="btn-o" id="ac-cerrar">Cerrar</button></div>
+  </dialog>
 
   <!-- Chat flotante: el asistente es un complemento disponible en todas las pantallas -->
   <button class="fab" type="button" id="fab" aria-expanded="false" aria-controls="chat">
@@ -1690,6 +1766,12 @@
   document.addEventListener('keydown', ev => {
     if(ev.key === 'Escape' && !$('chat').hidden && !$('chat').classList.contains('grande')){ $('chat').hidden = true; $('fab').setAttribute('aria-expanded','false'); $('fab').focus(); }
   });
+
+  // ---- Pie de página ----
+  $('pie-asistente').addEventListener('click', () => { if($('chat').hidden) $('fab').click(); });
+  $('pie-acerca').addEventListener('click', () => $('dlg-acerca').showModal());
+  $('pie-ayuda').addEventListener('click', () => { $('dlg-acerca').showModal(); $('ay-t').scrollIntoView({block:'nearest'}); });
+  $('ac-cerrar').addEventListener('click', () => $('dlg-acerca').close());
 
   irA();
   cargarPanel();
