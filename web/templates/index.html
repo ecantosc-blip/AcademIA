@@ -187,6 +187,7 @@
   @media (max-width:760px){ .menu a .insignia{position:absolute; margin:0; transform:translate(14px,-12px)} .menu a{position:relative} }
   .etq.sv{background:transparent; border:1px dashed var(--muted); color:var(--muted)}
   .etq{display:inline-block; font-size:.75rem; padding:0 7px; border-radius:6px; margin-right:6px; background:var(--accent-bg); font-weight:500}
+  .etq.personal{background:transparent; border:1px solid var(--orange); color:var(--orange)}
 
   /* horario */
   .dias{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
@@ -654,6 +655,11 @@
       <h1 id="t-agenda">Tu agenda</h1>
       <p class="sub">Entregas, eventos y clases de la semana.</p>
       <div class="col">
+        <section class="card" aria-labelledby="h-centro">
+          <h2 id="h-centro">Centro de pendientes</h2>
+          <p class="sub">Tus tareas de Moodle y tus propios compromisos, juntos pero sin mezclar su origen.</p>
+          <div id="centro-pendientes"><p class="vacio">Cargando…</p></div>
+        </section>
         <section class="card" aria-labelledby="h-fec">
           <h2 id="h-fec">Lo que viene</h2>
           <div id="fechas"><p class="vacio">Cargando…</p></div>
@@ -1230,7 +1236,7 @@
   // core/planificador.py (urgencia + dificultad que indicó la persona). No es un
   // modelo aparte: toma el primer bloque de hoy (o, si no hay horas configuradas,
   // el elemento más urgente) y muestra por qué va primero.
-  let ultimoPanel = null, ultimoPlan = null;
+  let ultimoPanel = null, ultimoPlan = null, ultimaAgenda = null;
   async function cargarRecomendacion(){
     try{
       const r = await fetch('/api/plan');
@@ -1238,9 +1244,61 @@
       const d = await r.json();
       embellecer(d);
       ultimoPlan = d.plan || {};
+      ultimaAgenda = d.agenda || {};
       pintarRecomendacion(ultimoPlan);
       pintarRendimiento();
+      pintarPendientes();
     }catch(_){ /* silencioso: no es crítico para el inicio */ }
+  }
+
+  // ---- Centro de pendientes: une lo que Moodle confirma como pendiente (tareas y
+  // eventos de d.fechas, ya calculado en core/tareas.py) con los compromisos propios
+  // que la persona anotó en su agenda (core/agenda_personal.py, recurrentes por día de
+  // semana). Cada fila deja claro de dónde sale: no se mezclan como si fueran lo mismo.
+  function _proximaFechaDia(diaTexto){
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const objetivo = DIAS[sinAcentos(diaTexto || '')];
+    if(objetivo == null) return null;
+    for(let off = 0; off < 7; off++){
+      const f = new Date(hoy); f.setDate(f.getDate() + off);
+      if(f.getDay() === objetivo) return f;
+    }
+    return null;
+  }
+  function construirPendientes(){
+    const items = [];
+    for(const f of (ultimoPanel && ultimoPanel.fechas) || []){
+      const fd = new Date(f.fecha);
+      if(!isNaN(fd)) items.push({origen: 'Moodle', iso: f.fecha, fecha: fd, nombre: f.nombre, materia: f.materia, tipo: f.tipo, estado: f.estado});
+    }
+    for(const a of (ultimaAgenda && ultimaAgenda.actividades) || []){
+      const f = _proximaFechaDia(a.dia);
+      if(!f) continue;
+      const iso = f.toISOString().slice(0, 10) + 'T' + (a.inicio || '00:00') + ':00';
+      items.push({origen: 'Personal', iso, fecha: new Date(iso), nombre: a.nombre, materia: null, tipo: null, estado: null});
+    }
+    items.sort((x, y) => x.fecha - y.fecha);
+    return items;
+  }
+  function pintarPendientes(){
+    if(!ultimoPanel) return;
+    const cont = $('centro-pendientes'); cont.replaceChildren();
+    const items = construirPendientes().slice(0, 12);
+    if(!items.length){
+      cont.append(el('p', {class: 'vacio', text: 'No tienes tareas de Moodle ni compromisos personales registrados para los próximos días.'}));
+      return;
+    }
+    for(const it of items){
+      const [rel, abs] = cuando(it.iso);
+      cont.append(el('div', {class: 'fecha'},
+        el('div', {class: 'cuando'}, el('b', {text: rel}), abs),
+        el('div', {},
+          el('div', {class: 'que'},
+            el('span', {class: 'etq' + (it.origen === 'Personal' ? ' personal' : ''), text: it.origen},),
+            it.tipo && it.estado ? etiquetaEstado(it) : null,
+            it.nombre),
+          it.materia ? el('div', {class: 'de', text: it.materia}) : null)));
+    }
   }
 
   // ---- Mi rendimiento académico (en "Tus materias"): actividades completadas
@@ -1749,7 +1807,11 @@
       setSugerencias(SUG_BASE);
     }
   }
-  function pintarTodoPlan(d, conConfig){ planDatos = d; if(conConfig) pintarConfigPlan(d); pintarGrilla(d); pintarTelegram(d); }
+  function pintarTodoPlan(d, conConfig){
+    planDatos = d; if(conConfig) pintarConfigPlan(d); pintarGrilla(d); pintarTelegram(d);
+    // La agenda (compromisos propios) puede haber cambiado: se refleja ya en Centro de pendientes.
+    if(d.agenda){ ultimoPlan = d.plan || ultimoPlan; ultimaAgenda = d.agenda; pintarPendientes(); }
+  }
 
   async function cargarPlan(){
     try{
@@ -1825,7 +1887,7 @@
     const d = await r.json();
     embellecer(d);
     ultimoPanel = d;
-    pintarConexiones(d); pintarInicio(d); pintarSemana(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d); ultimasAlertas = d.alertas || []; pintarAlertas(ultimasAlertas); pintarRendimiento();
+    pintarConexiones(d); pintarInicio(d); pintarSemana(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d); ultimasAlertas = d.alertas || []; pintarAlertas(ultimasAlertas); pintarRendimiento(); pintarPendientes();
     if(!$('v-novedades').hidden) cargarNovedades();
   }
 
