@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "AcademIA – Token del ERP",
+  "version": "1.0.0",
+  "description": "Lee el token de tu sesión ya iniciada en el ERP de la UNEMI y lo rellena en el login de AcademIA. No inicia sesión por ti: solo observa lo que tu propio navegador envía cuando TÚ ya estás conectado.",
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "permissions": ["storage", "webRequest", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://sga.unemi.edu.ec/*",
+    "https://sgaestudiante.unemi.edu.ec/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png" }
+  },
+  "options_page": "options.html"
+}

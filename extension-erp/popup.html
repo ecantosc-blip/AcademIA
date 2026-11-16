@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>AcademIA - Token del ERP</title>
+<style>
+  :root{color-scheme:light dark}
+  body{width:300px; margin:0; padding:14px; font:14px/1.4 system-ui,sans-serif; color:#13222c; background:#fff}
+  h1{font-size:15px; margin:0 0 8px; display:flex; align-items:center; gap:8px}
+  h1 img{width:22px; height:22px; border-radius:50%}
+  p{margin:6px 0}
+  .estado{border-radius:8px; padding:8px 10px; margin:10px 0; font-size:13px}
+  .ok{background:#e6f4ea; color:#1e4620}
+  .falta{background:#fdecea; color:#611a15}
+  button{width:100%; padding:9px; border:0; border-radius:8px; background:#002E45; color:#fff; font-weight:600; cursor:pointer; margin-top:4px}
+  button:disabled{opacity:.5; cursor:default}
+  button.sec{background:transparent; color:#002E45; border:1px solid #cdd7dc}
+  .msg{font-size:12.5px; color:#51636b; margin-top:8px}
+  a{color:#FF6900}
+</style>
+</head>
+<body>
+  <h1><img src="icons/icon32.png" alt="">AcademIA</h1>
+  <p class="msg">Lee el token de tu sesión ya iniciada en el ERP. No inicia sesión por ti.</p>
+  <div id="estado" class="estado">Comprobando…</div>
+  <button id="rellenar" disabled>Rellenar en esta pestaña</button>
+  <button id="copiar" class="sec" disabled>Copiar token</button>
+  <p class="msg">Úsala estando en la pestaña del login de AcademIA. Primero abre el ERP, inicia sesión normal una vez y navega un momento (por ejemplo, abre "Mis materias").</p>
+  <p class="msg"><a href="options.html" target="_blank">Borrar el token guardado</a></p>
+  <script src="popup.js"></script>
+</body>
+</html>

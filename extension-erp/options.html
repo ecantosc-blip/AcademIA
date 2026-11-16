@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>AcademIA - Token del ERP</title>
+<style>body{font:14px system-ui,sans-serif; max-width:420px; margin:40px auto; color:#13222c}
+button{padding:9px 16px; border:0; border-radius:8px; background:#b3261e; color:#fff; font-weight:600; cursor:pointer}
+p{color:#51636b}</style>
+</head>
+<body>
+  <h2>AcademIA &ndash; Token del ERP</h2>
+  <p>Esta extensión solo guarda, en tu navegador, el último token de acceso que vio mientras usabas el ERP ya con tu sesión iniciada. Nunca ve tu contraseña ni envía nada a ningún sitio por su cuenta.</p>
+  <button id="borrar">Borrar el token guardado ahora</button>
+  <p id="msg"></p>
+  <script>
+    document.getElementById("borrar").addEventListener("click", () => {
+      chrome.storage.local.remove(["sga_access_token", "sga_capturado_en"], () => {
+        document.getElementById("msg").textContent = "Listo, se borró.";
+      });
+    });
+  </script>
+</body>
+</html>

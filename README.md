@@ -149,7 +149,8 @@ recarga automática al editar código, arranca con `FLASK_DEBUG=1`
    `https://aulagradoa.unemi.edu.ec/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`.
    Aparecerá una fila `token=...` (marcada *canceled*, es normal). Clic
    derecho → Copy → Copy URL, y pega ese texto en el Paso 1 del login.
-2. *Token del ERP (opcional).* Igual que en el paso 2 de este README: copia `"access"`
+2. *Token del ERP (opcional).* Hay una extensión de navegador (`extension-erp/`) que lo rellena
+   sola leyendo tu sesión ya abierta del ERP; ver `extension-erp/README.md`. A mano es igual que en el paso 2 de este README: copia `"access"`
    (y opcionalmente `"refresh"`) de la petición `login.json`.
 
 Si un token vence, la app lo avisa: genera uno nuevo y vuelve a entrar.
