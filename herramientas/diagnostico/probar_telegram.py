@@ -13,7 +13,8 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
 token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-print("1. Token en .env:", "SI (largo %d)" % len(token) if token else "NO -> falta TELEGRAM_BOT_TOKEN")
+largo = len(token)
+print("1. Token en .env:", "SI (largo %d)" % largo if largo else "NO -> falta TELEGRAM_BOT_TOKEN")
 if token and (":" not in token or " " in token):
     print("   AVISO: el token tiene forma rara (debe ser como 123456789:AAE... sin espacios ni comillas).")
 
@@ -33,12 +34,15 @@ except requests.RequestException as e:
 
 if hasattr(T, "_por_curl") and exe:
     cuerpo = T._por_curl(f"{T.API}/bot{token}/getMe", {}, 15)
-    print("5. Por curl:", ("responde: " + cuerpo[:80].replace(token, "***")) if cuerpo else "falla (sin respuesta)")
+    # Solo se informa si respondio y el usuario del bot; la respuesta cruda no se imprime.
+    ok_curl = bool(cuerpo) and '"ok":true' in cuerpo.replace(" ", "")
+    print("5. Por curl:", "responde y el token es VALIDO" if ok_curl else ("responde pero RECHAZA el token" if cuerpo else "falla (sin respuesta)"))
     if not cuerpo:
         r = subprocess.run([exe, "-sS", "-m", "10", "-o", "NUL" if os.name == "nt" else "/dev/null", "-w", "%{http_code}",
                             "https://api.telegram.org/"], capture_output=True, text=True)
         print("   curl a la raiz de Telegram: codigo", r.stdout, "| error:", (r.stderr or "-").strip()[:120])
 try:
-    print("6. preparar_bot:", "OK, usuario @" + str(T.preparar_bot(token)))
+    usuario_bot = T.preparar_bot(token)
+    print("6. preparar_bot: OK, usuario @" + str(usuario_bot))
 except T.TelegramError as e:
     print("6. preparar_bot falla:", e)

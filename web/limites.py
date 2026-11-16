@@ -39,6 +39,7 @@ def _leer_limite(nombre: str, por_defecto: str) -> tuple:
 # Valores por defecto pensados para un uso normal de estudiante (con holgura).
 LIMITES = {
     "login":   ("LIMITE_LOGIN",   "10/600"),    # por IP: 10 intentos cada 10 min
+    "login_usuario": ("LIMITE_LOGIN_USUARIO", "5/600"),   # por usuario de Moodle: frena adivinar claves
     "chat":    ("LIMITE_CHAT",    "20/60"),     # por sesion
     "estudio": ("LIMITE_ESTUDIO", "20/300"),    # practica, videos y tutor, por sesion
     "sync":    ("LIMITE_SYNC",    "4/300"),     # por sesion: 4 actualizaciones cada 5 min

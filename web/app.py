@@ -257,49 +257,59 @@ def login_submit():
             error=f"Demasiados intentos. Espera {max(1, espera // 60)} min y vuelve a intentarlo.",
             moodle_base_url=os.getenv("MOODLE_BASE_URL", "https://aulagradoa.unemi.edu.ec"),
         ), 429
-    # Autenticacion por token (sin contraseñas): el estudiante pega el token
-    # de sesion de Moodle (o el enlace moodlemobile://token=... completo) y
-    # el token del ERP. Esta app nunca recibe ni guarda contraseñas.
+    # Dos formas de entrar (ISO/IEC 27001: la contrasena se usa UNA vez y no se guarda):
+    #  1. Con usuario y contrasena de Moodle (lo normal): el SERVIDOR le pide a Moodle un token
+    #     (login/token.php, el mismo mecanismo de la app oficial de Moodle), descarta la contrasena
+    #     y trabaja solo con el token, que vence y es de solo lectura.
+    #  2. Avanzado: pegar el token de Moodle ya generado (sin contrasena).
+    # El ERP es OPCIONAL: su login tiene deteccion de bots y no se automatiza; si el estudiante
+    # pega su token, se agrega horario de clases, foto y notas oficiales.
+    moodle_base_url = os.getenv("MOODLE_BASE_URL", "https://aulagradoa.unemi.edu.ec")
+    usuario = (request.form.get("moodle_usuario") or "").strip()
+    clave = request.form.get("moodle_clave") or ""
     moodle_token = extraer_token_moodle(request.form.get("moodle_token") or "")
     sga_access_token = (request.form.get("sga_access_token") or "").strip()
     sga_refresh_token = (request.form.get("sga_refresh_token") or "").strip()
     sga_alumno_id = (request.form.get("sga_alumno_id") or "").strip()
 
-    moodle_base_url = os.getenv("MOODLE_BASE_URL", "https://aulagradoa.unemi.edu.ec")
+    def _error_login(texto, codigo=200):
+        return render_template("login.html", error=texto, moodle_base_url=moodle_base_url), codigo
 
-    if not moodle_token or not sga_access_token:
-        return render_template(
-            "login.html",
-            error="Completa el token de Moodle y el token del ERP académico.",
-            moodle_base_url=moodle_base_url,
-        )
+    if not moodle_token:
+        if not usuario or not clave:
+            return _error_login("Escribe tu usuario y contraseña de Moodle.")
+        # Freno por usuario: esta pagina no puede servir para adivinar contrasenas ajenas.
+        ok_u, espera_u = limites.revisar("login_usuario", usuario.lower())
+        if not ok_u:
+            return _error_login(f"Demasiados intentos con ese usuario. Espera {max(1, espera_u // 60)} min.", 429)
+        try:
+            with limites.cupo_sync.tomar(20):
+                moodle_token = MoodleClient(base_url=moodle_base_url).login(usuario, clave)
+        except limites.Ocupado:
+            return _error_login("Hay mucha gente conectándose ahora mismo. Inténtalo de nuevo en un momento.", 503)
+        except ValueError:      # Moodle rechazo las credenciales; no se repite lo que escribio
+            return _error_login("Usuario o contraseña incorrectos.")
+        except RuntimeError:
+            return _error_login("No pude conectar con Moodle. Inténtalo de nuevo en unos minutos.")
+        finally:
+            clave = None        # la contrasena no vuelve a usarse ni se guarda en ningun sitio
 
-    # El token del ERP trae su fecha de vencimiento dentro: se revisa aqui,
-    # sin llamar a la red, para no dejar entrar a alguien con un token vencido
-    # (antes el login "funcionaba" y el ERP quedaba vacio sin avisar).
-    resto = segundos_para_vencer(sga_access_token)
-    if resto is None and sga_access_token.count(".") != 2:
-        return render_template(
-            "login.html",
-            error="El token del ERP no parece válido: debe ser el valor largo de \"access\" "
-                  "(empieza con eyJ...). Cópialo de nuevo desde login.json.",
-            moodle_base_url=moodle_base_url,
-        )
-    if resto is not None and resto <= 0 and sga_refresh_token:
-        # El access ya vencio, pero con el token de renovacion se puede pedir uno nuevo.
+    tiene_erp = bool(sga_access_token)
+
+    # El token del ERP (si lo hay) trae su vencimiento dentro: se revisa sin llamar a la red.
+    resto = segundos_para_vencer(sga_access_token) if tiene_erp else None
+    if tiene_erp and resto is None and sga_access_token.count(".") != 2:
+        return _error_login("El token del ERP no parece válido: debe ser el valor largo de \"access\" "
+                            "(empieza con eyJ...). Cópialo de nuevo desde login.json, o déjalo vacío.")
+    if tiene_erp and resto is not None and resto <= 0 and sga_refresh_token:
         intento = SGAClient(os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec"), sga_access_token, sga_refresh_token)
         if intento.refresh_access_token():
             sga_access_token, sga_refresh_token = intento.access_token, intento.refresh_token
             resto = segundos_para_vencer(sga_access_token)
-    if resto is not None and resto <= 0:
+    if tiene_erp and resto is not None and resto <= 0:
         minutos = int(-resto // 60)
         hace = f"hace {minutos} min" if minutos < 120 else f"hace {minutos // 60} h"
-        return render_template(
-            "login.html",
-            error=f"El token del ERP ya venció ({hace}). Inicia sesión en el ERP desde tu "
-                  "navegador, copia un token nuevo (el valor de \"access\") y vuelve a intentarlo.",
-            moodle_base_url=moodle_base_url,
-        )
+        return _error_login(f"El token del ERP ya venció ({hace}). Copia uno nuevo, o déjalo vacío para entrar solo con Moodle.")
 
     # La parte lenta (hablar con Moodle y el ERP y sincronizar) entra por un cupo:
     # si hay muchos ingresando a la vez, se espera un poco y luego se pide reintentar.
@@ -310,11 +320,7 @@ def login_submit():
                 # Valida el token: si es incorrecto o ya venció, Moodle responde con error.
                 info = moodle.get_site_info()
             except Exception as e:
-                return render_template(
-                    "login.html",
-                    error=f"El token de Moodle no es válido o ya venció. Genera uno nuevo y vuelve a intentarlo. ({depurar(e)})",
-                    moodle_base_url=moodle_base_url,
-                )
+                return _error_login(f"El token de Moodle no es válido o ya venció. Genera uno nuevo y vuelve a intentarlo. ({depurar(e)})")
 
             estudiante_id = info["userid"]
             nombre = info.get("fullname", "Estudiante")
@@ -324,23 +330,18 @@ def login_submit():
                 access_token=sga_access_token,
                 refresh_token=sga_refresh_token,
             )
+            sga_alumno_id_final = ""
 
-            # Si la cuenta tiene mas de un perfil de carrera (ej. Nivelacion +
-            # Grado, caso comun en estudiantes recien admitidos), se cambia
-            # automaticamente al perfil de carrera regular ("Grado"), que es el
-            # que tiene horario/notas/registro academico completos.
-            try:
-                if sga.cambiar_a_perfil_regular():
-                    print(f"[login] Se detectaron multiples perfiles de carrera - "
-                          f"cambiado automaticamente al de tipo 'Grado'.")
-            except Exception as e:
-                print(f"[login] Aviso: no se pudo verificar/cambiar el perfil de carrera: {depurar(e)}")
-
-            # El ID de alumno para "Registro Academico" ya no se pide manualmente:
-            # se extrae automaticamente de la propia respuesta de materias().
-            # Si el campo del formulario viene lleno (override manual, por si la
-            # extraccion automatica fallara para algun tipo de cuenta), se respeta.
-            sga_alumno_id_final = sga_alumno_id or sga.get_alumno_id_automatico() or ""
+            if tiene_erp:
+                # Si la cuenta tiene mas de un perfil de carrera (ej. Nivelacion + Grado), se cambia
+                # al perfil regular ("Grado"), que es el que tiene horario/notas/registro completos.
+                try:
+                    if sga.cambiar_a_perfil_regular():
+                        print("[login] Varios perfiles de carrera: cambiado al de tipo 'Grado'.")
+                except Exception as e:
+                    print(f"[login] Aviso: no se pudo verificar/cambiar el perfil de carrera: {depurar(e)}")
+                # El ID de alumno se extrae solo; el campo del formulario permite forzarlo a mano.
+                sga_alumno_id_final = sga_alumno_id or sga.get_alumno_id_automatico() or ""
 
             # Sincronizacion inicial con los datos de ESTA persona especificamente.
             inicio_sync = ahora_iso()
@@ -355,19 +356,20 @@ def login_submit():
                 print(f"[login] Aviso: la sincronizacion inicial tuvo problemas: {depurar(e)}")
 
             avisos = avisos_de_sincronizacion(estudiante_id, inicio_sync)
+            if not tiene_erp:
+                avisos.append("Entraste solo con Moodle: no tendrás horario de clases ni foto del ERP. "
+                              "Puedes conectar el ERP al volver a entrar (opcional).")
 
     except limites.Ocupado:
-        return render_template(
-            "login.html",
-            error="Hay mucha gente conectándose ahora mismo. Inténtalo de nuevo en un momento.",
-            moodle_base_url=moodle_base_url,
-        ), 503
+        return _error_login("Hay mucha gente conectándose ahora mismo. Inténtalo de nuevo en un momento.", 503)
 
-    try:
-        sga_base = os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec")
-        foto_erp_url = foto.buscar_en_sga(decodificar_jwt(sga.access_token), sga_base)
-    except Exception:
-        foto_erp_url = ""
+    foto_erp_url = ""
+    if tiene_erp:
+        try:
+            foto_erp_url = foto.buscar_en_sga(decodificar_jwt(sga.access_token),
+                                              os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec"))
+        except Exception:
+            foto_erp_url = ""
 
     sid = sessions_store.crear({
         "aviso_sync": " ".join(avisos),
@@ -375,7 +377,7 @@ def login_submit():
         "nombre": nombre,
         "foto_url": foto.url_valida(info.get("userpictureurl"), moodle_base_url),
         "foto_erp_url": foto_erp_url,
-        "moodle_token": moodle_token,            # token de sesion; NO se guarda ninguna contraseña
+        "moodle_token": moodle_token,            # solo el token (vence); la contrasena nunca se guarda
         "sga_access_token": sga.access_token,   # ya actualizado si hubo cambio de perfil
         "sga_refresh_token": sga.refresh_token,  # idem
         "sga_alumno_id": sga_alumno_id_final,
@@ -713,6 +715,9 @@ def carnet():
     ok, espera = limites.revisar("carnet", sid)
     if not ok:
         return _demasiadas(espera)
+    if not sesion.get("sga_access_token"):
+        return jsonify({"error": "El carné viene del ERP y entraste solo con Moodle. "
+                                 "Cierra sesión y vuelve a entrar conectando el ERP (es opcional)."}), 400
     renovar_token_erp(sid, sesion)
     sga = SGAClient(
         base_url=os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec"),
