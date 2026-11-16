@@ -43,6 +43,44 @@ def test_carnet_sin_sesion_da_401(app_web):
         assert app_web.app.test_client().get("/carnet").status_code == 401
 
 
+def test_carnet_digital_arma_su_propio_pdf_si_el_erp_no_entrega_uno(app_web):
+    """Desde nov/2026 el ERP ya no arma el PDF: entrega los datos sueltos del 'carne digital'
+    (eCarnetDigital) y AcademIA debe armar el PDF ella misma con esos datos (core/carnet_pdf)."""
+    A = app_web
+    info = {"pdf_url": None, "nombres": "Kleber", "apellidos": "Solis", "cedula": "0943293290",
+            "carrera": "Enfermería", "facultad_siglas": "FACS", "modalidad": "Presencial",
+            "nivel": "Quinto semestre", "periodo": "Agosto - Diciembre 2026", "codigo": "123",
+            "qr_data_uri": None, "foto_url": "https://sga.unemi.edu.ec/foto.jpg"}
+    with mock.patch.object(A, "get_session", return_value=("sid1", dict(SESION))), \
+         mock.patch.object(A.SGAClient, "cambiar_a_perfil_regular", return_value=False), \
+         mock.patch.object(A.SGAClient, "get_carnet_parseado", return_value=info), \
+         mock.patch.object(A.foto, "descargar_erp", return_value=(b"\x89PNG...", "image/png", "ok")) as m_foto, \
+         mock.patch.object(A.sessions_store, "guardar"):
+        r = A.app.test_client().get("/carnet")
+    assert r.status_code == 200 and r.headers["Content-Type"] == "application/pdf"
+    assert r.data.startswith(b"%PDF") and "carne-unemi.pdf" in r.headers["Content-Disposition"]
+    m_foto.assert_called_once()   # intento traer la foto para ponerla en el PDF
+
+
+def test_carnet_digital_sin_foto_tambien_genera_el_pdf(app_web):
+    A = app_web
+    info = {"pdf_url": None, "nombres": "Ana", "apellidos": "Ruiz", "cedula": "1",
+            "carrera": "Software", "foto_url": None}
+    with mock.patch.object(A, "get_session", return_value=("sid1", dict(SESION))), \
+         mock.patch.object(A.SGAClient, "cambiar_a_perfil_regular", return_value=False), \
+         mock.patch.object(A.SGAClient, "get_carnet_parseado", return_value=info), \
+         mock.patch.object(A.foto, "descargar_erp") as m_foto, \
+         mock.patch.object(A.sessions_store, "guardar"):
+        r = A.app.test_client().get("/carnet")
+    assert r.status_code == 200 and r.data.startswith(b"%PDF")
+    m_foto.assert_not_called()
+
+
+def test_sin_pdf_ni_datos_digitales_sigue_siendo_404(app_web):
+    """Cuenta sin carne de ningun tipo (ej. propedeutico): sigue avisando que no hay carne."""
+    assert _pedir(app_web, {"pdf_url": None, "nombres": None, "cedula": None, "carrera": None}).status_code == 404
+
+
 def test_chat_devuelve_accion_de_carnet(app_web):
     A = app_web
     from core import assistant as AS

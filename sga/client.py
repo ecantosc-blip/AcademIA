@@ -315,14 +315,35 @@ class SGAClient:
                           referer="https://sgaestudiante.unemi.edu.ec/alu_carnet")
 
     def get_carnet_parseado(self):
-        """Solo lo necesario: enlace al PDF, imagen, QR y fechas de vigencia."""
-        carnet = (self.get_carnet().get("data", {}) or {}).get("eCarnet", {}) or {}
+        """Enlace al PDF (si el ERP todavia lo genera asi), imagen, QR y fechas de vigencia,
+        mas los datos del "carne digital" (eCarnetDigital): desde nov/2026 el ERP ya no arma
+        un PDF/PNG propio (quedan vacios) y en su lugar entrega estos datos sueltos para que
+        su pagina los dibuje. Con ellos, core/carnet_pdf.generar_pdf arma un PDF equivalente
+        cuando no hay pdf_url."""
+        data = self.get_carnet().get("data", {}) or {}
+        carnet = data.get("eCarnet", {}) or {}
+        digital = data.get("eCarnetDigital", {}) or {}
         return {
             "pdf_url": carnet.get("pdf"),
             "imagen_url": carnet.get("png_anverso"),
             "codigo_qr": carnet.get("codigo_qr"),
             "fecha_emision": carnet.get("fecha_emision"),
             "fecha_caducidad": carnet.get("fecha_caducidad"),
+            # --- carne digital (cuando no hay pdf_url) ---
+            "nombres": digital.get("nombres"),
+            "apellidos": digital.get("apellidos"),
+            "cedula": digital.get("cedula"),
+            "carrera": digital.get("carrera"),
+            "facultad": digital.get("facultad"),
+            "facultad_siglas": digital.get("facultad_siglas"),
+            "modalidad": digital.get("modalidad"),
+            "paralelo": digital.get("paralelo"),
+            "nivel": digital.get("nivel"),
+            "periodo": digital.get("periodo"),
+            "codigo": digital.get("codigo"),
+            "qr_data_uri": digital.get("qr"),
+            "url_validacion": digital.get("url_validacion"),
+            "foto_url": digital.get("foto") or (carnet.get("persona") or {}).get("foto_perfil"),
             "activo": carnet.get("activo"),
         }
 

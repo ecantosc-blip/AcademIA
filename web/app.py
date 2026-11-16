@@ -38,7 +38,7 @@ from core.sync_all import sync as sync_estudiante
 from db.setup import get_connection, init_db
 from core.privacidad import depurar
 from core.tiempo import ahora_iso
-from core import foto
+from core import foto, carnet_pdf
 
 # Crea las tablas (y aplica migraciones) si la base no existe todavia.
 # Es idempotente: si ya existen, no toca los datos.
@@ -745,14 +745,28 @@ def carnet():
             url = info.get("pdf_url") or ""
             if url.startswith("/"):
                 url = os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec").rstrip("/") + url
-            partes = urlparse(url)
-            if not url:
+
+            if url:
+                # Caso antiguo: el ERP ya entrega un PDF armado.
+                partes = urlparse(url)
+                if partes.scheme != "https" or (partes.hostname or "").lower() not in {"sga.unemi.edu.ec", "sgaestudiante.unemi.edu.ec"}:
+                    return jsonify({"error": "El enlace del carné no es de un dominio permitido."}), 400
+                resp = requests.get(url, headers={"Authorization": f"Bearer {sga.access_token}"}, timeout=20)
+                resp.raise_for_status()
+                pdf_bytes = resp.content
+            elif info.get("cedula") or info.get("carrera"):
+                # Caso actual (nov/2026): el ERP solo entrega los datos del "carne digital"
+                # (ver SGAClient.get_carnet_parseado); AcademIA arma el PDF con esos mismos datos.
+                foto_bytes = None
+                if info.get("foto_url"):
+                    foto_bytes, _tipo, _motivo = foto.descargar_erp(
+                        info["foto_url"], sga.access_token,
+                        os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec"))
+                pdf_bytes = carnet_pdf.generar_pdf(info, foto_bytes)
+            else:
                 return jsonify({"error": "No hay un carné generado para esta cuenta en el ERP."}), 404
-            if partes.scheme != "https" or (partes.hostname or "").lower() not in {"sga.unemi.edu.ec", "sgaestudiante.unemi.edu.ec"}:
-                return jsonify({"error": "El enlace del carné no es de un dominio permitido."}), 400
-            resp = requests.get(url, headers={"Authorization": f"Bearer {sga.access_token}"}, timeout=20)
-            resp.raise_for_status()
-            return Response(resp.content, mimetype=resp.headers.get("Content-Type", "application/pdf"),
+
+            return Response(pdf_bytes, mimetype="application/pdf",
                             headers={"Content-Disposition": 'attachment; filename="carne-unemi.pdf"'})
     except limites.Ocupado:
         return jsonify({"error": "Hay muchas operaciones en curso. Inténtalo de nuevo en un momento."}), 503
