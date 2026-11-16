@@ -590,6 +590,13 @@
         <div id="semana-detalle"></div>
       </section>
 
+      <section class="card" aria-labelledby="h-reco">
+        <h2 id="h-reco">Recomendación de estudio</h2>
+        <p class="sub" style="margin-top:0">Según tus tareas y evaluaciones próximas, esto es lo que conviene estudiar primero.</p>
+        <div id="reco-cont"><p class="vacio">Cargando…</p></div>
+        <a class="ver-mas" href="#plan">Ver mi plan completo</a>
+      </section>
+
       <section class="card" id="card-alertas" aria-labelledby="h-alertas" hidden>
         <div class="barra">
           <h2 id="h-alertas">Alertas</h2>
@@ -1209,6 +1216,45 @@
     pintarDetalle();
   }
 
+  // ---- Recomendación de estudio: reutiliza el plan explicable que ya arma
+  // core/planificador.py (urgencia + dificultad que indicó la persona). No es un
+  // modelo aparte: toma el primer bloque de hoy (o, si no hay horas configuradas,
+  // el elemento más urgente) y muestra por qué va primero.
+  async function cargarRecomendacion(){
+    try{
+      const r = await fetch('/api/plan');
+      if(!r.ok) return;
+      const d = await r.json();
+      embellecer(d);
+      pintarRecomendacion(d.plan || {});
+    }catch(_){ /* silencioso: no es crítico para el inicio */ }
+  }
+
+  function pintarRecomendacion(plan){
+    const cont = $('reco-cont'); cont.replaceChildren();
+    let items = [];
+    if(plan.configurado && (plan.dias || []).length){
+      items = (plan.dias[0].bloques || []).filter(b => b.tipo !== 'refuerzo').slice(0, 2);
+    }
+    if(items.length){
+      for(const b of items)
+        cont.append(el('div', {class: 'sd-item'},
+          el('span', {class: 'sd-hora', text: b.minutos + ' min'}),
+          el('div', {}, el('b', {text: b.item}), el('div', {class: 'de', text: b.motivo || b.materia || ''}))));
+      return;
+    }
+    if((plan.por_planificar || []).length){
+      cont.append(el('p', {class: 'vacio'},
+        'No has indicado tus horas libres, así que no hay un horario exacto, pero según lo más urgente esto va primero:'));
+      const top = plan.por_planificar[0];
+      cont.append(el('div', {class: 'sd-item'},
+        el('span', {class: 'sd-hora', text: Math.round(top.minutos) + ' min'}),
+        el('div', {}, el('b', {text: top.item}), top.materia ? el('div', {class: 'de', text: top.materia}) : null)));
+      return;
+    }
+    cont.append(el('p', {class: 'vacio', text: 'No tienes tareas ni evaluaciones urgentes pendientes por ahora.'}));
+  }
+
   function pintarInicio(d){
     const n = d.inicio ? d.inicio.vencen_7d : 0;
     const sv = d.inicio ? (d.inicio.sin_verificar_7d || 0) : 0;
@@ -1697,7 +1743,7 @@
     const cuerpo = {disponibilidad, dificultades, minutos_por_tarea:$('p-tarea').value, minutos_evaluacion:$('p-eval').value,
       alerta_horas:Number($('p-horas').value), asistencia_minima:$('p-asis').value,
       alertas_tipos:[...document.querySelectorAll('#p-tipos input:checked')].map(c => c.dataset.tipo)};
-    try{ pintarTodoPlan(await postPlan('/api/plan/preferencias', cuerpo), true); msg.textContent = 'Guardado.'; cargarPanel(); }
+    try{ pintarTodoPlan(await postPlan('/api/plan/preferencias', cuerpo), true); msg.textContent = 'Guardado.'; cargarPanel(); cargarRecomendacion(); }
     catch(err){ msg.textContent = err.message; }
     b.disabled = false;
   });
@@ -1767,7 +1813,7 @@
       catch(_){ d = {error: 'El servidor respondió con un error (' + r.status + '). Revisa la consola donde corre la app; si el token del ERP venció, cierra el acceso y entra con uno nuevo.'}; }
       if(d.error) mostrarAviso(d.error, true);
       else if(d.avisos && d.avisos.length) d.avisos.forEach(a => mostrarAviso(a, true));
-      await cargarPanel();
+      await cargarPanel(); cargarRecomendacion();
     }catch(e){ mostrarAviso('No se pudo actualizar: ' + e.message, true); }
     b.disabled = false; b.textContent = 'Actualizar datos';
   }
@@ -1919,6 +1965,7 @@
 
   irA();
   cargarPanel();
+  cargarRecomendacion();
 </script>
 </body>
 </html>
