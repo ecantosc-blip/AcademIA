@@ -7,12 +7,20 @@ en tu navegador, pasando su verificación como cualquier persona), la extensión
 que tu propio navegador ya envía y lo guarda. Luego, con un clic, lo escribe en el campo
 "Token del ERP" del login de AcademIA.
 
-De paso, si el propio ERP llega a renovar su sesión mientras navegas, la extensión también
-intenta capturar el **token de renovación**. Esto no está garantizado en cada visita (depende
-de que el ERP decida renovarse justo en ese momento): si tu cuenta tiene más de una carrera
-(por ejemplo, nivelación y una carrera de grado), ese token es el que permite cambiarte
-automáticamente a la carrera de grado para ver su horario y sus notas. Si no se capturó, puedes
-seguir pegándolo a mano, como ya era opcional antes.
+La extensión también captura el **token de renovación** (el que permite cambiarte
+automáticamente a otra carrera si tu cuenta tiene más de una, por ejemplo nivelación y una
+carrera de grado). Ese token solo viene en el cuerpo de la respuesta del login, así que para
+leerlo la extensión se conecta un instante (justo al pausar un momento esa única respuesta y
+dejarla seguir enseguida) —justo mientras inicias sesión en el ERP— al
+Protocolo de Depuración de Chrome. **Vas a ver un aviso amarillo de Chrome que dice algo como
+"AcademIA – Token del ERP está depurando este navegador".** Es normal, Chrome lo muestra
+siempre que algo usa ese protocolo (no se puede ocultar, y es correcto que avise), y es
+justamente para que sepas qué está pasando: es la misma información que verías a mano abriendo
+F12 → Network → `login.json`, solo que automático. El aviso desaparece solo, en un par de
+segundos, en cuanto la extensión termina de leerlo.
+
+Si por algún motivo no lo logra capturar (por ejemplo, si ya tenías las herramientas de
+desarrollador abiertas en esa pestaña), puedes seguir pegándolo a mano, como ya era opcional.
 
 **Qué NO hace.**
 - No inicia sesión por ti en el ERP ni toca su formulario de usuario/contraseña.
