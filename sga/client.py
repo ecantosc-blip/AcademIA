@@ -315,16 +315,26 @@ class SGAClient:
                           referer="https://sgaestudiante.unemi.edu.ec/alu_carnet")
 
     def get_carnet_parseado(self):
-        """Enlace al PDF (si el ERP todavia lo genera asi), imagen, QR y fechas de vigencia,
-        mas los datos del "carne digital" (eCarnetDigital): desde nov/2026 el ERP ya no arma
-        un PDF/PNG propio (quedan vacios) y en su lugar entrega estos datos sueltos para que
-        su pagina los dibuje. Con ellos, core/carnet_pdf.generar_pdf arma un PDF equivalente
-        cuando no hay pdf_url."""
+        """Enlace al PDF real que el propio ERP genera, mas los datos del "carne digital"
+        (eCarnetDigital) como respaldo cuando no hay PDF.
+
+        El ERP ha usado (al menos) dos formas de contestar este mismo endpoint, segun la
+        cuenta/perfil de carrera activo:
+          1) "data": {"pdf": "https://.../archivo.pdf"} -- plano, directo. Es el PDF real
+             que arma el propio SGA (el mismo que baja su boton "Imprimir en PDF"); se
+             confirmo con una cuenta real de carrera de Grado (nov/2026).
+          2) "data": {"eCarnet": {...}, "eCarnetDigital": {...}} -- la forma anterior, con
+             el PDF/PNG ya armados dentro de "eCarnet" (cuando el ERP los generaba asi) o,
+             si esos vienen vacios, los datos sueltos en "eCarnetDigital" para que la pagina
+             del SGA arme la tarjeta ella misma.
+        Se intenta primero el PDF real (formas 1 y 2) y solo se cae a los datos sueltos de
+        "eCarnetDigital" -- para que core/carnet_pdf.generar_pdf arme un PDF equivalente --
+        cuando el ERP de verdad no tiene un PDF que entregar."""
         data = self.get_carnet().get("data", {}) or {}
         carnet = data.get("eCarnet", {}) or {}
         digital = data.get("eCarnetDigital", {}) or {}
         return {
-            "pdf_url": carnet.get("pdf"),
+            "pdf_url": data.get("pdf") or carnet.get("pdf"),
             "imagen_url": carnet.get("png_anverso"),
             "codigo_qr": carnet.get("codigo_qr"),
             "fecha_emision": carnet.get("fecha_emision"),

@@ -747,7 +747,8 @@ def carnet():
                 url = os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec").rstrip("/") + url
 
             if url:
-                # Caso antiguo: el ERP ya entrega un PDF armado.
+                # Caso normal: el ERP ya entrega el PDF real (el mismo que arma su boton
+                # "Imprimir en PDF"), asi que lo bajamos tal cual y se lo pasamos al navegador.
                 partes = urlparse(url)
                 if partes.scheme != "https" or (partes.hostname or "").lower() not in {"sga.unemi.edu.ec", "sgaestudiante.unemi.edu.ec"}:
                     return jsonify({"error": "El enlace del carné no es de un dominio permitido."}), 400
