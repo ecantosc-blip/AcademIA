@@ -19,8 +19,24 @@ def test_sin_sesion_todo_da_401(app_web):
         c = app_web.app.test_client()
         for ruta in ("/api/plan", "/api/alertas"):
             assert c.get(ruta).status_code == 401
-        for ruta in ("/api/plan/preferencias", "/api/plan/excluir", "/api/plan/incluir", "/api/alertas/vistas"):
+        for ruta in ("/api/plan/preferencias", "/api/plan/excluir", "/api/plan/incluir", "/api/alertas/vistas",
+                     "/api/resumen_semanal"):
             assert c.post(ruta, json={}).status_code == 401
+
+
+def test_resumen_semanal_pide_para_el_estudiante_de_la_sesion_y_no_llama_a_la_ia_en_cada_carga(app_web):
+    """La ruta solo debe reaccionar a un POST explicito (se pide, no se genera solo) y
+    debe usar el estudiante_id de la sesion, no uno inventado."""
+    from core import resumen_semanal as R
+    c, p = _cli(app_web)
+    try:
+        with mock.patch.object(R, "generar", return_value={"completado": [], "pendiente": [],
+                               "proximas_evaluaciones": [], "sugerencias": [], "mensaje": "ok", "generado": True}) as m:
+            assert c.get("/api/resumen_semanal").status_code == 405, "no debe generarse solo con un GET"
+            d = c.post("/api/resumen_semanal", json={}).get_json()
+            assert d["mensaje"] == "ok" and m.call_args.args[1] == 77
+    finally:
+        p.stop()
 
 
 def test_el_plan_sin_configurar_lo_dice_y_lista_las_materias(app_web):

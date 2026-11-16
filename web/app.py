@@ -691,6 +691,16 @@ def api_plan_incluir():
     return _con_estudiante(f)
 
 
+@app.route("/api/resumen_semanal", methods=["POST"])
+def api_resumen_semanal():
+    """Genera (con IA) el resumen de la semana a partir de datos ya verificados.
+    Se pide a propósito, no en cada carga del panel: tiene costo y demora."""
+    def f(conn, est, _d):
+        from core import resumen_semanal
+        return resumen_semanal.generar(conn, est)
+    return _con_estudiante(f)
+
+
 @app.route("/api/alertas")
 def api_alertas():
     def f(conn, est, _d):
