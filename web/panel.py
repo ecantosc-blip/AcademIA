@@ -175,7 +175,10 @@ def construir_panel(sesion: dict) -> dict:
             WHERE estudiante_id = ? AND estado = 'aprobada' AND nota_final IS NOT NULL
         """, (est,)).fetchone()["p"]
         inicio = {"vencen_7d": vencen, "sin_verificar_7d": sin_verificar_7d,
-                  "vencidas_sin_entregar": len(grupos["vencidas_sin_entregar"]), "promedio_general": prom}
+                  "vencidas_sin_entregar": len(grupos["vencidas_sin_entregar"]), "promedio_general": prom,
+                  # Actividades que Moodle confirma como entregadas, para "Mi rendimiento académico".
+                  # Es un conteo de hechos verificados (tabla entrega), no una medida de desempeño.
+                  "entregadas_total": len(grupos["entregadas"])}
 
         # ---- Bitacora ----
         bitacora = [{"plataforma": "ERP" if r["plataforma"] == "sga" else "Moodle",

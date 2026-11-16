@@ -636,6 +636,16 @@
           <div class="barras" id="semestres"></div>
           <p class="pie-nota">Solo materias aprobadas, según tu historial.</p>
         </section>
+        <section class="card" aria-labelledby="h-rend">
+          <h2 id="h-rend">Mi rendimiento académico</h2>
+          <div class="kpis" style="grid-template-columns:1fr 1fr; margin-bottom:16px">
+            <div class="kpi" style="cursor:default"><span class="et">Actividades completadas</span><span class="gran num" id="rend-entregadas">—</span><span class="det">Confirmadas por Moodle</span></div>
+            <div class="kpi" style="cursor:default"><span class="et">Promedio general</span><span class="gran num" id="rend-promedio">—</span><span class="det">Materias aprobadas</span></div>
+          </div>
+          <h3 class="sub-t" style="margin-top:0">Materias con menor porcentaje en Moodle</h3>
+          <div id="rend-atencion"><p class="vacio">Cargando…</p></div>
+          <p class="pie-nota">Es solo el porcentaje que informa Moodle de lo que cursas ahora, sin mínimos ni veredictos: AcademIA no decide si "está mal", muestra el dato para que tú lo juzgues.</p>
+        </section>
       </div>
     </section>
 
@@ -1220,14 +1230,36 @@
   // core/planificador.py (urgencia + dificultad que indicó la persona). No es un
   // modelo aparte: toma el primer bloque de hoy (o, si no hay horas configuradas,
   // el elemento más urgente) y muestra por qué va primero.
+  let ultimoPanel = null, ultimoPlan = null;
   async function cargarRecomendacion(){
     try{
       const r = await fetch('/api/plan');
       if(!r.ok) return;
       const d = await r.json();
       embellecer(d);
-      pintarRecomendacion(d.plan || {});
+      ultimoPlan = d.plan || {};
+      pintarRecomendacion(ultimoPlan);
+      pintarRendimiento();
     }catch(_){ /* silencioso: no es crítico para el inicio */ }
+  }
+
+  // ---- Mi rendimiento académico (en "Tus materias"): actividades completadas
+  // (hecho verificado, de core/tareas.py) y, de lo que cursas ahora, las materias
+  // con MENOR porcentaje en Moodle -- el mismo dato que ya usa el plan para el
+  // refuerzo (core/planificador.py), no un veredicto nuevo.
+  function pintarRendimiento(){
+    if(!ultimoPanel) return;
+    $('rend-entregadas').textContent = ultimoPanel.inicio && ultimoPanel.inicio.entregadas_total != null
+      ? ultimoPanel.inicio.entregadas_total : '—';
+    $('rend-promedio').textContent = num(ultimoPanel.inicio ? ultimoPanel.inicio.promedio_general : null);
+    const cont = $('rend-atencion'); cont.replaceChildren();
+    if(!ultimoPlan){ cont.append(el('p', {class: 'vacio', text: 'Cargando…'})); return; }
+    const lista = (ultimoPlan.prioridad_moodle || []).slice(0, 3);
+    if(!lista.length){ cont.append(el('p', {class: 'vacio', text: 'Moodle no informa aún el porcentaje de tus materias actuales.'})); return; }
+    for(const m of lista)
+      cont.append(el('div', {class: 'sd-item'},
+        el('span', {class: 'sd-hora', text: num(m.porcentaje) + '%'}),
+        el('div', {}, el('b', {text: m.materia}))));
   }
 
   function pintarRecomendacion(plan){
@@ -1792,7 +1824,8 @@
     if(r.status === 401){ location = '/login'; return; }
     const d = await r.json();
     embellecer(d);
-    pintarConexiones(d); pintarInicio(d); pintarSemana(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d); ultimasAlertas = d.alertas || []; pintarAlertas(ultimasAlertas);
+    ultimoPanel = d;
+    pintarConexiones(d); pintarInicio(d); pintarSemana(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d); ultimasAlertas = d.alertas || []; pintarAlertas(ultimasAlertas); pintarRendimiento();
     if(!$('v-novedades').hidden) cargarNovedades();
   }
 

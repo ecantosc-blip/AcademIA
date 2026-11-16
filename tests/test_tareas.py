@@ -161,6 +161,7 @@ def test_kpis_del_inicio_no_cuentan_sin_verificar_como_pendiente(datos):
     i = construir_panel({"estudiante_id": 77, "nombre": "X"})["inicio"]
     # hasta 7 dias: 'Borrador futura' (27) y 'Pendiente futura' (28) son confirmadas; 'Sin verificar futura' no
     assert i["vencen_7d"] == 2 and i["sin_verificar_7d"] == 1 and i["vencidas_sin_entregar"] == 1
+    assert i["entregadas_total"] == 1, "solo 'Entregada' (tarea 4) está entregada para la estudiante 77"
 
 
 def test_el_espacio_de_estudio_protege_tambien_lo_sin_verificar(datos):
