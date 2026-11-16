@@ -11,6 +11,7 @@ from db.setup import get_connection
 
 
 class Trabajador(threading.Thread):
+    """Hilo en segundo plano: atiende los mensajes del bot (/start, /stop, /ayuda) y envia los recordatorios de estudio pendientes."""
     def __init__(self, token: str):
         super().__init__(daemon=True, name="telegram-recordatorios")
         self.token = token

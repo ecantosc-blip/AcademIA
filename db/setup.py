@@ -1,3 +1,4 @@
+"""Base de datos SQLite: conexion, esquema (schema.sql) y migraciones idempotentes."""
 import sqlite3
 import os
 from datetime import datetime
@@ -173,6 +174,7 @@ def _aplicar_migraciones(conn):
 
 
 def get_connection(db_path: str = None):
+    """Abre una conexion SQLite (WAL, claves foraneas activas) a DB_PATH o al archivo por defecto."""
     db_path = db_path or os.getenv("DB_PATH", "./unemi_assistant.db")
     # check_same_thread=False: el servidor web atiende cada peticion en un hilo
     # distinto. timeout: si otra conexion esta escribiendo, se espera hasta 10 s
@@ -190,6 +192,7 @@ def get_connection(db_path: str = None):
 
 
 def init_db(db_path: str = None):
+    """Crea o migra la base de datos: aplica schema.sql y las migraciones numeradas de forma idempotente."""
     conn = get_connection(db_path)
     if _es_esquema_legado(conn):
         _reiniciar_esquema_legado(conn)

@@ -99,6 +99,7 @@ def _rango(f):
 
 
 def ver_horario_personal(conn, est) -> str:
+    """Herramienta del chatbot: resume por dia las franjas libres y las actividades del estudiante."""
     d = AP.listar(conn, est)
     lineas = []
     for dia in DIAS:
@@ -130,6 +131,7 @@ def guardar_actividades(conn, est, actividades=None) -> str:
 
 
 def generar_plan_estudio(conn, est) -> str:
+    """Herramienta del chatbot: calcula el plan con el planificador y lo devuelve como texto. Las horas las pone el codigo; la IA no debe cambiarlas."""
     p = planificador.generar(conn, est)
     if not p["configurado"]:
         return ("Todavía no hay horas libres para planificar: el estudiante no ha indicado franjas en las que pueda "
@@ -173,6 +175,7 @@ def agregar_actividad(conn, est, nombre=None, dias=None, inicio=None, fin=None) 
 
 
 def quitar_actividad(conn, est, nombre=None, dia=None) -> str:
+    """Herramienta del chatbot: borra una actividad de la rutina por nombre (y dia opcional). Si hay ambiguedad, pide precisar."""
     quiero = _sin_tildes(nombre)
     dia_n = None
     if dia:
@@ -207,6 +210,7 @@ def _fecha_destino(plan, dia):
 
 
 def mover_bloque_estudio(conn, est, texto=None, dia=None, inicio=None, desde_dia=None) -> str:
+    """Herramienta del chatbot: mueve un bloque de estudio a otro dia/hora y lo deja fijado. Valida choques con clases, actividades y otros fijados."""
     plan = planificador.generar(conn, est)
     quiero = _sin_tildes(texto)
     if not quiero:

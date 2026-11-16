@@ -20,7 +20,6 @@ import time
 import json
 import base64
 import requests
-from datetime import datetime
 
 
 def decodificar_jwt(token: str) -> dict:
@@ -125,6 +124,7 @@ def extraer_nombre_materia(texto: str):
 
 
 class SGAClient:
+    """Cliente del ERP/SGA (solo lectura) autenticado con el JWT que aporta el estudiante; renueva el acceso con el token de renovacion cuando vence."""
     def __init__(self, base_url: str, access_token: str = None, refresh_token: str = None):
         self.base_url = base_url.rstrip("/")
         self.access_token = access_token

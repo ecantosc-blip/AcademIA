@@ -11,7 +11,6 @@ capa de acceso a datos como las "herramientas" que el LLM puede invocar
 import os
 import threading
 import sys
-import re
 import unicodedata
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,6 +35,7 @@ _hilo = threading.local()
 
 
 class QueryEngine:
+    """Consultas de solo lectura sobre los datos ya sincronizados de UN estudiante (SQLite). Es la unica fuente de datos del chatbot: la IA nunca inventa cifras, las pide aqui."""
     def __init__(self, estudiante_id: int = 1):
         self.estudiante_id = estudiante_id
 
@@ -104,6 +104,7 @@ class QueryEngine:
 
     # --- Funcionalidad 5: horario ---
     def horario_materia(self, nombre_materia: str = None):
+        """Horario de clases de una materia (o de todas si no se indica) en texto legible."""
         materia_id = None
         if nombre_materia:
             materia = self._buscar_materia(nombre_materia)
@@ -136,6 +137,7 @@ class QueryEngine:
 
     # --- Router simple de intencion (reemplazable por LLM despues) ---
     def responder(self, pregunta: str) -> str:
+        """Enrutador sencillo por palabras clave para preguntas frecuentes, sin llamar a la IA. Devuelve texto."""
         p = pregunta.lower()
 
         if "resumen" in p or "esta semana" in p or "qué tengo" in p:
@@ -253,6 +255,7 @@ class QueryEngine:
                 f"y {row['asistencia']}% de asistencia.")
 
     def calificaciones_detalladas(self, nombre_materia: str):
+        """Desglose de notas por componente de una materia, tal como lo entrega Moodle."""
         materia = self._buscar_materia(nombre_materia)
         if not materia:
             return f"No encontré ninguna materia que coincida con '{nombre_materia}'."
@@ -271,6 +274,7 @@ class QueryEngine:
 
     # --- Comparación entre materias (¿en cuál voy peor/mejor?) ---
     def comparar_materias(self, peor: bool = True):
+        """Materias con la mejor (peor=False) o la peor (peor=True) nota final registrada."""
         cur = self.conn.execute("""
             SELECT m.nombre AS materia, mat.nota_final
             FROM matricula mat
@@ -295,6 +299,7 @@ class QueryEngine:
     # y todavia no se extrae automaticamente de la API - queda documentado
     # como mejora pendiente.
     def nota_necesaria(self, nombre_materia: str, nota_minima_aprobar: float = 70.0):
+        """Cuanto necesita sacar el estudiante en lo que falta para llegar a la nota minima de aprobacion (por defecto 70)."""
         materia = self._buscar_materia(nombre_materia)
         if not materia:
             return f"No encontré ninguna materia que coincida con '{nombre_materia}'."
@@ -316,6 +321,7 @@ class QueryEngine:
 
     # --- Profesor de una materia ---
     def profesor_materia(self, nombre_materia: str):
+        """Docentes asignados a una materia."""
         materia = self._buscar_materia(nombre_materia)
         if not materia:
             return f"No encontré ninguna materia que coincida con '{nombre_materia}'."
@@ -357,6 +363,7 @@ class QueryEngine:
         return f"Materias aprobadas ({len(rows)}):\n" + "\n".join(lineas)
 
     def record_academico(self):
+        """Historial de materias del estudiante (periodo, estado y nota final)."""
         cur = self.conn.execute("""
             SELECT m.nombre AS materia, mat.periodo, mat.estado, mat.nota_final
             FROM matricula mat
@@ -389,6 +396,7 @@ class QueryEngine:
     }
 
     def rendimiento_materia(self, nombre_materia: str):
+        """Resumen del rendimiento en una materia: nota, asistencia y componentes evaluados."""
         materia = self._buscar_materia(nombre_materia)
         if not materia:
             return f"No encontré ninguna materia que coincida con '{nombre_materia}'."

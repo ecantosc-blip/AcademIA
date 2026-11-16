@@ -9,7 +9,6 @@ Panel "Mis datos": transparencia y control para el estudiante.
 Respeta la proteccion de datos personales: el estudiante ve, se lleva y borra lo que
 se guardo sobre el.
 """
-import sqlite3
 
 from db.setup import get_connection
 from core.tiempo import ahora_iso

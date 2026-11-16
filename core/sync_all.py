@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from moodle.client import build_client_from_env as build_moodle_client, limpiar_nombre_curso
 from sga.client import build_client_from_env as build_sga_client
 from db.setup import get_connection
-from core.nombres import normalizar as _normalizar_n, coincide, nivel_a_numero
+from core.nombres import coincide, nivel_a_numero
 from core.privacidad import depurar
 from core.entregas import sincronizar_entregas
 from core import cambios as detector_cambios

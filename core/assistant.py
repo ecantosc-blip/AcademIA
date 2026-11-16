@@ -13,7 +13,6 @@ Requiere una API key de Anthropic (console.anthropic.com) en el .env:
 """
 import os
 import sys
-import json
 import threading
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -201,6 +200,7 @@ Reglas importantes:
 
 
 class AssistantLLM:
+    """Chatbot con Claude y herramientas (tool calling). Mantiene el historial de UNA sesion; los datos salen siempre de QueryEngine y de las herramientas del plan, nunca de memoria del modelo."""
     def __init__(self, estudiante_id: int = 1, model: str = "claude-sonnet-4-6"):
         self.client = anthropic.Anthropic()  # usa ANTHROPIC_API_KEY del entorno
         self.model = model

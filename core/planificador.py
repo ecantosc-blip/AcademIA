@@ -130,6 +130,7 @@ def _motivo(e):
 
 
 def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) -> dict:
+    """Calcula el plan de estudio de los proximos `dias` para un estudiante. El CODIGO decide horas y minutos (la IA solo conversa y propone): ordena pendientes por fecha con prioridad por nota baja en Moodle, descuenta clases y actividades, respeta los bloques fijados por la persona y devuelve el plan con el motivo de cada bloque."""
     ahora = ahora or ahora_iso("seconds")
     prefs, dif, excluidos = P.obtener(conn, estudiante_id), P.dificultades(conn, estudiante_id), P.excluidos(conn, estudiante_id)
     grupos = clasificar_tareas(conn, estudiante_id, ahora=ahora)

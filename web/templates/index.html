@@ -73,6 +73,9 @@
   .riel i.warn{background:var(--warn)} .riel i.bad{background:var(--bad)}
   .btn-p{background:var(--accent); color:var(--accent-ink); border:0; border-radius:10px; padding:11px 16px; font-weight:600; white-space:nowrap}
   .btn-p:disabled{opacity:.6; cursor:wait}
+  .seg-det summary{cursor:pointer; font-weight:600; margin-top:8px}
+  .seg-det[open] summary{margin-bottom:8px}
+  #btn-alertas-mas{margin-top:8px}
   .btn-o{background:transparent; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:10px 16px; font-weight:500; white-space:nowrap; width:100%}
 
   .permisos{list-style:none; margin:0 0 4px; padding:0; display:grid; gap:7px; font-size:.9rem}
@@ -496,12 +499,16 @@
           <button type="button" class="btn-o" id="btn-alertas-todas">Descartar todas</button>
         </div>
         <div id="alertas"></div>
+        <button type="button" class="btn-o" id="btn-alertas-mas" hidden></button>
       </section>
       <section class="card" aria-labelledby="h-seg">
         <h2 id="h-seg">Tu seguimiento</h2>
         <p class="seg-res" id="seg-res">Cargando…</p>
-        <div id="seg"></div>
-        <p class="sub" style="margin-top:10px">Son reglas simples sobre datos verificados, no una predicción. Abre «¿Por qué?» para ver cada regla.</p>
+        <details id="seg-det" class="seg-det">
+          <summary id="seg-sum">Ver el detalle</summary>
+          <div id="seg"></div>
+          <p class="sub" style="margin-top:10px">Son reglas simples sobre datos verificados, no una predicción. Abre «¿Por qué?» para ver cada regla.</p>
+        </details>
       </section>
       <section class="card" aria-labelledby="h-prox">
         <h2 id="h-prox">Lo próximo</h2>
@@ -968,6 +975,29 @@
     }
     return null;
   }
+  // Moodle y el ERP entregan los nombres en MAYUSCULAS: se muestran en formato titulo para leerse mejor.
+  const MINUSC = new Set(['de','del','la','las','el','los','y','e','en','a','para','por','con','al','o','u']);
+  const SIGLAS = new Set(['ii','iii','iv','vi','vii','viii','ix','erp','ti','ia','sga','uml','bd','sql','api','html','css','pc']);
+  function tituloCaso(t){
+    if(typeof t !== 'string' || !/[A-ZÁÉÍÓÚÑ]/.test(t) || t !== t.toUpperCase()) return t;   // solo si viene todo en mayusculas
+    return t.toLowerCase().replace(/[\p{L}\p{N}]+/gu, (w, i) => {
+      if(SIGLAS.has(w)) return w.toUpperCase();
+      if(i > 0 && MINUSC.has(w)) return w;
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    });
+  }
+  // En frases (alertas, seguimiento) solo se cambian las rachas de 2+ palabras en mayusculas.
+  const RACHA = /[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9_-]+(?: [A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9_-]*)+/g;
+  const suavizar = t => t.replace(RACHA, m => tituloCaso(m));
+  function embellecer(x){
+    if(Array.isArray(x)) x.forEach(embellecer);
+    else if(x && typeof x === 'object') for(const k of Object.keys(x)){
+      if(['materia','nombre','item','nombre_item'].includes(k) && typeof x[k] === 'string') x[k] = tituloCaso(x[k]);
+      else if(['mensaje','texto','detalle'].includes(k) && typeof x[k] === 'string') x[k] = suavizar(x[k]);
+      else embellecer(x[k]);
+    }
+  }
+
   function pintarInicio(d){
     const n = d.inicio ? d.inicio.vencen_7d : 0;
     const sv = d.inicio ? (d.inicio.sin_verificar_7d || 0) : 0;
@@ -1008,6 +1038,9 @@
   function pintarSeguimiento(d){
     const s = d.seguimiento; if(!s) return;
     $('seg-res').textContent = s.resumen.texto;
+    const nAt = s.reglas.filter(r => r.estado === 'atencion').length;
+    $('seg-sum').textContent = 'Ver el detalle (' + s.reglas.length + ' reglas' + (nAt ? ', ' + nAt + ' por atender' : '') + ')';
+    $('seg-det').open = nAt > 0;
     const cont = $('seg'); cont.replaceChildren();
     for(const r of s.reglas){
       const items = r.items.length ? el('ul', {}, ...r.items.map(i => el('li', {text:i.texto + (i.fecha ? ' — ' + cuando(i.fecha).join(', ') : '')}))) : null;
@@ -1055,17 +1088,27 @@
 
 
   // ---- Alertas (Inicio) ----
+  const ALERTAS_VISIBLES = 3;          // la pantalla de inicio no debe saturarse: el resto va plegado
+  let alertasTodas = false;
   function pintarAlertas(lista){
     const cont = $('alertas'); cont.replaceChildren();
     $('card-alertas').hidden = !lista.length;
-    lista.forEach(a => cont.append(el('div', {class:'alerta'}, el('span', {text:a.mensaje}),
+    const mostrar = alertasTodas ? lista : lista.slice(0, ALERTAS_VISIBLES);
+    mostrar.forEach(a => cont.append(el('div', {class:'alerta'}, el('span', {text:a.mensaje}),
       el('button', {type:'button', class:'btn-o', text:'Descartar', 'data-id':a.id}))));
+    const mas = $('btn-alertas-mas'), extra = lista.length - ALERTAS_VISIBLES;
+    mas.hidden = extra <= 0;
+    mas.textContent = alertasTodas ? 'Ver menos' : 'Ver ' + extra + ' más';
+    $('h-alertas').textContent = 'Alertas' + (lista.length > 1 ? ' (' + lista.length + ')' : '');
   }
+  $('btn-alertas-mas').addEventListener('click', () => { alertasTodas = !alertasTodas; cargarPanelAlertas(); });
+  let ultimasAlertas = [];
+  function cargarPanelAlertas(){ pintarAlertas(ultimasAlertas); }
   async function descartarAlertas(ids){
     try{
       const r = await fetch('/api/alertas/vistas', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(ids ? {ids} : {})});
       if(r.status === 401){ location = '/login'; return; }
-      const d = await r.json(); pintarAlertas(d.alertas || []);
+      const d = await r.json(); ultimasAlertas = d.alertas || []; pintarAlertas(ultimasAlertas);
     }catch(e){ mostrarAviso('No se pudo descartar: ' + e.message, true); }
   }
   $('alertas').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if(b) descartarAlertas([Number(b.dataset.id)]); });
@@ -1491,7 +1534,8 @@
     const r = await fetch('/api/panel');
     if(r.status === 401){ location = '/login'; return; }
     const d = await r.json();
-    pintarConexiones(d); pintarInicio(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d); pintarAlertas(d.alertas || []);
+    embellecer(d);
+    pintarConexiones(d); pintarInicio(d); pintarMaterias(d); pintarFechas(d); pintarHorario(d); pintarBitacora(d); pintarSemestres(d); pintarInsignia(d.novedades_nuevas || 0); pintarSeguimiento(d); ultimasAlertas = d.alertas || []; pintarAlertas(ultimasAlertas);
     if(!$('v-novedades').hidden) cargarNovedades();
   }
 

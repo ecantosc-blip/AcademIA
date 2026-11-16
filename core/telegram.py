@@ -36,6 +36,7 @@ _estado = {"usuario_bot": None}
 
 
 class TelegramError(Exception):
+    """Error al hablar con Telegram. Su mensaje nunca incluye la URL ni el token del bot."""
     def __init__(self, mensaje, codigo=None):
         super().__init__(mensaje)
         self.codigo = codigo

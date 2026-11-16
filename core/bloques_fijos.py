@@ -5,7 +5,7 @@ Lo que mueve queda FIJADO en esa fecha y hora; el planificador lo respeta y acom
 Solo se puede mover dentro de la semana del plan, de 07:00 a 24:00, no al pasado, y sin chocar con una
 clase del ERP, con una actividad suya ni con otro bloque fijado.
 """
-from datetime import date, timedelta
+from datetime import date
 
 from core import agenda_personal as AP
 from core import planificador

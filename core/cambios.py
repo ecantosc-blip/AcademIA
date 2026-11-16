@@ -85,6 +85,7 @@ def _cambio(tipo, materia_id, item, antes, despues):
 
 
 def comparar_moodle(antes: dict, despues: dict) -> list:
+    """Compara dos fotos de Moodle (antes/despues de sincronizar) y lista los cambios: tareas nuevas, fechas, entregas y notas."""
     cambios = []
     for clave, t in despues.get("tareas", {}).items():
         previa = antes.get("tareas", {}).get(clave)
@@ -191,6 +192,7 @@ def _num(valor):
 
 
 def describir(c: dict) -> str:
+    """Convierte un cambio detectado en una frase corta para mostrar en Novedades."""
     t, item = c["tipo"], c.get("item") or ""
     if t == "tarea_nueva":
         return f"Nueva tarea: {item}" + (f" (vence {_fecha_humana(c['despues'])})" if c.get("despues") else " (sin fecha de entrega)")

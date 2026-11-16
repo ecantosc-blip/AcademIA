@@ -764,6 +764,7 @@ def api_mis_datos():
 
 @app.route("/api/mis-datos/exportar")
 def api_mis_datos_exportar():
+    """Descarga un JSON con todo lo que la app guarda del estudiante (derecho de acceso). No incluye tokens ni chat_id de Telegram."""
     sid, sesion = get_session()
     if not sesion:
         return jsonify({"error": "No has iniciado sesión"}), 401
@@ -833,6 +834,7 @@ def proxy_image():
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
+    """Endpoint del chatbot: aplica limites y presupuesto de IA, toma un cupo y responde con texto, acciones (botones), opciones de encuesta y las fuentes de los datos."""
     sid, sesion = get_session()
     if not sesion:
         return jsonify({"error": "No has iniciado sesión"}), 401

@@ -80,6 +80,7 @@ def extraer_componente(nombre_tarea: str):
 
 
 class MoodleClient:
+    """Cliente de Moodle Web Services (solo lectura). Se autentica con token; `login()` lo obtiene con usuario/contrasena (login/token.php) y descarta la contrasena."""
     def __init__(self, base_url: str, token: str = None):
         self.base_url = base_url.rstrip("/")
         self.token = token

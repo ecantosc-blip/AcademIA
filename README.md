@@ -6,9 +6,13 @@ respuesta a preguntas) funciona de punta a punta, ANTES de invertir tiempo
 en la capa de LLM/RAG y en el marco teórico completo.
 
 **IMPORTANTE - Seguridad:** Este proyecto corre 100% en tu computadora.
-La app web usa **autenticación por token**: nunca pide ni guarda
-contraseñas. Los tokens de sesión que pegas en el login se guardan
-cifrados y se descartan al cerrar sesión o al vencer (8 horas). El archivo
+La app web entra con tu **usuario y contraseña de Moodle**: la contraseña se
+envía una sola vez a Moodle (`login/token.php`) para obtener un token de solo
+lectura y se descarta al instante; **nunca se guarda ni se registra**. Solo el
+token se guarda, cifrado, y se borra al cerrar sesión o al vencer (8 horas).
+Hay una opción avanzada para entrar con un token ya generado, sin escribir la
+contraseña. El ERP es **opcional** (su login tiene detección de bots y no se
+automatiza). Más en `docs/NORMAS_ISO.md`. El archivo
 `.env` y el archivo `.session_key` están en `.gitignore`: nunca los subas
 a GitHub ni los compartas con nadie.
 
@@ -137,14 +141,15 @@ El servidor usa Waitress (apto para producción). Para desarrollo, con
 recarga automática al editar código, arranca con `FLASK_DEBUG=1`
 (PowerShell: `$env:FLASK_DEBUG=1; python web/app.py`).
 
-**Cómo iniciar sesión en la web (2 pasos, sin contraseñas):**
+**Cómo iniciar sesión en la web:** escribe tu usuario y contraseña de Moodle. Opcionalmente conecta el ERP
+(horario de clases, foto y notas oficiales) o usa la opción avanzada con token de Moodle:
 
-1. *Token de Moodle.* Con tu sesión abierta en el aula virtual, presiona F12 →
+1. *Token de Moodle (opción avanzada).* Con tu sesión abierta en el aula virtual, presiona F12 →
    pestaña Network → marca "Preserve log". En otra pestaña abre
    `https://aulagradoa.unemi.edu.ec/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`.
    Aparecerá una fila `token=...` (marcada *canceled*, es normal). Clic
    derecho → Copy → Copy URL, y pega ese texto en el Paso 1 del login.
-2. *Token del ERP.* Igual que en el paso 2 de este README: copia `"access"`
+2. *Token del ERP (opcional).* Igual que en el paso 2 de este README: copia `"access"`
    (y opcionalmente `"refresh"`) de la petición `login.json`.
 
 Si un token vence, la app lo avisa: genera uno nuevo y vuelve a entrar.
@@ -203,7 +208,7 @@ unemi-assistant/
 ├── core/assistant.py    # Asistente v2: LLM real con tool-calling (RAG)
 ├── web/app.py            # Servidor Flask (interfaz web)
 ├── web/sessions_store.py # Sesiones web persistentes y cifradas (SQLite)
-├── web/templates/        # login.html (2 pasos por token) e index.html
+├── web/templates/        # login.html (usuario/contraseña de Moodle, ERP opcional) e index.html
 ├── ver_bd.py             # Muestra las tablas de la base de datos
 ├── herramientas/diagnostico/  # Scripts de diagnóstico (salida sin datos personales)
 ├── tests/                # Pruebas automáticas (pytest; solo datos simulados)

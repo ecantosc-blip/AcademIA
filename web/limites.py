@@ -49,6 +49,7 @@ LIMITES = {
 
 
 class Limitador:
+    """Limitador por ventana deslizante en memoria: como maximo N eventos por clave en S segundos. Seguro entre hilos."""
     def __init__(self):
         self._lock = threading.Lock()
         self._eventos = defaultdict(deque)

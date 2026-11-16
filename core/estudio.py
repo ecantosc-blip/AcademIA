@@ -234,6 +234,7 @@ class Estudio:
 
     # ---- practica --------------------------------------------------------
     def iniciar_practica(self, materia_id, tema: str = "", n: int = 5, dificultad: str = "medio") -> dict:
+        """Arma una practica de opcion multiple de la materia (n preguntas, dificultad y tema opcionales) con la IA. Rechaza pedidos que busquen resolver una evaluacion activa."""
         materia = self._materia(materia_id)
         n = max(MIN_PREGUNTAS, min(MAX_PREGUNTAS, int(n or 5)))
         dificultad = dificultad if dificultad in DIFICULTADES else "medio"
@@ -291,6 +292,7 @@ class Estudio:
         return listas
 
     def responder(self, indice, opcion) -> dict:
+        """Corrige la respuesta del estudiante a la pregunta `indice` de la practica en curso y devuelve si acerto, la opcion correcta y la explicacion."""
         p = self.practica
         if not p:
             raise ValueError("No hay una práctica en curso. Empieza una nueva.")
@@ -332,6 +334,7 @@ class Estudio:
 
     # ---- videos ----------------------------------------------------------
     def videos(self, materia_id, tema: str = "") -> list:
+        """Sugiere busquedas de videos educativos sobre la materia/tema (la IA propone las busquedas; no se resuelven evaluaciones)."""
         materia = self._materia(materia_id)
         tema = re.sub(r"\s+", " ", tema or "").strip()[:120]
         if tema and es_pedido_de_respuestas(tema, self.evaluaciones_activas(materia["id"])):
@@ -352,6 +355,7 @@ class Estudio:
 
     # ---- tutor -----------------------------------------------------------
     def tutor(self, materia_id, mensaje: str) -> dict:
+        """Responde una duda de concepto de la materia como tutor. Si el mensaje pide respuestas de una evaluacion activa, se rechaza con una explicacion."""
         materia = self._materia(materia_id)
         mensaje = (mensaje or "").strip()[:800]
         if not mensaje:
