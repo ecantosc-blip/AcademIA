@@ -248,7 +248,16 @@
 
   /* ---- Inicio ---- */
   .kpis{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:24px}
-  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:6px; min-width:0}
+  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px; display:flex; flex-direction:column; gap:6px; min-width:0;
+    position:relative; overflow:hidden; text-decoration:none; color:inherit; cursor:pointer;
+    transition:transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, border-color .22s ease}
+  .kpi::after{content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(115deg, transparent 35%, var(--kpi-brillo, rgba(255,255,255,.55)) 50%, transparent 65%);
+    transform:translateX(-120%); transition:transform .65s ease}
+  .kpi:hover, .kpi:focus-visible{transform:translateY(-4px) scale(1.015); box-shadow:0 14px 28px -12px rgba(0,46,69,.25); border-color:var(--accent)}
+  .kpi:hover::after, .kpi:focus-visible::after{transform:translateX(120%)}
+  .kpi:active{transform:translateY(-1px) scale(.985); transition-duration:.08s}
+  @media (prefers-reduced-motion: reduce){ .kpi, .kpi::after{transition:none} }
   .kpi .et{color:var(--muted); font-size:.82rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase}
   .kpi .gran{font-size:2.4rem; font-weight:700; letter-spacing:-.03em; line-height:1.05}
   .kpi .gran.mid{font-size:1.35rem; letter-spacing:-.01em; line-height:1.25}
@@ -337,8 +346,8 @@
   .barra .pista i{background:var(--orange)}
   .btn-p:hover{filter:brightness(1.12)}
   .kpi{border-top:3px solid var(--brand)}
-  :root[data-theme="dark"] .kpi{border-top-color:var(--orange)}
-  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kpi{border-top-color:var(--orange)} }
+  :root[data-theme="dark"] .kpi{border-top-color:var(--orange); --kpi-brillo:rgba(255,178,122,.18)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kpi{border-top-color:var(--orange); --kpi-brillo:rgba(255,178,122,.18)} }
   .topm{background:var(--side); margin:-18px calc(-1 * clamp(18px,4vw,56px)) 18px; padding:10px clamp(18px,4vw,56px); border-bottom:3px solid var(--orange)}
   .topm .brand{color:#fff}
   .topm .marca .tigre{width:36px; height:36px}
@@ -512,10 +521,10 @@
       <h1 id="t-inicio">Hola{% if nombre %}, {{ nombre.split()[0]|capitalize }}{% endif %}</h1>
       <p class="sub">Esto es lo importante de hoy.</p>
       <div class="kpis">
-        <div class="kpi" id="k-vence"><span class="et">Vence esta semana</span><span class="gran num" id="k-vence-n">—</span><span class="det" id="k-vence-d">Cargando…</span></div>
-        <div class="kpi" id="k-clase"><span class="et">Próxima clase</span><span class="gran mid" id="k-clase-n">—</span><span class="det" id="k-clase-d">Cargando…</span></div>
-        <div class="kpi" id="k-prom"><span class="et">Tu promedio</span><span class="gran num" id="k-prom-n">—</span><span class="det" id="k-prom-d">Materias aprobadas</span></div>
-        <div class="kpi" id="k-estado"><span class="et">Tus datos</span><span class="gran mid" id="k-estado-n">—</span><span class="det" id="k-estado-d">Cargando…</span></div>
+        <div class="kpi" id="k-vence" data-ir="#agenda" role="link" tabindex="0"><span class="et">Vence esta semana</span><span class="gran num" id="k-vence-n">—</span><span class="det" id="k-vence-d">Cargando…</span></div>
+        <div class="kpi" id="k-clase" data-ir="#agenda" role="link" tabindex="0"><span class="et">Próxima clase</span><span class="gran mid" id="k-clase-n">—</span><span class="det" id="k-clase-d">Cargando…</span></div>
+        <div class="kpi" id="k-prom" data-ir="#materias" role="link" tabindex="0"><span class="et">Tu promedio</span><span class="gran num" id="k-prom-n">—</span><span class="det" id="k-prom-d">Materias aprobadas</span></div>
+        <div class="kpi" id="k-estado" data-ir="#datos" role="link" tabindex="0"><span class="et">Tus datos</span><span class="gran mid" id="k-estado-n">—</span><span class="det" id="k-estado-d">Cargando…</span></div>
       </div>
       <section class="card" id="card-alertas" aria-labelledby="h-alertas" hidden>
         <div class="barra">
@@ -1765,6 +1774,15 @@
   });
   document.addEventListener('keydown', ev => {
     if(ev.key === 'Escape' && !$('chat').hidden && !$('chat').classList.contains('grande')){ $('chat').hidden = true; $('fab').setAttribute('aria-expanded','false'); $('fab').focus(); }
+  });
+
+  // ---- Tarjetas de resumen (KPI): clicables y accesibles por teclado ----
+  document.querySelectorAll('.kpi[data-ir]').forEach(tarjeta => {
+    const ir = () => { location.hash = tarjeta.dataset.ir; };
+    tarjeta.addEventListener('click', ev => { if(!ev.target.closest('a')) ir(); });
+    tarjeta.addEventListener('keydown', ev => {
+      if((ev.key === 'Enter' || ev.key === ' ') && !ev.target.closest('a')){ ev.preventDefault(); ir(); }
+    });
   });
 
   // ---- Pie de página ----
