@@ -9,10 +9,10 @@ que tu propio navegador ya envía y lo guarda. Luego, con un clic, lo escribe en
 
 La extensión también captura el **token de renovación** (el que permite cambiarte
 automáticamente a otra carrera si tu cuenta tiene más de una, por ejemplo nivelación y una
-carrera de grado). Ese token solo viene en el cuerpo de la respuesta del login, así que para
-leerlo la extensión se conecta un instante (justo al pausar un momento esa única respuesta y
-dejarla seguir enseguida) —justo mientras inicias sesión en el ERP— al
-Protocolo de Depuración de Chrome. **Vas a ver un aviso amarillo de Chrome que dice algo como
+carrera de grado). Ese token solo viene en el cuerpo de la respuesta del login, así que, justo
+mientras inicias sesión en el ERP, la extensión se conecta un instante al Protocolo de
+Depuración de Chrome, pausa nada más esa única respuesta el tiempo justo para leerla y la deja
+seguir su curso normal enseguida. **Vas a ver un aviso amarillo de Chrome que dice algo como
 "AcademIA – Token del ERP está depurando este navegador".** Es normal, Chrome lo muestra
 siempre que algo usa ese protocolo (no se puede ocultar, y es correcto que avise), y es
 justamente para que sepas qué está pasando: es la misma información que verías a mano abriendo
