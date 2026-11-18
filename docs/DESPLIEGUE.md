@@ -38,6 +38,7 @@ Vercel y Netlify **no** sirven para esta app (no tienen disco persistente ni pro
 | Variable | Por defecto | Para qué |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | — | Llave de la API (obligatoria) |
+| `TELEGRAM_BOT_TOKEN` | — | Opcional. Activa los recordatorios por Telegram (`core/trabajador.py`). Si tu red local bloquea `api.telegram.org` (pasa en algunos proveedores/antivirus), el bot nunca podrá conectarse corriendo en tu computadora aunque el token sea válido; desplegar en un hosting con salida de red normal resuelve esto |
 | `SESSION_ENC_KEY` | archivo `.session_key` | Secreto para cifrar las sesiones. En un servidor, defínelo siempre |
 | `COOKIE_SECURE` | 0 | Poner 1 si se sirve por HTTPS |
 | `TRUST_PROXY` | 0 | Poner 1 detrás de Render/Cloudflare/nginx para que los límites usen la IP real |

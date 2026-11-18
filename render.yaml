@@ -13,6 +13,8 @@ services:
     envVars:
       - key: ANTHROPIC_API_KEY
         sync: false            # se escribe a mano en el panel de Render; nunca en el repositorio
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false            # se escribe a mano en el panel de Render; nunca en el repositorio. Opcional: sin esto, el bot simplemente no se activa.
       - key: SESSION_ENC_KEY
         generateValue: true    # Render genera un secreto; la app deriva de el la llave de cifrado
       - key: COOKIE_SECURE
