@@ -49,9 +49,13 @@ def _regla(res, id_):
 def test_todo_verificado_y_al_dia_no_muestra_alertas(con):
     _estado(con, 5, "entregada")
     _estado(con, 6, "entregada")
+    # Promedio de Moodle para que prioridad_estudio tenga con que calcular (si no, queda "sin_datos"
+    # y el nivel general deja de ser "ok" -- ver el seed de bd_demo, que no pone porcentaje).
+    con.execute("update componente_nota set porcentaje='66.7' where nombre_item='Total del curso'")
+    con.commit()
     res = seguimiento.evaluar(con, E, AHORA)
     assert res["resumen"]["nivel"] == "ok" and res["resumen"]["atencion"] == 0
-    assert [r["estado"] for r in res["reglas"]] == ["ok", "ok", "ok", "info", "ok", "ok"]
+    assert [r["estado"] for r in res["reglas"]] == ["ok", "ok", "ok", "info", "ok", "ok", "info"]
 
 
 def test_tareas_sin_verificar_no_son_pendientes_ni_entregadas(con):
@@ -128,6 +132,24 @@ def test_asistencia_bajo_60_en_varias_materias_las_lista_todas(con):
     assert r["estado"] == "atencion" and "2 materias están bajo el 60%" in r["detalle"]
     nombres = {i["texto"].split(" · ")[0] for i in r["items"]}
     assert nombres == {"SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL", "DISEÑO DE INTEGRACIÓN CURRICULAR"}
+
+
+def test_prioridad_estudio_sin_promedio_de_moodle_es_sin_datos_nunca_atencion(con):
+    """El seed de bd_demo no pone 'porcentaje' en componente_nota: sin ese dato, prioridad_estudio
+    no se puede calcular. Debe decir "sin_datos", NUNCA "atencion" (no es una alerta, es un dato
+    mas del panel; ver el docstring de _regla_prioridad_estudio)."""
+    r = _regla(seguimiento.evaluar(con, E, AHORA), "prioridad_estudio")
+    assert r["estado"] == "sin_datos"
+
+
+def test_prioridad_estudio_con_promedio_muestra_la_materia_con_mas_prioridad(con):
+    con.execute("update componente_nota set porcentaje='66.7' where nombre_item='Total del curso'")
+    con.commit()
+    r = _regla(seguimiento.evaluar(con, E, AHORA), "prioridad_estudio")
+    assert r["estado"] == "info"
+    assert "SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL es tu prioridad de estudio ahora" in r["detalle"]
+    assert r["items"][0]["texto"] == "SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL · 66,7% promedio, 0 tareas vencidas"
+    assert "no un reglamento" in r["porque"]
 
 
 def test_novedades_pendientes_se_informan_sin_alarmar(con):

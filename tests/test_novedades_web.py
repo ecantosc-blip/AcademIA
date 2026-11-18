@@ -85,6 +85,6 @@ def test_el_panel_incluye_el_seguimiento_y_la_pagina_lo_muestra(app_web):
         p.stop()
     seg = panel["seguimiento"]
     assert set(seg) == {"resumen", "reglas"}
-    assert [r["id"] for r in seg["reglas"]] == ["vencidas", "proximas", "sin_verificar", "asistencia", "novedades", "datos"]
+    assert [r["id"] for r in seg["reglas"]] == ["vencidas", "proximas", "sin_verificar", "asistencia", "novedades", "datos", "prioridad_estudio"]
     assert all(r["porque"] and r["detalle"] for r in seg["reglas"])      # toda regla se explica
     assert 'id="seg"' in html and "Tu seguimiento" in html and "no una predicción" in html

@@ -19,11 +19,17 @@ Principios (probados en tests/test_seguimiento.py):
     siguen siendo solo datos, sin veredicto, porque no hay un reglamento análogo para notas.
     Pendiente: conseguir el número exacto de artículo para citarlo en la tesis (por ahora el
     nombre del reglamento, sin artículo).
+  * La regla "prioridad_estudio" es otra excepción, pero de otro tipo: no hay reglamento detrás,
+    es una decisión del propio usuario (confirmada explícitamente antes de programarla) de combinar
+    tareas atrasadas y promedio de Moodle en un orden de prioridad entre materias. Por eso nunca
+    llega a "atencion" (no es una alerta: es un dato más, siempre "info" o "sin_datos") y por eso no
+    vive en core/alertas.py (un ranking relativo puede cambiar de puesto sin que haya pasado nada
+    nuevo que descartar).
   * Si faltan datos se dice "sin datos"; nunca se rellena con una suposicion.
 """
 from datetime import timedelta
 
-from core import cambios
+from core import cambios, notas_moodle
 from core.tareas import clasificar_tareas
 from core.tiempo import ahora_iso, iso_a_datetime
 
@@ -123,6 +129,35 @@ def _regla_asistencia(conn, estudiante_id):
                   f"(por encima del {UMBRAL_ASISTENCIA}% mínimo).", porque)
 
 
+def _regla_prioridad_estudio(conn, estudiante_id):
+    """Muestra la prioridad de estudio (core/notas_moodle.py::prioridad_estudio_combinada) como un
+    DATO mas del panel, nunca como "atencion": a diferencia de la asistencia, no hay un reglamento
+    oficial detras, es un orden relativo entre materias que el usuario pidio explicitamente. Se
+    queda fuera del sistema de alertas descartables de core/alertas.py a proposito: un ranking
+    relativo puede cambiar de puesto sin que haya pasado nada nuevo que "descartar", asi que no le
+    queda bien esa logica; aqui simplemente se recalcula cada vez que se ve el panel."""
+    porque = ("Combina, con el mismo peso, tus tareas vencidas sin entregar y tu promedio de Moodle "
+              "en cada materia en curso (se suma la posicion en cada orden por separado). Es una "
+              "decision tuya, no un reglamento -a diferencia de la asistencia-, y no es un pronostico "
+              "de tu nota final.")
+    r = notas_moodle.prioridad_estudio_combinada(conn, estudiante_id)
+    if not r["hay_materias"]:
+        return _regla("prioridad_estudio", "Prioridad de estudio", "sin_datos",
+                      "No tienes materias en curso sincronizadas todavía.", porque)
+    if not r["ranking"]:
+        return _regla("prioridad_estudio", "Prioridad de estudio", "sin_datos",
+                      "Aún no tengo promedio de Moodle de ninguna materia en curso para calcularla.", porque)
+
+    top = r["ranking"][0]
+    detalle = (f"{top['materia']} es tu prioridad de estudio ahora "
+               f"({_plural(top['atrasadas'], 'tarea vencida', 'tareas vencidas')} sin entregar, "
+               f"{_fmt_pct(top['promedio'])}% de promedio en Moodle).")
+    items = [{"texto": f"{d['materia']} · {_fmt_pct(d['promedio'])}% promedio, "
+                        f"{_plural(d['atrasadas'], 'tarea vencida', 'tareas vencidas')}", "fecha": None}
+             for d in r["ranking"][:MAX_ITEMS]]
+    return _regla("prioridad_estudio", "Prioridad de estudio", "info", detalle, porque, items)
+
+
 def _regla_novedades(conn, estudiante_id):
     n = cambios.contar_nuevas(conn, estudiante_id)
     porque = "Cambios detectados entre lecturas exitosas que todavía no marcaste como vistos."
@@ -160,7 +195,7 @@ def evaluar(conn, estudiante_id: int, ahora: str = None) -> dict:
     grupos = clasificar_tareas(conn, estudiante_id, ahora=ahora)
     reglas = [_regla_vencidas(grupos), _regla_proximas(grupos, ahora), _regla_sin_verificar(grupos, ahora),
               _regla_asistencia(conn, estudiante_id), _regla_novedades(conn, estudiante_id),
-              _regla_datos(conn, estudiante_id, ahora)]
+              _regla_datos(conn, estudiante_id, ahora), _regla_prioridad_estudio(conn, estudiante_id)]
     atencion = sum(r["estado"] == "atencion" for r in reglas)
     sin_datos = sum(r["estado"] == "sin_datos" for r in reglas)
     if atencion:

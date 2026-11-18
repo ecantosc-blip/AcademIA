@@ -317,7 +317,7 @@ Reglas (todas cubiertas por pruebas):
 ## Tu seguimiento (indicador por reglas)
 
 En **Inicio**, la tarjeta «Tu seguimiento» junta en un solo lugar lo que pide atención hoy
-(`core/seguimiento.py`). Son 6 reglas simples sobre datos ya verificados, y cada una explica
+(`core/seguimiento.py`). Son 7 reglas simples sobre datos ya verificados, y cada una explica
 su criterio en «¿Por qué?»:
 
 | Regla | Qué mide |
@@ -328,11 +328,14 @@ su criterio en «¿Por qué?»:
 | Asistencia | Compara cada materia en curso contra el 60% mínimo del Reglamento de la UNEMI (dato del ERP); marca "atención" si alguna está debajo |
 | Novedades | Cambios detectados que aún no viste |
 | Datos al día | La última lectura falló, no existe, o tiene más de 2 días |
+| Prioridad de estudio | Combina, con el mismo peso, tus tareas vencidas y tu promedio de Moodle por materia en curso; siempre "info" o "sin datos", nunca "atención" |
 
 Lo que NO hace, a propósito: no predice ni habla de "riesgo de reprobar"; no juzga notas (Moodle y el
 ERP no entregan pesos ni máximos); no compara notas con reglamentos. La asistencia es la única
-excepción: el 60% mínimo es un reglamento oficial confirmado, no una suposición. Si faltan datos,
-dice "sin datos".
+excepción respaldada por un reglamento oficial (60% mínimo, confirmado por el usuario). La
+"prioridad de estudio" es otra excepción, pero de otro tipo: no hay reglamento detrás, es un criterio
+que el usuario pidió explícitamente combinar; por eso nunca se presenta como alerta, solo como un
+dato más. Si faltan datos, dice "sin datos".
 
 
 
