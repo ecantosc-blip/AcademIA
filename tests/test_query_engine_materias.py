@@ -16,12 +16,13 @@ def datos(bd_vacia):
     c.executescript("""
         INSERT INTO estudiante(id,nombre) VALUES (77,'Ana');
         INSERT INTO materia(id,nombre,moodle_course_id) VALUES
-          (1,'CALCULO',1),(2,'FISICA',2),(3,'ALGEBRA LINEAL',3);
-        -- Calculo y Fisica: en curso ahora. Algebra: ya aprobada un semestre anterior.
+          (1,'CALCULO',1),(2,'FISICA',2),(3,'ALGEBRA LINEAL',3),(4,'QUIMICA',4);
+        -- Calculo, Fisica y Quimica: en curso ahora. Algebra: ya aprobada un semestre anterior.
         INSERT INTO matricula(id,estudiante_id,materia_id,estado,nota_final,asistencia) VALUES
           (10,77,1,'en_curso',NULL,90),
           (11,77,2,'en_curso',NULL,85),
-          (12,77,3,'aprobada',88,95);
+          (12,77,3,'aprobada',88,95),
+          (13,77,4,'en_curso',NULL,80);
         -- Calculo: componentes de Moodle ya sincronizados, con el formato REAL que entrega Moodle
         -- (el total de cada bloque se llama "Total N1", no "N1"; ver moodle/client.py). Se agrega
         -- tambien una fila de tarea individual ("N2 - Tarea 1") y un total sin calcular ("Total N3"
@@ -30,6 +31,12 @@ def datos(bd_vacia):
         INSERT INTO componente_nota(matricula_id,nombre_item,calificacion) VALUES
           (10,'Total N1','8,5'),(10,'Total N2','9,0'),
           (10,'N2 - Tarea 1','9,0'),(10,'Total N3','-');
+        -- Quimica: mismos valores reales que confirmo el usuario con pantallazos de Moodle para
+        -- "SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL" (Total EXP1 = 15,00, peso 15; Total N3 = 5,00, peso
+        -- 10). Sirve para probar que un componente con peso distinto de 10 ya NO se reescala.
+        INSERT INTO componente_nota(matricula_id,nombre_item,calificacion) VALUES
+          (13,'Total N1','-'),(13,'Total N2','-'),
+          (13,'Total EXP1','15,00'),(13,'Total N3','5,00');
     """)
     c.commit()
     yield c
@@ -63,6 +70,15 @@ def test_rendimiento_actual_calcula_con_componentes_de_moodle_no_con_el_erp(dato
     assert "ALGEBRA" not in texto    # no esta en curso
 
 
+def test_rendimiento_actual_no_reescala_componentes_con_peso_distinto_de_10(datos):
+    """Caso real reportado por el usuario (pantallazos de Moodle): Total EXP1 = 15,00 (peso 15) y
+    Total N3 = 5,00 (peso 10). Antes del fix esto se reescalaba como si viniera sobre 10
+    (EXP1 -> (15/10)*15 = 22.5, mas que el maximo posible de 15). Ahora se usa el valor tal cual:
+    15 + 5 = 20 obtenidos de 45 posibles (N1+N2+EXP1+N3)."""
+    texto = QueryEngine(77).rendimiento_actual()
+    assert "QUIMICA: 20.0/45" in texto
+
+
 def test_rendimiento_actual_sin_materias_en_curso_lo_dice(datos):
     datos.execute("update matricula set estado='aprobada' where estudiante_id=77")
     datos.commit()
@@ -75,10 +91,17 @@ def test_rendimiento_materia_reconoce_los_totales_de_bloque_reales_de_moodle(dat
     (comparar contra 'N1' en vez de 'Total N1') lo afectaba tambien a el, sin que ningun test lo
     hubiera detectado."""
     texto = QueryEngine(77).rendimiento_materia("CALCULO")
-    assert "N1: 8.5/10 → 8.5/10 pts" in texto
-    assert "N2: 9.0/10 → 9.0/10 pts" in texto
-    assert "N3: sin calificar (vale 10 pts)" in texto
+    assert "- N1: 8.5/10 pts" in texto
+    assert "- N2: 9.0/10 pts" in texto
+    assert "- N3: sin calificar (vale 10 pts)" in texto
     assert "Total: 17.5 / 30 puntos evaluados hasta ahora." in texto
+
+
+def test_rendimiento_materia_no_reescala_componentes_con_peso_distinto_de_10(datos):
+    texto = QueryEngine(77).rendimiento_materia("QUIMICA")
+    assert "- EXP1: 15.0/15 pts" in texto
+    assert "- N3: 5.0/10 pts" in texto
+    assert "Total: 20.0 / 45 puntos evaluados hasta ahora." in texto
 
 
 def test_rendimiento_materia_sin_componentes_sincronizados_lo_dice(datos):

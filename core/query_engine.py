@@ -389,6 +389,10 @@ class QueryEngine:
     # examen final = 30 puntos. Total = 100.
     # NOTA: este modelo de pesos puede variar segun la materia/carrera -
     # se documenta como una asuncion, igual que en nota_necesaria().
+    # LIMITE CONOCIDO: en algunas materias Moodle no divide la practica en "EXP1"/"EXP2" sino que
+    # usa una sola categoria "EXP" (visto en un caso real). Como "EXP" no esta en este diccionario,
+    # ese bloque queda fuera del calculo (ni suma a lo obtenido ni a lo posible) en vez de inventarle
+    # un peso. Pendiente: confirmar si en esos casos "EXP" vale 15 o 30 antes de agregarlo aqui.
     PESOS_COMPONENTES = {
         "N1": 10, "N2": 10, "N3": 10, "N4": 10,
         "EXP1": 15, "EXP2": 15,
@@ -432,12 +436,18 @@ class QueryEngine:
 
             total_posible += peso
             if calif_num is not None:
-                # Se asume que la calificacion de Moodle viene sobre 10 por
-                # componente (patron visto en las pruebas) y se escala al
-                # peso real del componente (ej. N1 sobre 10 -> pondera a 10 pts).
-                obtenido = (calif_num / 10.0) * peso
+                # "Total N1"/"Total EXP1"/"Total EX"... es el total que Moodle YA calculo para ese
+                # bloque, ponderado sobre su propio peso (no una nota de 0 a 10 que haya que
+                # reescalar). Se confirmo con pantallazos reales del SGA: en una materia donde solo
+                # "Total EX" (peso 30) tenia nota (27,73) y el resto estaba sin calificar, "Total del
+                # curso" tambien era 27,73 - es decir, Moodle ya lo entrega en la escala del peso, no
+                # sobre 10. Antes este codigo reescalaba igual (calif/10*peso), lo que inflaba
+                # cualquier componente con peso distinto de 10 (ej. "Total EXP1"=15,00 -> se convertia
+                # en 22.5/15, mas de lo maximo posible). Se usa el valor tal cual, limitado al peso
+                # por seguridad ante un dato inesperado de Moodle.
+                obtenido = min(calif_num, peso)
                 total_obtenido += obtenido
-                detalle.append(f"- {etiqueta}: {calif_num}/10 → {obtenido:.1f}/{peso} pts")
+                detalle.append(f"- {etiqueta}: {obtenido:.1f}/{peso} pts")
             else:
                 detalle.append(f"- {etiqueta}: sin calificar (vale {peso} pts)")
         return detalle, total_obtenido, total_posible
