@@ -140,7 +140,12 @@ TOOLS = [
     },
     {
         "name": "materias_actuales",
-        "description": "Lista todas las materias en las que el estudiante esta matriculado actualmente, con su nota si esta disponible.",
+        "description": "Lista las materias que el estudiante cursa AHORA MISMO (estado en_curso), con su nota si esta disponible. Usala para '¿qué materias curso?'/'¿qué materias llevo?' sin preguntar el semestre: ya se sabe por la matrícula sincronizada.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "rendimiento_actual",
+        "description": "Nota ponderada (N1-N4, EXP1-EXP2, examen) de CADA materia que el estudiante cursa ahora, calculada con los componentes que ya sincronizó Moodle. Úsala quien pregunte por sus notas actuales/de este semestre en general (no de una sola materia): Moodle suele tener los componentes evaluados antes de que el ERP publique la nota final, así que es más al día que record_academico/notas_por_semestre.",
         "input_schema": {"type": "object", "properties": {}},
     },
     {
@@ -171,6 +176,15 @@ Reglas importantes:
   herramienta presenta como pendiente.
 - Responde de forma breve, clara y en tono cercano (eres un asistente
   universitario, no un reporte formal).
+- Si preguntan qué materias cursan o cómo van "ahora"/"este semestre"/"actualmente" SIN decir un
+  número de semestre, usa materias_actuales (o rendimiento_actual para notas) directamente: la
+  matrícula sincronizada ya dice qué está en_curso, no hace falta preguntar el semestre. Solo pregunta
+  el semestre si piden explícitamente las notas de un semestre YA CURSADO (ej. "cómo pasé el 5to").
+- Para notas "actuales"/"de este periodo" en general (no de una sola materia), prefiere
+  rendimiento_actual sobre record_academico/notas_por_semestre: Moodle calcula los componentes
+  (N1-N4, EXP1, EXP2, examen) antes de que el ERP publique la nota_final, así que suele estar más al
+  día. Si el estudiante pide explícitamente "la nota del ERP" o la nota final/oficial, usa
+  calificacion_materia o record_academico en su lugar.
 - Si el estudiante pide su carne, usa la herramienta carnet_estudiantil y dile
   que pulse el boton "Descargar carne" que aparece debajo de tu mensaje. No
   describas el contenido del carne ni inventes sus datos.

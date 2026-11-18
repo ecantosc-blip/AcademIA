@@ -97,15 +97,37 @@ def test_sin_verificar_que_vence_pronto_no_se_cuenta_como_pendiente(con):
     assert _regla(res, "sin_verificar")["estado"] == "sin_datos"
 
 
-def test_asistencia_es_un_dato_nunca_un_veredicto(con):
-    con.execute("update matricula set asistencia=10 where estudiante_id=? and materia_id=1", (E,))
-    con.commit()
+def test_asistencia_por_encima_del_minimo_oficial_es_solo_info(con):
+    """100% y 95% (semilla de bd_demo): ninguna materia baja del 60% del reglamento, asi que es
+    solo un dato, no una alerta."""
     r = _regla(seguimiento.evaluar(con, E, AHORA), "asistencia")
-    assert r["estado"] == "info" and r["detalle"] == "Tu asistencia más baja es 10% en SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL."
-    assert "no hay un mínimo oficial" in r["porque"]
+    assert r["estado"] == "info" and r["detalle"] == "Tu asistencia más baja es 95% en DISEÑO DE INTEGRACIÓN CURRICULAR (por encima del 60% mínimo)."
     con.execute("update matricula set asistencia=NULL where estudiante_id=?", (E,))
     con.commit()
     assert _regla(seguimiento.evaluar(con, E, AHORA), "asistencia")["estado"] == "sin_datos"
+
+
+def test_asistencia_bajo_60_es_atencion_citando_el_reglamento(con):
+    """Unico umbral oficial del panel: menos de 60% (Reglamento de Facultades de Grado/Reglamento de
+    Facultades de la UNEMI) -> pierde examen final/recuperacion y reprueba por inasistencia."""
+    con.execute("update matricula set asistencia=10 where estudiante_id=? and materia_id=1", (E,))
+    con.commit()
+    r = _regla(seguimiento.evaluar(con, E, AHORA), "asistencia")
+    assert r["estado"] == "atencion"
+    assert "1 materia está bajo el 60% de asistencia" in r["detalle"]
+    assert "reprobarías por inasistencia" in r["detalle"]
+    assert r["items"] == [{"texto": "SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL · 10% de asistencia", "fecha": None}]
+    assert "Reglamento de Facultades" in r["porque"]
+
+
+def test_asistencia_bajo_60_en_varias_materias_las_lista_todas(con):
+    con.execute("update matricula set asistencia=10 where estudiante_id=? and materia_id=1", (E,))
+    con.execute("update matricula set asistencia=59 where estudiante_id=? and materia_id=2", (E,))
+    con.commit()
+    r = _regla(seguimiento.evaluar(con, E, AHORA), "asistencia")
+    assert r["estado"] == "atencion" and "2 materias están bajo el 60%" in r["detalle"]
+    nombres = {i["texto"].split(" · ")[0] for i in r["items"]}
+    assert nombres == {"SISTEMA DE AUTOMATIZACIÓN INDUSTRIAL", "DISEÑO DE INTEGRACIÓN CURRICULAR"}
 
 
 def test_novedades_pendientes_se_informan_sin_alarmar(con):

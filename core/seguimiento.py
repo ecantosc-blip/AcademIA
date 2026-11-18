@@ -12,8 +12,13 @@ Principios (probados en tests/test_seguimiento.py):
     pendiente ni como entregada: se informa aparte, como dato faltante.
   * No hay modelo predictivo ni "riesgo de reprobar". No se juzgan notas (Moodle y el ERP no
     entregan pesos ni maximos) ni se comparan con reglamentos (fuera del alcance acordado).
-  * La asistencia se muestra como dato, sin veredicto: no hay un mínimo oficial confirmado.
-    Un minimo propio se podra configurar en la Fase 3 (alertas configurables).
+  * La asistencia SÍ tiene un mínimo oficial confirmado por el usuario (Reglamento de Facultades
+    de Grado / Reglamento de Facultades de la UNEMI): menos del 60% en una materia presencial o
+    semipresencial quita el derecho a examen final y de recuperación, y la materia se reprueba por
+    inasistencia. Es la única regla de esta lista que compara contra un umbral fijo; las demás
+    siguen siendo solo datos, sin veredicto, porque no hay un reglamento análogo para notas.
+    Pendiente: conseguir el número exacto de artículo para citarlo en la tesis (por ahora el
+    nombre del reglamento, sin artículo).
   * Si faltan datos se dice "sin datos"; nunca se rellena con una suposicion.
 """
 from datetime import timedelta
@@ -79,19 +84,43 @@ def _regla_sin_verificar(grupos, ahora):
                   "El estado de todas las tareas recientes está confirmado.", porque)
 
 
+UMBRAL_ASISTENCIA = 60  # Reglamento de Facultades de Grado / Reglamento de Facultades (UNEMI): con
+# menos de este porcentaje en una materia presencial o semipresencial, el estudiante no rinde el
+# examen final ni el de recuperación y reprueba la materia por inasistencia. Confirmado por el
+# usuario; falta el número de artículo exacto para la cita en la tesis.
+
+
+def _fmt_pct(valor) -> str:
+    return f"{valor:.0f}" if float(valor).is_integer() else f"{valor:.1f}".replace(".", ",")
+
+
 def _regla_asistencia(conn, estudiante_id):
     filas = conn.execute("""
         SELECT m.nombre, mat.asistencia FROM matricula mat JOIN materia m ON m.id = mat.materia_id
         WHERE mat.estudiante_id = ? AND mat.estado = 'en_curso' AND mat.asistencia IS NOT NULL
-        ORDER BY mat.asistencia ASC, m.nombre LIMIT 1
+        ORDER BY mat.asistencia ASC, m.nombre
     """, (estudiante_id,)).fetchall()
-    porque = ("Muestra la asistencia más baja entre tus materias en curso, tal como la informa el ERP. "
-              "Es un dato, no un veredicto: no hay un mínimo oficial confirmado en esta aplicación.")
+    porque = (f"Compara tu asistencia en cada materia en curso con el {UMBRAL_ASISTENCIA}% mínimo del "
+              "Reglamento de Facultades de Grado / Reglamento de Facultades de la UNEMI: con menos, "
+              "pierdes el derecho a examen final y de recuperación y repruebas la materia por inasistencia. "
+              "Es la única regla de este panel que usa un umbral oficial; las notas no se juzgan porque no "
+              "hay un reglamento análogo confirmado para ellas.")
     if not filas:
         return _regla("asistencia", "Asistencia", "sin_datos", "El ERP no informó asistencia de tus materias en curso.", porque)
+
+    bajo_umbral = [f for f in filas if f["asistencia"] < UMBRAL_ASISTENCIA]
+    if bajo_umbral:
+        detalle = (f"{_plural(len(bajo_umbral), 'materia está', 'materias están')} bajo el "
+                   f"{UMBRAL_ASISTENCIA}% de asistencia: perderías el examen final/recuperación y "
+                   "reprobarías por inasistencia si se mantiene así.")
+        items = [{"texto": f"{b['nombre']} · {_fmt_pct(b['asistencia'])}% de asistencia", "fecha": None}
+                 for b in bajo_umbral[:MAX_ITEMS]]
+        return _regla("asistencia", "Asistencia", "atencion", detalle, porque, items)
+
     f = filas[0]
-    valor = f"{f['asistencia']:.0f}" if float(f["asistencia"]).is_integer() else f"{f['asistencia']:.1f}".replace(".", ",")
-    return _regla("asistencia", "Asistencia", "info", f"Tu asistencia más baja es {valor}% en {f['nombre']}.", porque)
+    return _regla("asistencia", "Asistencia", "info",
+                  f"Tu asistencia más baja es {_fmt_pct(f['asistencia'])}% en {f['nombre']} "
+                  f"(por encima del {UMBRAL_ASISTENCIA}% mínimo).", porque)
 
 
 def _regla_novedades(conn, estudiante_id):

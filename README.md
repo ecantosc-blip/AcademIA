@@ -325,13 +325,14 @@ su criterio en «¿Por qué?»:
 | Tareas vencidas sin entregar | Moodle informa que no está entregada (o en borrador) y su fecha pasó |
 | Vencen en 48 horas | Lo mismo, pero con fecha dentro de las próximas 48 horas |
 | Tareas sin verificar | Moodle no informó el estado: no se cuentan como pendientes ni como entregadas |
-| Asistencia | La más baja entre tus materias en curso (dato del ERP, sin veredicto) |
+| Asistencia | Compara cada materia en curso contra el 60% mínimo del Reglamento de la UNEMI (dato del ERP); marca "atención" si alguna está debajo |
 | Novedades | Cambios detectados que aún no viste |
 | Datos al día | La última lectura falló, no existe, o tiene más de 2 días |
 
 Lo que NO hace, a propósito: no predice ni habla de "riesgo de reprobar"; no juzga notas (Moodle y el
-ERP no entregan pesos ni máximos); no compara con reglamentos; no inventa un mínimo de asistencia.
-Si faltan datos, dice "sin datos".
+ERP no entregan pesos ni máximos); no compara notas con reglamentos. La asistencia es la única
+excepción: el 60% mínimo es un reglamento oficial confirmado, no una suposición. Si faltan datos,
+dice "sin datos".
 
 
 

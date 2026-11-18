@@ -395,26 +395,20 @@ class QueryEngine:
         "EX": 30, "EXT": 30,  # examen final (la etiqueta exacta puede variar)
     }
 
-    def rendimiento_materia(self, nombre_materia: str):
-        """Resumen del rendimiento en una materia: nota, asistencia y componentes evaluados."""
-        materia = self._buscar_materia(nombre_materia)
-        if not materia:
-            return f"No encontré ninguna materia que coincida con '{nombre_materia}'."
-
+    def _componentes_de(self, materia_id: int):
+        """Detalle y totales ponderados (segun PESOS_COMPONENTES) de una materia, por su materia_id.
+        Devuelve (detalle: list[str], total_obtenido: float, total_posible: float). detalle vacio si
+        no hay componentes con peso conocido sincronizados."""
         cur = self.conn.execute("""
             SELECT cn.nombre_item, cn.calificacion
             FROM componente_nota cn
             JOIN matricula mat ON mat.id = cn.matricula_id
             WHERE mat.estudiante_id = ? AND mat.materia_id = ?
-        """, (self.estudiante_id, materia["id"]))
-        rows = cur.fetchall()
-        if not rows:
-            return f"No tengo calificaciones por componente de {materia['nombre']} sincronizadas todavía."
-
+        """, (self.estudiante_id, materia_id))
         detalle = []
         total_obtenido = 0.0
         total_posible = 0.0
-        for r in rows:
+        for r in cur.fetchall():
             etiqueta = (r["nombre_item"] or "").upper()
             peso = self.PESOS_COMPONENTES.get(etiqueta)
             if not peso:
@@ -435,12 +429,56 @@ class QueryEngine:
                 detalle.append(f"- {etiqueta}: {calif_num}/10 → {obtenido:.1f}/{peso} pts")
             else:
                 detalle.append(f"- {etiqueta}: sin calificar (vale {peso} pts)")
+        return detalle, total_obtenido, total_posible
 
+    def rendimiento_materia(self, nombre_materia: str):
+        """Resumen del rendimiento en una materia: nota, asistencia y componentes evaluados."""
+        materia = self._buscar_materia(nombre_materia)
+        if not materia:
+            return f"No encontré ninguna materia que coincida con '{nombre_materia}'."
+
+        detalle, total_obtenido, total_posible = self._componentes_de(materia["id"])
         if not detalle:
+            cur = self.conn.execute("""
+                SELECT 1 FROM componente_nota cn JOIN matricula mat ON mat.id = cn.matricula_id
+                WHERE mat.estudiante_id = ? AND mat.materia_id = ? LIMIT 1
+            """, (self.estudiante_id, materia["id"]))
+            if cur.fetchone() is None:
+                return f"No tengo calificaciones por componente de {materia['nombre']} sincronizadas todavía."
             return f"No pude identificar componentes con peso conocido para {materia['nombre']}."
 
         texto = f"Rendimiento en {materia['nombre']}:\n" + "\n".join(detalle)
         texto += f"\n\nTotal: {total_obtenido:.1f} / {total_posible:.0f} puntos evaluados hasta ahora."
+        return texto
+
+    # --- Rendimiento de TODAS las materias actuales, calculado con los componentes de Moodle ---
+    def rendimiento_actual(self):
+        """Nota ponderada (N1-N4, EXP1-EXP2, examen) de cada materia en curso, calculada con lo que
+        ya sincronizó Moodle. A diferencia de record_academico/notas_por_semestre (que usan nota_final
+        del ERP), esto no depende de que el ERP ya haya cerrado y cargado la nota: Moodle suele tener
+        los componentes evaluados antes que el ERP publique la nota final."""
+        cur = self.conn.execute("""
+            SELECT mat.materia_id AS materia_id, m.nombre AS materia
+            FROM matricula mat JOIN materia m ON m.id = mat.materia_id
+            WHERE mat.estudiante_id = ? AND mat.estado = 'en_curso'
+            ORDER BY m.nombre
+        """, (self.estudiante_id,))
+        materias = cur.fetchall()
+        if not materias:
+            return "No tienes materias en curso sincronizadas todavía. Usa el botón de sincronizar (⟳)."
+
+        lineas = []
+        sin_componentes = []
+        for m in materias:
+            detalle, obtenido, posible = self._componentes_de(m["materia_id"])
+            if not detalle:
+                sin_componentes.append(m["materia"])
+                continue
+            lineas.append(f"- {m['materia']}: {obtenido:.1f}/{posible:.0f} pts evaluados hasta ahora")
+        texto = "Tu rendimiento actual según Moodle (N1-N4, EXP1-EXP2, examen; no el ERP, que suele tardar más en publicar la nota final):\n"
+        texto += "\n".join(lineas) if lineas else "(ninguna materia con componentes de Moodle sincronizados aún)"
+        if sin_componentes:
+            texto += "\n\nSin componentes de Moodle sincronizados todavía: " + ", ".join(sin_componentes)
         return texto
 
     # --- Materias de un semestre especifico de la malla ---
@@ -506,15 +544,19 @@ class QueryEngine:
 
     # --- Lista de materias actuales ---
     def materias_actuales(self):
+        """Materias en curso AHORA MISMO (estado = 'en_curso'), no el historial completo. Antes esta
+        consulta no filtraba por estado y devolvía también materias de semestres ya cursados; por eso
+        el chat terminaba preguntando "¿en qué semestre estás?" en vez de poder contestar directo."""
         cur = self.conn.execute("""
             SELECT m.nombre AS materia, mat.nota_final, mat.asistencia
             FROM matricula mat
             JOIN materia m ON m.id = mat.materia_id
-            WHERE mat.estudiante_id = ?
+            WHERE mat.estudiante_id = ? AND mat.estado = 'en_curso'
+            ORDER BY m.nombre
         """, (self.estudiante_id,))
         rows = cur.fetchall()
         if not rows:
-            return "No tienes materias sincronizadas todavía. Usa el botón de sincronizar (⟳) en la parte superior de la página."
+            return "No tienes materias en curso sincronizadas todavía. Usa el botón de sincronizar (⟳) en la parte superior de la página."
         lineas = []
         for r in rows:
             nota_txt = f" (nota: {r['nota_final']})" if r["nota_final"] is not None else ""
