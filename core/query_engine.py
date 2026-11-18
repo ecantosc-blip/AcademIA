@@ -17,6 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from db.setup import get_connection
 from core.tareas import clasificar_tareas
 from core.nombres import coincide
+from core import notas_moodle
 
 
 def _normalizar(texto: str) -> str:
@@ -26,6 +27,10 @@ def _normalizar(texto: str) -> str:
         return ""
     sin_acentos = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
     return sin_acentos.lower()
+
+
+def _plural_tareas(n: int) -> str:
+    return f"{n} tarea{'s' if n != 1 else ''} vencida{'s' if n != 1 else ''} sin entregar" if n else "0 tareas vencidas"
 
 
 # Una conexion por HILO del servidor (no una por estudiante): con cientos de
@@ -500,6 +505,69 @@ class QueryEngine:
         texto += "\n".join(lineas) if lineas else "(ninguna materia con componentes de Moodle sincronizados aún)"
         if sin_componentes:
             texto += "\n\nSin componentes de Moodle sincronizados todavía: " + ", ".join(sin_componentes)
+        return texto
+
+    # --- Prioridad de estudio entre las materias en curso ---
+    def prioridad_estudio(self):
+        """EXCEPCIÓN EXPLÍCITA al principio de "no juzgar" de este proyecto (ver el docstring de
+        core/seguimiento.py: ahí solo la asistencia tiene una excepción, respaldada por un reglamento
+        oficial de la UNEMI). Esta sí es una recomendación -una prioridad de estudio entre materias-
+        pero NO está respaldada por ningún reglamento: el usuario la pidió explícitamente y confirmó
+        el criterio (tareas atrasadas y promedio bajo de Moodle, con el MISMO peso para ambas), así
+        que queda documentado aquí como una decisión del usuario, no una suposición del sistema.
+
+        Método (para que sea explicable, no una fórmula arbitraria con pesos inventados): se ordenan
+        las materias en curso por separado según cada factor (más tareas vencidas sin entregar
+        primero; promedio de Moodle más bajo primero) y se suma la posición en cada orden (método de
+        Borda). El número más bajo es la materia con más prioridad. Una materia sin promedio de
+        Moodle sincronizado no se puede comparar en igualdad de condiciones con las que sí lo tienen,
+        así que se excluye del ranking y se lista aparte en vez de asumirle un promedio."""
+        materias = self.conn.execute("""
+            SELECT mat.materia_id AS materia_id, m.nombre AS materia
+            FROM matricula mat JOIN materia m ON m.id = mat.materia_id
+            WHERE mat.estudiante_id = ? AND mat.estado = 'en_curso'
+            ORDER BY m.nombre
+        """, (self.estudiante_id,)).fetchall()
+        if not materias:
+            return "No tienes materias en curso sincronizadas todavía. Usa el botón de sincronizar (⟳)."
+
+        atrasadas_por_materia = {}
+        for t in clasificar_tareas(self.conn, self.estudiante_id)["vencidas_sin_entregar"]:
+            atrasadas_por_materia[t["materia_id"]] = atrasadas_por_materia.get(t["materia_id"], 0) + 1
+        promedios = notas_moodle.promedios(self.conn, self.estudiante_id)
+
+        datos = [{"materia": m["materia"], "materia_id": m["materia_id"],
+                  "atrasadas": atrasadas_por_materia.get(m["materia_id"], 0),
+                  "promedio": promedios.get(m["materia_id"])} for m in materias]
+        con_promedio = [d for d in datos if d["promedio"] is not None]
+        sin_promedio = [d["materia"] for d in datos if d["promedio"] is None]
+
+        if not con_promedio:
+            texto = ("No tengo promedio de Moodle sincronizado para ninguna de tus materias en curso "
+                     "todavía, así que no puedo calcular una prioridad de estudio (necesito ese dato "
+                     "y el de tareas atrasadas, con el mismo peso).")
+            if any(d["atrasadas"] for d in datos):
+                texto += "\n\nLo único que sí tengo: " + ", ".join(
+                    f"{d['materia']} ({_plural_tareas(d['atrasadas'])})" for d in datos if d["atrasadas"])
+            return texto
+
+        por_atrasadas = sorted(con_promedio, key=lambda d: (-d["atrasadas"], d["materia"]))
+        por_promedio = sorted(con_promedio, key=lambda d: (d["promedio"], d["materia"]))
+        rango_atrasadas = {d["materia_id"]: i for i, d in enumerate(por_atrasadas)}
+        rango_promedio = {d["materia_id"]: i for i, d in enumerate(por_promedio)}
+        for d in con_promedio:
+            d["puesto"] = rango_atrasadas[d["materia_id"]] + rango_promedio[d["materia_id"]]
+        con_promedio.sort(key=lambda d: (d["puesto"], d["materia"]))
+
+        lineas = [f"{i + 1}. {d['materia']} — {_plural_tareas(d['atrasadas'])}, "
+                  f"promedio {d['promedio']:.0f}% en Moodle" for i, d in enumerate(con_promedio)]
+        texto = ("Prioridad de estudio entre tus materias en curso (combina, con el mismo peso, tus "
+                 "tareas vencidas sin entregar y tu promedio en Moodle, a tu pedido; es un orden "
+                 "sugerido con estos dos datos, no una predicción de si vas a aprobar o reprobar):\n"
+                 + "\n".join(lineas))
+        if sin_promedio:
+            texto += ("\n\nSin promedio de Moodle sincronizado, no se pudieron incluir en el orden: "
+                      + ", ".join(sin_promedio))
         return texto
 
     # --- Materias de un semestre especifico de la malla ---

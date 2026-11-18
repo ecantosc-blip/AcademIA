@@ -37,6 +37,7 @@ FUENTE_POR_HERRAMIENTA = {
     "notas_por_semestre": "ERP",
     "materias_actuales": "ERP",
     "rendimiento_actual": "Moodle",
+    "prioridad_estudio": "Moodle",
     "horario_materia": "ERP",
 }
 

@@ -107,3 +107,59 @@ def test_rendimiento_materia_no_reescala_componentes_con_peso_distinto_de_10(dat
 def test_rendimiento_materia_sin_componentes_sincronizados_lo_dice(datos):
     texto = QueryEngine(77).rendimiento_materia("FISICA")
     assert "No tengo calificaciones por componente de FISICA sincronizadas todavía." in texto
+
+
+# --- prioridad_estudio(): combina tareas atrasadas + promedio de Moodle, mismo peso (a pedido
+# explicito del usuario). Ver el docstring del metodo en core/query_engine.py para el porque. ---
+
+@pytest.fixture
+def datos_prioridad(bd_vacia):
+    c = get_connection()
+    c.executescript("""
+        INSERT INTO estudiante(id,nombre) VALUES (77,'Ana');
+        INSERT INTO materia(id,nombre,moodle_course_id) VALUES
+          (1,'CALCULO',1),(2,'FISICA',2),(3,'QUIMICA',3);
+        INSERT INTO matricula(id,estudiante_id,materia_id,estado) VALUES
+          (10,77,1,'en_curso'),(11,77,2,'en_curso'),(12,77,3,'en_curso');
+        -- Calculo: promedio bajo (40%) y sin tareas atrasadas.
+        -- Fisica: promedio alto (90%) pero 2 tareas atrasadas.
+        -- Quimica: sin componentes de Moodle sincronizados (no se puede priorizar).
+        INSERT INTO componente_nota(matricula_id,nombre_item,calificacion,porcentaje) VALUES
+          (10,'Total del curso','4,0','40'),
+          (11,'Total del curso','9,0','90');
+        INSERT INTO tarea(id,materia_id,moodle_assign_id,nombre,fecha_entrega) VALUES
+          (100,2,900,'Tarea vencida 1','2026-01-01T10:00:00'),
+          (101,2,901,'Tarea vencida 2','2026-01-02T10:00:00');
+        INSERT INTO entrega(tarea_id,estudiante_id,estado,verificada_en) VALUES
+          (100,77,'sin_entregar','2026-01-03T10:00:00'),
+          (101,77,'sin_entregar','2026-01-03T10:00:00');
+    """)
+    c.commit()
+    yield c
+    c.close()
+
+
+def test_prioridad_estudio_combina_tareas_atrasadas_y_promedio_con_el_mismo_peso(datos_prioridad):
+    texto = QueryEngine(77).prioridad_estudio()
+    # Calculo (0 atrasadas, 40%) y Fisica (2 atrasadas, 90%) quedan EMPATADAS en el puesto
+    # combinado (Borda): cada una gana en un factor y pierde en el otro. El desempate es por
+    # nombre, asi que Calculo sale primero.
+    assert texto.index("1. CALCULO") < texto.index("2. FISICA")
+    assert "0 tareas vencidas" in texto and "promedio 40% en Moodle" in texto
+    assert "2 tareas vencidas sin entregar" in texto and "promedio 90% en Moodle" in texto
+    assert "Sin promedio de Moodle sincronizado, no se pudieron incluir en el orden: QUIMICA" in texto
+
+
+def test_prioridad_estudio_sin_ningun_promedio_lo_dice_sin_inventar(datos_prioridad):
+    datos_prioridad.execute("DELETE FROM componente_nota")
+    datos_prioridad.commit()
+    texto = QueryEngine(77).prioridad_estudio()
+    assert "no puedo calcular una prioridad de estudio" in texto
+    assert "FISICA (2 tareas vencidas sin entregar)" in texto
+
+
+def test_prioridad_estudio_sin_materias_en_curso_lo_dice(datos_prioridad):
+    datos_prioridad.execute("update matricula set estado='aprobada' where estudiante_id=77")
+    datos_prioridad.commit()
+    texto = QueryEngine(77).prioridad_estudio()
+    assert "No tienes materias en curso" in texto

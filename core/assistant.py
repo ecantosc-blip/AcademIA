@@ -149,6 +149,11 @@ TOOLS = [
         "input_schema": {"type": "object", "properties": {}},
     },
     {
+        "name": "prioridad_estudio",
+        "description": "Ordena las materias que el estudiante cursa ahora por prioridad de estudio, combinando con el mismo peso sus tareas vencidas sin entregar y su promedio de Moodle (el más bajo primero). Úsala cuando pregunte dónde está bajo, en qué debería enfocarse o qué materia priorizar para estudiar. No es una predicción de si va a aprobar o reprobar: es solo un orden sugerido con esos dos datos.",
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
         "name": "carnet_estudiantil",
         "description": "Prepara la descarga del carne estudiantil (PDF). Usala cuando el estudiante pida, quiera o necesite su carne. No necesita parametros: la app muestra un boton de descarga debajo de tu respuesta.",
         "input_schema": {"type": "object", "properties": {}},
@@ -185,6 +190,10 @@ Reglas importantes:
   (N1-N4, EXP1, EXP2, examen) antes de que el ERP publique la nota_final, así que suele estar más al
   día. Si el estudiante pide explícitamente "la nota del ERP" o la nota final/oficial, usa
   calificacion_materia o record_academico en su lugar.
+- Si pregunta dónde está bajo, en qué materia enfocarse o priorizar, o algo como "¿qué debo
+  estudiar primero?", usa prioridad_estudio. No es un reglamento oficial (a diferencia del umbral
+  de asistencia): es un orden que el estudiante pidió explícitamente, combinando tareas atrasadas y
+  promedio de Moodle. No lo presentes como una predicción de si va a aprobar o reprobar.
 - Si el estudiante pide su carne, usa la herramienta carnet_estudiantil y dile
   que pulse el boton "Descargar carne" que aparece debajo de tu mensaje. No
   describas el contenido del carne ni inventes sus datos.
