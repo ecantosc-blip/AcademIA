@@ -398,7 +398,15 @@ class QueryEngine:
     def _componentes_de(self, materia_id: int):
         """Detalle y totales ponderados (segun PESOS_COMPONENTES) de una materia, por su materia_id.
         Devuelve (detalle: list[str], total_obtenido: float, total_posible: float). detalle vacio si
-        no hay componentes con peso conocido sincronizados."""
+        no hay componentes con peso conocido sincronizados.
+
+        IMPORTANTE: Moodle no entrega el total de cada bloque como "N1", "N2"... sino como
+        "Total N1", "Total N2" (ver moodle/client.py::get_grades_table_rows, confirmado con
+        pantallazos reales del SGA). Antes esta funcion comparaba el nombre_item completo contra
+        PESOS_COMPONENTES (que solo tiene "N1", "N2"...), asi que NUNCA encontraba una coincidencia
+        y rendimiento_materia()/rendimiento_actual() siempre decian "sin componentes sincronizados"
+        aunque Moodle sí tuviera notas. Se quita el prefijo "Total " (sin importar mayusculas) antes
+        de comparar, igual que ya hacia web/panel.py al mostrar estos mismos datos."""
         cur = self.conn.execute("""
             SELECT cn.nombre_item, cn.calificacion
             FROM componente_nota cn
@@ -409,7 +417,10 @@ class QueryEngine:
         total_obtenido = 0.0
         total_posible = 0.0
         for r in cur.fetchall():
-            etiqueta = (r["nombre_item"] or "").upper()
+            etiqueta = (r["nombre_item"] or "").strip()
+            if etiqueta[:6].lower() == "total ":
+                etiqueta = etiqueta[6:].strip()
+            etiqueta = etiqueta.upper()
             peso = self.PESOS_COMPONENTES.get(etiqueta)
             if not peso:
                 continue
