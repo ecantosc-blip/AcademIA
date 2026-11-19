@@ -37,3 +37,31 @@
 @media (prefers-reduced-motion:reduce) {
   .kpi,.modulo { transition:none; }
 }
+
+/* Identidad de navegación: jerarquía premium sin sustituir la paleta UNEMI. */
+@media (min-width:861px) {
+  .lateral { background:var(--side); border-right:1px solid var(--side-line); }
+  .lateral .brand,.lateral .marca-txt small,.lateral .oficial { color:var(--side-ink); }
+  .lateral .marca-txt small,.lateral .oficial { opacity:.76; }
+  .lateral .menu a { color:var(--side-muted); }
+  .lateral .menu a:hover { background:var(--side-hover); color:var(--side-ink); }
+  .lateral .menu a[aria-current="page"] { background:var(--side-hover); color:var(--side-ink); box-shadow:inset 3px 0 var(--orange); }
+  .lateral .menu a[aria-current="page"] svg { stroke:var(--orange); }
+  .lateral .quien { color:var(--side-ink); }
+  .lateral .plegar { color:var(--side-ink); }
+}
+/* Los elementos ocultos nunca deben ocupar celdas de la cuadrícula. */
+#v-inicio > [hidden] { display:none !important; }
+/* Foco visible y tamaño táctil consistente. */
+#v-inicio .modulo:focus-visible,#v-inicio .kpi:focus-visible { outline:3px solid var(--orange); outline-offset:2px; }
+@media (max-width:560px) {
+  #v-inicio .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  #v-inicio .kpi { padding:14px; min-height:118px; }
+  #v-inicio .kpi .gran { font-size:1.75rem; }
+  #v-inicio .kpi .gran.mid { font-size:1.05rem; }
+  #v-inicio .kpi .det { font-size:.78rem; }
+  #v-inicio .modulos { grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+  #v-inicio .modulo { padding:13px 6px; font-size:.78rem; }
+  .lateral .menu { overflow-x:auto; justify-content:flex-start; scrollbar-width:thin; }
+  .lateral .menu a { flex:0 0 auto; min-width:64px; }
+}
