@@ -801,14 +801,18 @@
 
     <!-- PLAN -->
     <section class="vista" id="v-plan" aria-labelledby="t-plan" hidden>
-      <h1 id="t-plan">Plan de estudio</h1>
-      <p class="sub">Conversa con el asistente para armar tu horario. Cada bloque dice por qué está ahí.</p>
+      <header class="plan-hero">
+        <div class="plan-hero-content">
+          <h1 id="t-plan">Plan de <span>estudio</span></h1>
+          <p class="sub">Organiza tus clases, tu rutina y tus sesiones de estudio con ayuda de AcademIA.</p>
+        </div>
+      </header>
       <div class="pestanas" role="tablist" aria-label="Plan de estudio">
         <button type="button" role="tab" id="tab-conv" aria-selected="true" aria-controls="pan-conv">Conversación</button>
         <button type="button" role="tab" id="tab-hor" aria-selected="false" aria-controls="pan-hor">Horario<span class="punto" id="punto-hor" hidden aria-label="Hay cambios"></span></button>
       </div>
-      <div id="pan-conv" role="tabpanel" aria-labelledby="tab-conv"><div id="plan-chat-slot"></div></div>
-      <div id="pan-hor" role="tabpanel" aria-labelledby="tab-hor" hidden>
+      <div id="pan-conv" role="tabpanel" aria-labelledby="tab-conv"><div class="plan-chat-intro"><h2>Conversación con el asistente</h2><p>Planifica tu semana a partir de tus datos académicos y disponibilidad.</p></div><div id="plan-chat-slot"></div></div>
+      <div id="pan-hor" role="tabpanel" aria-labelledby="tab-hor" hidden><div class="plan-hor-intro"><h2>Horario semanal</h2><p>Clases del ERP, rutinas y bloques de estudio organizados por tu planificador.</p></div>
         <div class="hor-cab">
           <p class="sub" id="hor-resumen"></p>
           <details class="pop" id="pop-calculo"><summary>ⓘ Cómo se calcula</summary><ul id="plan-sup" class="lista"></ul></details>
