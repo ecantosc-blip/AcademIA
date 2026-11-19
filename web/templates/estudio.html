@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Espacio de estudio — AcademIA</title>
-<link rel="icon" type="image/png" href="/static/tiger-avatar.png">
+<link rel="icon" type="image/png" href="/static/tigre-azul-chat.png">
 <style>
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:400; font-display:swap; src:url('/static/fonts/poppins-latin-400-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
@@ -297,7 +297,7 @@
   .tigre{width:44px; height:44px; border-radius:50%; background:#fff; border:2px solid var(--orange); object-fit:cover; flex:none; display:block}
 
   .msg.ia{display:grid; grid-template-columns:30px minmax(0,1fr); column-gap:8px; align-items:start; max-width:96%}
-  .msg.ia::before{content:""; grid-column:1; grid-row:1; width:30px; height:30px; border-radius:50%; background:#fff url('/static/tiger-avatar.png') center/cover no-repeat; border:1.5px solid var(--orange)}
+  .msg.ia::before{content:""; grid-column:1; grid-row:1; width:30px; height:30px; border-radius:50%; background:#fff url('/static/tigre-azul-chat.png') center/cover no-repeat; border:1.5px solid var(--orange)}
   .msg.ia > *{grid-column:2}
   .msg.yo{background:var(--brand); color:#fff}
   :root[data-theme="dark"] .msg.yo{background:var(--accent); color:var(--accent-ink)}
@@ -323,7 +323,7 @@
 </head>
 <body>
 <div class="bar">
-  <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="40" height="40"><p class="brand">AcademIA</p></div>
+  <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="40" height="40"><p class="brand">AcademIA</p></div>
   <div style="display:flex; align-items:center">
     <a class="enlace" href="/">Mi panel</a>
     <span class="quien">{{ nombre }}</span>
@@ -378,7 +378,7 @@
       </section>
       <section class="card tutor" aria-label="Tutor">
         <header>
-          <img class="tigre" src="/static/tiger-avatar.png" alt="" width="40" height="40">
+          <img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="40" height="40">
           <div style="flex:1;min-width:0"><h2>Pregúntale al tutor</h2><p>Dudas de teoría de la materia elegida.</p></div>
           <button class="icono" type="button" id="limpiar-t" data-tip="Limpiar charla" aria-label="Limpiar charla" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/></svg></button>
         </header>
