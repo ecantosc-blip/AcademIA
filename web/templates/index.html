@@ -827,7 +827,7 @@
           <button type="button" class="btn-o" id="btn-libre">+ Agregar horas libres</button>
           <button type="button" class="btn-o" id="btn-soltar" hidden>Soltar bloques fijados</button>
         </div>
-        <p class="sub" id="hor-ayuda">Toca una celda vacía para agregar tu rutina. Toca un bloque de rutina para editar su hora de inicio, fin o duración. Los bloques de estudio se pueden arrastrar para reubicarlos.</p>
+        <p class="sub" id="hor-ayuda">Haz clic en una celda vacía para agregar tu rutina. Arrastra desayuno, almuerzo, gimnasio u otra actividad personal para cambiar su horario; también puedes hacer clic para editarla. Las clases del ERP no se pueden mover.</p>
         <div class="cuadricula-wrap"><div class="cuadricula" id="cuadricula"></div></div>
         <section class="card" id="detalle-bloque" hidden aria-live="polite"></section>
         <details class="pop" id="libres-det" hidden><summary id="libres-sum">Mis horas libres</summary><div id="libres-lista"></div></details>
@@ -1885,10 +1885,10 @@
   });
   $('cuadricula').addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ const q = e.target.closest('[data-bq]'); if(q){ e.preventDefault(); abrirDetalle(q.dataset.bq); } } });
 
-  // Arrastrar bloques de estudio (mouse o lápiz; en pantallas táctiles se usa «Mover a…» del detalle)
+  // Arrastrar bloques de estudio y actividades personales. Clases ERP inmutables.
   let drag = null;
   $('cuadricula').addEventListener('pointerdown', e => {
-    const q = e.target.closest('.b-estudio, .b-refuerzo');
+    const q = e.target.closest('.b-estudio, .b-refuerzo, .b-rutina');
     if(!q || e.pointerType === 'touch' || e.button !== 0) return;
     drag = {el:q, x:e.clientX, y:e.clientY, mov:false, off:e.clientY - q.getBoundingClientRect().top};
     q.setPointerCapture(e.pointerId);
@@ -1907,8 +1907,20 @@
     const col = document.elementsFromPoint(e.clientX, e.clientY).map(x => x.closest && x.closest('.col-dia')).find(Boolean);
     if(!col) return;
     const b = bloquesPlan[d.el.dataset.bq], destino = planDatos.plan.dias[Number(col.dataset.di)];
+    if(!b || !destino) return;
+    const duracion = b.kind === 'actividad' ? tmin(b.fin) - tmin(b.inicio) : b.minutos;
     const y = e.clientY - d.off - col.getBoundingClientRect().top;
-    const ini = Math.min(Math.max(H_INI + Math.round((y/PPM)/15)*15, H_INI), H_FIN - b.minutos);
+    const ini = Math.min(Math.max(H_INI + Math.round((y/PPM)/15)*15, H_INI), H_FIN - duracion);
+    if(b.kind === 'actividad'){
+      // Solo actividades personales: las clases ERP nunca son arrastrables ni editables.
+      if(destino.dia === b.dia && hm(ini) === b.inicio) return;
+      try{
+        const fin = hm(ini + duracion);
+        pintarTodoPlan(await postPlan('/api/agenda/editar', {tipo:'actividad', id:b.id,
+          item:{dia:destino.dia, inicio:hm(ini), fin, nombre:b.nombre}}), false);
+      }catch(err){ mostrarAviso(err.message, true); }
+      return;
+    }
     await moverBloque(b, destino.fecha, hm(ini));
   });
   $('cuadricula').addEventListener('pointercancel', () => { if(drag){ drag.el.style.transform = ''; drag.el.classList.remove('arrastrando'); drag = null; } });
