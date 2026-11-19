@@ -10,34 +10,6 @@
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:600; font-display:swap; src:url('/static/fonts/poppins-latin-600-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:700; font-display:swap; src:url('/static/fonts/poppins-latin-700-normal.woff2') format('woff2')}
-  :root{
-    /* Paleta oficial UNEMI (Manual de identidad corporativa V1): azul oscuro #002E45, naranja #FF6900 */
-    --brand:#002E45; --orange:#FF6900; --orange-bg:#FFF0E5; --orange-ink:#8A3A00;
-    --canvas:#F2F5F8; --surface:#FFFFFF; --ink:#002E45; --muted:#4F6676; --line:#D3DEE6;
-    --accent:#335F7F; --accent-ink:#FFFFFF; --accent-bg:#E4EEF5;
-    --ok:#1B7F4B; --ok-bg:#E3F3EA; --warn:#8F5600; --warn-bg:#FCEFD6; --bad:#B3261E; --bad-bg:#FBE4E2;
-    --stub:#002E45; --stub-ink:#E8F0F5; --stub-muted:#A9C0CF;
-    --side:#002E45; --side-ink:#FFFFFF; --side-muted:#B5C9D6; --side-line:#264763; --side-hover:rgba(255,255,255,.1);
-  }
-  :root[data-theme="dark"]{
-    --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
-    --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
-    --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
-    --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-    --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
-    --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
-      --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
-      --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
-      --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-      --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
-      --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
-    }
-  }
-
   .icono{display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; padding:0; flex:none; position:relative;
     border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; cursor:pointer}
   .icono:hover{border-color:var(--accent)}
@@ -319,16 +291,6 @@
 
 /* Premium study workspace: isolated to this standalone template. */
 body { padding-left:210px; }
-.estudio-sidebar { position:fixed; z-index:40; top:0; left:0; bottom:0; width:210px; box-sizing:border-box; display:flex; flex-direction:column; background:linear-gradient(180deg,#001d32,#00324a); color:#fff; padding:18px 13px; }
-.estudio-sidebrand { display:flex; align-items:center; gap:9px; text-decoration:none; color:#fff; padding:0 4px 26px; }
-.estudio-sidebrand span { display:flex; flex-direction:column; min-width:0; }
-.estudio-sidebrand strong { font-size:1rem; }
-.estudio-sidebrand small { font-size:.62rem; line-height:1.35; color:#c2d8e7; }
-.estudio-sidelinks { display:grid; gap:6px; }
-.estudio-sidelinks a { color:#e2edf5; text-decoration:none; font-size:.86rem; font-weight:600; border-radius:10px; padding:12px 14px; }
-.estudio-sidelinks a:hover { background:rgba(255,255,255,.1); }
-.estudio-sidelinks a.actual { background:#244b62; border-left:3px solid #ff6900; color:#fff; }
-.estudio-sidefoot { margin:auto 4px 0; color:#b6cbd9; font-size:.66rem; line-height:1.6; }
 .bar { background:#002e45; color:white; border-bottom:2px solid #ff6900; padding:9px clamp(18px,2vw,34px); }
 .bar .brand { color:white; } .bar .quien { color:#d1e1eb; }
 .bar .enlace { color:#fff; }
@@ -477,36 +439,6 @@ body { padding-left:220px; }
 :root[data-theme="dark"] .tutor form { background:#202020; border-color:#3d3d3d; }
 :root[data-theme="dark"] .icono { background:#252525; color:#eee; border-color:#484848; }
 
-
-/* Study navigation uses the same geometry, active state and collapse preference as dashboard. */
-.estudio-sidebar { width:220px; background:var(--side); border-right:1px solid var(--side-line); box-shadow:none; padding:18px 12px; }
-.estudio-sidebrand { padding:0 5px 26px; gap:10px; }
-.estudio-sidebrand img { border-radius:50%; background:#fff; }
-.estudio-sidelinks { gap:5px; }
-.estudio-sidelinks a { border-radius:10px; min-height:39px; padding:10px 12px; font-weight:600; border-left:3px solid transparent; }
-.estudio-sidelinks a.actual { background:var(--side-hover); border-left-color:var(--orange); }
-.estudio-sidefoot { color:var(--side-muted); }
-.estudio-side-toggle { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:20px; width:29px; height:29px; border:1px solid var(--side-line); border-radius:9px; background:transparent; color:var(--side-ink); cursor:pointer; }
-.estudio-side-toggle:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
-@media(min-width:851px) {
- body { padding-left:220px; }
- :root[data-lateral="plegada"] body { padding-left:76px; }
- :root[data-lateral="plegada"] .estudio-sidebar { width:76px; padding:18px 9px; }
- :root[data-lateral="plegada"] .estudio-sidebrand span,
- :root[data-lateral="plegada"] .estudio-sidelinks a .side-label,
- :root[data-lateral="plegada"] .estudio-sidefoot { display:none; }
- :root[data-lateral="plegada"] .estudio-sidebrand { padding:0 0 32px; justify-content:center; }
- :root[data-lateral="plegada"] .estudio-sidebrand img { width:36px; height:36px; }
- :root[data-lateral="plegada"] .estudio-sidelinks a { text-align:center; padding:11px 3px; font-size:0; }
- :root[data-lateral="plegada"] .estudio-sidelinks a .side-icon { font-size:17px; }
- :root[data-lateral="plegada"] .estudio-side-toggle { top:66px; right:24px; width:28px; height:27px; }
-}
-.estudio-sidelinks a .side-icon { display:inline-flex; justify-content:center; align-items:center; width:22px; margin-right:9px; font-size:17px; font-weight:500; color:var(--side-muted); }
-.estudio-sidelinks a.actual .side-icon { color:var(--orange); }
-@media(max-width:850px) { .estudio-sidebar { width:100%; } .estudio-side-toggle { right:12px; } .estudio-sidelinks a .side-icon { margin-right:5px; } }
-:root[data-theme="dark"] .estudio-sidebar { background:#0b0b0b!important; }
-:root[data-theme="dark"] .estudio-sidelinks a.actual { background:#272727; }
-:root[data-theme="dark"] .estudio-side-toggle { border-color:#454545; color:#eee; }
 
 </style>
 <script>
