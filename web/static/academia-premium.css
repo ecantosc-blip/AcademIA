@@ -1103,9 +1103,22 @@
   width: calc(100% + 2 * var(--princ-x, 0px));
   margin-left: calc(-1 * var(--princ-x, 0px));
   margin-right: calc(-1 * var(--princ-x, 0px));
-  margin-top: calc(-1 * var(--princ-top, 0px));
   border-radius: 0;
   box-shadow: none;
+}
+/* En Inicio el encabezado NO es el primer elemento: antes va la barra de
+   búsqueda (.premium-topbar), así que subir el encabezado con margin-top
+   negativo lo hacía encimarse sobre esa barra (se veía como si la esquina
+   de la barra quedara "cortada" detrás del encabezado). El hueco superior
+   se cancela en la barra de búsqueda, que sí es el primer elemento real;
+   el encabezado conserva su separación normal debajo de ella. */
+#v-inicio .premium-topbar { margin-top: calc(-1 * var(--princ-top, 0px)); }
+#v-materias .materias-hero,
+#v-agenda .agenda-hero,
+#v-novedades .novedades-hero,
+#v-plan .plan-hero,
+#v-datos .datos-hero {
+  margin-top: calc(-1 * var(--princ-top, 0px));
 }
 #v-materias .materias-hero::before,
 #v-agenda .agenda-hero::before,
