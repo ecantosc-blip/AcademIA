@@ -428,3 +428,63 @@
 #v-materias #materias > * { max-width:100%; }
 @media(max-width:1100px){#v-materias .materias-layout { grid-template-columns:1fr; }#v-materias .materias-hero { margin:0 0 18px; }}
 @media(max-width:600px){#v-materias .materias-hero { padding:26px 18px; min-height:145px; }#v-materias .materias-hero h1 svg { width:31px; height:31px; }#v-materias .materias-toolbar { display:grid; grid-template-columns:1fr 1fr; }#v-materias .materias-tab { padding:10px; font-size:.78rem; }#v-materias .materias-metrics { grid-template-columns:1fr 1fr!important; }#v-materias .materias-metrics .kpi { padding:12px; }#v-materias .materias-shortcut-grid { grid-template-columns:1fr; }}
+
+/* Responsive shell correction: preserve the existing persisted sidebar toggle. */
+@media(min-width:1101px) {
+ :root:not([data-lateral="plegada"]) .app { grid-template-columns:clamp(210px,15vw,250px) minmax(0,1fr)!important; }
+ :root[data-lateral="plegada"] .app { grid-template-columns:76px minmax(0,1fr)!important; }
+ :root[data-lateral="plegada"] .lateral { padding:20px 10px!important; }
+ :root[data-lateral="plegada"] .lateral .marca-txt,
+ :root[data-lateral="plegada"] .lateral .menu a .et,
+ :root[data-lateral="plegada"] .lateral .oficial,
+ :root[data-lateral="plegada"] .lateral .lateral-pie .quien { display:none!important; }
+ :root[data-lateral="plegada"] .lateral .marca { justify-content:center; }
+ :root[data-lateral="plegada"] .lateral .menu a { justify-content:center; padding:11px 0; }
+ :root[data-lateral="plegada"] .lateral .plegar { position:static; margin:8px auto 0; }
+}
+@media(min-width:861px) and (max-width:1100px) {
+ :root:not([data-lateral="plegada"]) .app { grid-template-columns:210px minmax(0,1fr)!important; }
+ :root[data-lateral="plegada"] .app { grid-template-columns:76px minmax(0,1fr)!important; }
+ :root[data-lateral="plegada"] .lateral .marca-txt,
+ :root[data-lateral="plegada"] .lateral .menu a .et,
+ :root[data-lateral="plegada"] .lateral .oficial,
+ :root[data-lateral="plegada"] .lateral .lateral-pie .quien { display:none!important; }
+ :root[data-lateral="plegada"] .lateral .menu a { justify-content:center; }
+}
+@media(max-width:860px) {
+ :root[data-lateral="plegada"] .app { grid-template-columns:1fr!important; }
+ .principal { width:100%!important; margin:0!important; min-width:0; }
+}
+/* Full-width Materias header: image spans the entire hero and remains readable. */
+#v-materias .materias-hero {
+ min-height:clamp(185px,18vw,275px);
+ margin:0 0 20px;
+ padding:clamp(24px,3vw,44px);
+ border-radius:18px;
+ background:linear-gradient(90deg,#001b32,#003e62);
+}
+#v-materias .materias-hero::before {
+ background-image:linear-gradient(90deg,rgba(0,24,45,.96) 0%,rgba(0,38,68,.88) 33%,rgba(0,43,70,.28) 68%,rgba(0,36,61,.08) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+ background-size:cover,cover;
+ background-position:center,right center;
+}
+#v-materias .materias-hero-content { position:relative; z-index:1; width:min(100%,700px); }
+#v-materias .materias-layout { min-width:0; }
+#v-materias .materias-current,#v-materias .materias-aside { min-width:0; }
+@media(max-width:860px) {
+ #v-materias .materias-hero { min-height:185px; margin:0 0 16px; padding:26px 20px; }
+ #v-materias .materias-hero::before { background-position:center,right center; }
+ #v-materias .materias-layout { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:560px) {
+ #v-materias .materias-hero { min-height:155px; padding:20px 16px; }
+ #v-materias .materias-hero::before { background-image:linear-gradient(90deg,rgba(0,27,49,.98),rgba(0,40,68,.80) 55%,rgba(0,40,68,.42)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); }
+ #v-materias .materias-hero h1 { font-size:1.65rem; gap:8px; }
+ #v-materias .materias-hero h1 svg { width:30px; height:30px; }
+ #v-materias .materias-hero .sub { font-size:.82rem; }
+ #v-materias .materias-toolbar { display:flex; flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px; }
+ #v-materias .materias-tab { flex:0 0 auto; }
+ #v-materias .materias-metrics { grid-template-columns:1fr!important; }
+ #v-materias .materias-current,#v-materias .materias-performance,#v-materias .materias-shortcuts { padding:15px; }
+ #v-materias .materias-shortcut-grid { grid-template-columns:1fr; }
+}
