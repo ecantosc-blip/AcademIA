@@ -574,3 +574,41 @@
 #v-agenda[data-agenda-vista="lista"] .agenda-column:nth-child(2) { display:none; }
 @media(max-width:1100px) { #v-agenda .agenda-grid { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:600px) { #v-agenda .agenda-hero { padding:22px 16px; min-height:160px; } #v-agenda .agenda-tabs { flex-wrap:nowrap; overflow-x:auto; } #v-agenda .agenda-tab { white-space:nowrap; font-size:.8rem; padding:10px 12px; } #v-agenda .agenda-column > .card { padding:15px; } #v-agenda .agenda-metrics { gap:6px; } #v-agenda .agenda-metrics > div { padding:11px 7px; } #v-agenda .agenda-metrics b { font-size:1.5rem; } #v-agenda .agenda-metrics span { font-size:.69rem; } #v-agenda .agenda-pendientes .fecha,#v-agenda .agenda-lista .fecha { grid-template-columns:78px minmax(0,1fr); gap:8px; padding:12px 4px; } #v-agenda .agenda-day { min-height:39px; } }
+
+/* Novedades: presentation only; records are supplied by existing API. */
+#v-novedades { min-width:0; }
+#v-novedades .novedades-hero { position:relative; isolation:isolate; overflow:hidden; display:flex; align-items:center; min-height:195px; margin-bottom:18px; padding:32px; border-radius:20px; background:#002e45; color:#fff; }
+#v-novedades .novedades-hero::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.95) 30%,rgba(0,40,67,.36) 72%,rgba(0,40,67,.08)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-repeat:no-repeat; background-size:100% 100%,auto 100%; background-position:center,right center; }
+#v-novedades .novedades-hero h1 { color:white; margin:0 0 10px; font-size:clamp(1.8rem,3vw,2.6rem); }
+#v-novedades .novedades-hero .sub { color:#e8f2fb; margin:0; }
+#v-novedades .novedades-metricas { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+#v-novedades .novedades-metrica { display:flex; flex-direction:column; gap:6px; padding:20px 22px; border-radius:16px; background:#eaf5ff; color:#002e45; border:1px solid #d9e8f6; }
+#v-novedades .novedades-metrica:nth-child(2) { background:#f2ecff; border-color:#e9ddff; }
+#v-novedades .novedades-metrica:nth-child(3) { background:#fff1e5; border-color:#ffdfc7; }
+#v-novedades .novedades-metrica:nth-child(4) { background:#e8f8f1; border-color:#d4f0e2; }
+#v-novedades .novedades-metrica b { font-size:2rem; line-height:1.1; }
+#v-novedades .novedades-metrica span { font-weight:700; font-size:.85rem; }
+#v-novedades .novedades-grid { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(270px,.85fr); gap:17px; align-items:start; }
+#v-novedades .novedades-principal,#v-novedades .novedades-aside { display:flex; flex-direction:column; gap:16px; min-width:0; }
+#v-novedades .novedades-grid .card { margin:0; padding:22px; min-width:0; border-radius:18px; box-shadow:0 8px 22px rgba(0,34,58,.055); }
+#v-novedades .novedades-grid h2 { margin:0 0 14px; font-size:1.15rem; }
+#v-novedades .novedades-grid .barra { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+#v-novedades .novedades-filtros { display:flex; flex-wrap:wrap; gap:7px; margin:14px 0 18px; }
+#v-novedades .nov-filtro { padding:10px 13px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-weight:700; font-size:.81rem; cursor:pointer; }
+#v-novedades .nov-filtro.active { border-color:#ff7900; background:#fff0e3; color:#002e45; }
+#v-novedades .nov { display:grid; grid-template-columns:100px minmax(0,1fr); gap:14px; align-items:center; padding:16px 12px; border:1px solid var(--line); border-left:4px solid #1884df; border-radius:13px; margin:0 0 10px; overflow-wrap:anywhere; }
+#v-novedades .nov-notas { border-left-color:#8952d9; }
+#v-novedades .nov-eventos { border-left-color:#ff7900; }
+#v-novedades .nov-otros { border-left-color:#13a36d; }
+#v-novedades .nov.visto { opacity:.78; }
+#v-novedades .nov-fuente { display:flex; flex-direction:column; gap:7px; padding:17px; margin-top:10px; border-radius:12px; background:var(--canvas); border:1px solid var(--line); }
+#v-novedades .nov-fuente strong { font-size:1rem; }
+#v-novedades .nov-fuente span { color:var(--muted); font-size:.85rem; }
+#v-novedades .nov-info { background:var(--surface); }
+#v-novedades .nov-info p { line-height:1.7; margin:0; font-size:.88rem; color:var(--muted); }
+#v-novedades .nov-sin-cambios { display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:35px 16px; }
+#v-novedades .nov-sin-icono { display:grid; place-items:center; width:60px; height:60px; border-radius:50%; background:#e6f7ed; color:#138454; font-size:2rem; }
+#v-novedades .nov-sin-cambios strong { font-size:1.15rem; }
+#v-novedades .nov-sin-cambios p { margin:0; color:var(--muted); }
+@media(max-width:1100px) { #v-novedades .novedades-grid { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:700px) { #v-novedades .novedades-metricas { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } #v-novedades .novedades-metrica { padding:15px; } #v-novedades .novedades-hero { padding:22px 16px; min-height:160px; } #v-novedades .novedades-grid .card { padding:15px; } #v-novedades .novedades-filtros { flex-wrap:nowrap; overflow-x:auto; padding-bottom:5px; } #v-novedades .nov-filtro { flex:none; } #v-novedades .nov { grid-template-columns:1fr; gap:5px; } }
