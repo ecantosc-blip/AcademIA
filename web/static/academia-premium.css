@@ -1140,12 +1140,12 @@
 
 /* Consistent full-bleed home hero: image and gradient share one surface. */
 #v-inicio .premium-hero {
- position:relative; isolation:isolate; background:#0b0b0b;
+ position:relative; isolation:isolate; background:#002e45;
  color:#fff; overflow:hidden;
 }
 #v-inicio .premium-hero-art {
  inset:0; border-radius:0; opacity:1;
- background-image:linear-gradient(90deg,rgba(0,0,0,.97) 0%,rgba(0,0,0,.88) 27%,rgba(0,0,0,.55) 52%,rgba(0,0,0,.12) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+ background-image:linear-gradient(90deg,rgba(0,32,53,.97) 0%,rgba(0,43,70,.9) 27%,rgba(0,48,77,.6) 52%,rgba(0,40,65,.1) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
  background-position:center,center 48%; background-size:100% 100%,cover; background-repeat:no-repeat;
 }
 #v-inicio .premium-hero-copy { position:relative; z-index:1; max-width:min(680px,75%); }
