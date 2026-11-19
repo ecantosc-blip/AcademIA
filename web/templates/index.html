@@ -214,7 +214,7 @@
   .menu a[aria-current="page"] svg{stroke:var(--accent)}
   .lateral-pie{margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 6px}
   .quien{color:var(--muted); font-size:.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .principal{padding:32px clamp(18px,4vw,56px) 120px; max-width:1120px; width:100%; margin:0 auto}
+  .principal{padding:32px clamp(18px,4vw,56px) 120px; max-width:1120px; width:100%; margin:0 auto; --princ-x:clamp(18px,4vw,56px); --princ-top:32px}
   .topm{display:none}
   .vista[hidden]{display:none}
 
@@ -326,7 +326,7 @@
     .menu a{flex-direction:column; gap:3px; padding:6px 8px; font-size:.7rem; border-radius:8px; min-width:0}
     .topm{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px}
     .topm .brand{padding:0}
-    .principal{padding-top:18px; padding-bottom:150px}
+    .principal{padding-top:18px; padding-bottom:150px; --princ-top:18px}
     .fab{bottom:84px; right:16px; padding:13px 16px}
     .fab span{display:none}
     .chat{right:8px; left:8px; width:auto; bottom:148px; height:min(68vh,560px)}
@@ -502,7 +502,7 @@
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
   try{ if(localStorage.getItem('lateral')==='plegada') document.documentElement.setAttribute('data-lateral','plegada'); }catch(e){}
 </script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='academia-premium.css', v='20261118-hero-full-width-v11') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='academia-premium.css', v='20261118-hero-edge-to-edge-v12') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='academia-shell.css', v='2') }}">
 </head>
 <body>

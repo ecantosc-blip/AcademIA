@@ -1,6 +1,6 @@
 /* AcademIA Premium — primera iteración visual, sin alterar lógica ni datos. */
 @media (min-width: 1101px) {
-  .principal { max-width: 1480px; padding-inline: clamp(24px,3vw,48px); }
+  .principal { max-width: 1480px; padding-inline: clamp(24px,3vw,48px); --princ-x: clamp(24px,3vw,48px); }
   .pie-top,.pie-bottom { max-width: 1384px; }
   #v-inicio { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr); gap:18px 22px; align-items:start; }
   #v-inicio[hidden] { display:none; }
@@ -16,7 +16,7 @@
   #v-inicio > section[aria-labelledby="h-prox"] { grid-column:1; }
 }
 @media (min-width:861px) and (max-width:1100px) {
-  .principal { max-width:100%; padding-inline:28px; }
+  .principal { max-width:100%; padding-inline:28px; --princ-x:28px; }
 }
 .vista > h1 { font-size:clamp(1.65rem,2vw,2.05rem); letter-spacing:-.035em; }
 .vista > .sub { margin-bottom:24px; }
@@ -174,7 +174,7 @@
 /* Visual rebuild 3 — use the full workspace and match the approved composition. */
 :root { --premium-shadow:0 8px 24px rgba(4,33,56,.065); }
 @media(min-width:1101px) {
-  .principal { max-width:none!important; width:calc(100% - 160px); margin-left:160px; padding:18px clamp(24px,2.5vw,48px) 110px!important; }
+  .principal { max-width:none!important; width:calc(100% - 160px); margin-left:160px; padding:18px clamp(24px,2.5vw,48px) 110px!important; --princ-x:clamp(24px,2.5vw,48px)!important; --princ-top:18px!important; }
   .lateral { width:160px!important; }
   #v-inicio { max-width:1600px; margin:0 auto; }
   #v-inicio .premium-overview { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:22px; }
@@ -300,7 +300,7 @@
 @media(min-width:1101px){
   .app { grid-template-columns:clamp(210px,15vw,250px) minmax(0,1fr)!important; }
   .lateral { width:auto!important; padding:22px 18px!important; }
-  .principal { padding:14px clamp(20px,2vw,36px) 90px!important; }
+  .principal { padding:14px clamp(20px,2vw,36px) 90px!important; --princ-x:clamp(20px,2vw,36px)!important; --princ-top:14px!important; }
   #v-inicio { max-width:none!important; }
   #v-inicio .premium-home-grid { grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr) minmax(0,1fr)!important; gap:18px!important; }
 }
@@ -1069,3 +1069,33 @@
 :root[data-theme="dark"] #v-plan .b-rutina { background:#323232; border-color:#686868; color:#f0f0f0; }
 :root[data-theme="dark"] #v-plan .b-estudio { background:#41332b; border-color:#98775f; color:#f4ebe4; }
 :root[data-theme="dark"] #v-plan .bq:hover { filter:brightness(1.15); }
+
+/* Encabezados de borde a borde (pedido explícito del usuario, 18 nov 2026):
+   antes el banner de cada vista era una tarjeta con margen alrededor (border-
+   radius + hueco respecto al menú lateral y al borde derecho de la página).
+   Ahora llega hasta ambos bordes del área de contenido y hasta arriba.
+   Usa las variables --princ-x/--princ-top que cada regla de .principal ya fija
+   arriba (una por cada punto de quiebre), así que el hueco que se cancela
+   siempre coincide con el padding real de .principal en ese momento, sin
+   tener que repetir ni sincronizar esos valores a mano aquí. */
+#v-inicio .premium-hero,
+#v-materias .materias-hero,
+#v-agenda .agenda-hero,
+#v-novedades .novedades-hero,
+#v-plan .plan-hero,
+#v-datos .datos-hero {
+  box-sizing: border-box;
+  width: calc(100% + 2 * var(--princ-x, 0px));
+  margin-left: calc(-1 * var(--princ-x, 0px));
+  margin-right: calc(-1 * var(--princ-x, 0px));
+  margin-top: calc(-1 * var(--princ-top, 0px));
+  border-radius: 0;
+  box-shadow: none;
+}
+#v-materias .materias-hero::before,
+#v-agenda .agenda-hero::before,
+#v-novedades .novedades-hero::before,
+#v-plan .plan-hero::before,
+#v-datos .datos-hero::before {
+  border-radius: 0;
+}
