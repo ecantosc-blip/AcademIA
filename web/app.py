@@ -265,6 +265,9 @@ def api_foto():
     if datos is None:
         if sesion.get("foto_erp_url") or sesion.get("foto_url"):
             print(f"[foto] No se mostró la foto de perfil: {motivo}")
+        else:
+            print("[foto] No se mostró la foto de perfil: no se encontró ninguna URL "
+                  "(ni del ERP ni de Moodle) para este estudiante")
         return ("", 404)
     return Response(datos, mimetype=tipo)   # /api/* ya sale con Cache-Control: no-store
 
@@ -421,8 +424,12 @@ def login_submit():
         try:
             foto_erp_url = foto.buscar_en_sga(decodificar_jwt(sga.access_token),
                                               os.getenv("SGA_BASE_URL", "https://sga.unemi.edu.ec"))
-        except Exception:
+            if not foto_erp_url:
+                print("[foto] El token del ERP no trae ninguna URL de foto reconocible "
+                      "(se busca dentro del propio JWT); se usará la de Moodle si hay.")
+        except Exception as e:
             foto_erp_url = ""
+            print(f"[foto] Error al buscar la foto en el token del ERP: {depurar(e)}")
 
     sid = sessions_store.crear({
         "aviso_sync": " ".join(avisos),
