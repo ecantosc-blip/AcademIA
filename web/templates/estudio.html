@@ -291,9 +291,6 @@
 
 /* Premium study workspace: isolated to this standalone template. */
 body { padding-left:210px; }
-.bar { background:#002e45; color:white; border-bottom:2px solid #ff6900; padding:9px clamp(18px,2vw,34px); }
-.bar .brand { color:white; } .bar .quien { color:#d1e1eb; }
-.bar .enlace { color:#fff; }
 .wrap { max-width:none; padding:0 clamp(16px,2vw,34px) 45px; }
 .cab-pag { position:relative; isolation:isolate; overflow:hidden; box-sizing:border-box; min-height:190px; display:flex; flex-direction:column; justify-content:center; padding:30px clamp(20px,3vw,42px); margin:18px 0; border-radius:18px; background:#002e45; color:#fff; }
 .cab-pag::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.97) 33%,rgba(0,42,69,.42) 73%,rgba(0,42,69,.08)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-repeat:no-repeat; background-size:100% 100%,auto 100%; background-position:center,right center; }
@@ -450,8 +447,6 @@ body { padding-left:220px; }
 <body class="estudio-page">
 {% set panel = false %}
 {% include '_academia_sidebar.html' %}
-<div class="bar estudio-toolbar"><span>Espacio de estudio</span><a class="enlace" href="/#inicio">Volver al panel</a></div>
-
 <div class="wrap">
   <div class="cab-pag">
     <h1>Espacio de <span>estudio</span></h1>
