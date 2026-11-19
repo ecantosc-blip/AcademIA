@@ -681,7 +681,7 @@
       </div>
       <div class="materias-layout">
         <section class="card materias-current" aria-labelledby="h-mat">
-          <h2 id="h-mat">Materias que cursas ahora</h2>
+          <div class="materias-section-heading"><h2 id="h-mat">Materias que cursas ahora</h2><span id="materias-contador" class="materias-contador" aria-live="polite"></span></div>
           <div id="materias"><p class="vacio">Cargando…</p></div>
           <div class="malla" id="malla" hidden></div>
         </section>
@@ -1098,13 +1098,49 @@
 
   // ---- Panel ----
   const sinNota = m => m.nota_final == null || Number(m.nota_final) === 0;
+  // Iconos visuales: clasificacion aproximada por nombre, nunca afecta datos academicos.
+  function categoriaMateria(nombre){
+    const n = String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    if(/program|software|comput|informatic|algorit|base de datos|sistema de informacion|desarrollo web|inteligencia artificial/.test(n)) return 'codigo';
+    if(/matemat|calculo|algebra|estadistic|fisica|geometr|numerico/.test(n)) return 'ciencia';
+    if(/automatiz|robot|electron|electric|mecanic|industrial|control|neumatic/.test(n)) return 'tecnica';
+    if(/medicin|salud|enfermer|anatom|biolog|farmac|clinica|nutricion/.test(n)) return 'salud';
+    if(/derecho|juridic|legisl|constituc|penal|civil/.test(n)) return 'derecho';
+    if(/educacion|pedagog|didactic|docencia|aprendizaje/.test(n)) return 'educacion';
+    if(/contab|finanz|econom|administr|marketing|empresa/.test(n)) return 'negocios';
+    if(/diseno|arte|arquitect|comunicacion|audiovisual/.test(n)) return 'creativa';
+    return 'general';
+  }
+  function iconoMateria(categoria){
+    const trazos = {
+      codigo:['M8 8 4 12l4 4','M16 8l4 4-4 4','M14 5l-4 14'],
+      ciencia:['M9 3h6','M10 3v7l-5 8a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-8V3','M8 16h8'],
+      tecnica:['M12 2v3','M12 19v3','M4.9 4.9l2.1 2.1','M17 17l2.1 2.1','M2 12h3','M19 12h3','M4.9 19.1L7 17','M17 7l2.1-2.1','M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0-8'],
+      salud:['M12 21s-9-5.8-9-12a5 5 0 0 1 9-3a5 5 0 0 1 9 3c0 6.2-9 12-9 12Z','M12 8v7','M8.5 11.5h7'],
+      derecho:['M12 3v18','M5 7h14','M5 7l-3 6h6l-3-6','M19 7l-3 6h6l-3-6','M8 21h8'],
+      educacion:['M2 9l10-5 10 5-10 5-10-5','M6 11v6c4 3 8 3 12 0v-6','M22 9v7'],
+      negocios:['M4 7h16v13H4z','M9 7V4h6v3','M4 13h16'],
+      creativa:['M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 1-4 2 2 0 0 1 0-4h2a4 4 0 0 0 4-4 9 9 0 0 0-9-6','M7 11h.01','M11 7h.01','M17 9h.01'],
+      general:['M12 5c-3.5-2-6.5-2-10-1v15c3.5-1 6.5-1 10 1 3.5-2 6.5-2 10-1V4c-3.5-1-6.5-1-10 1','M12 5v15']
+    };
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.8');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+    for(const d of (trazos[categoria]||trazos.general)){const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',d);svg.append(p);}
+    return svg;
+  }
+
   function pintarMaterias(d){
     const cont = $('materias'); cont.replaceChildren();
     if(!d.materias.length){
       cont.append(el('p', {class:'vacio'}, 'Aún no hay materias leídas. ', el('button', {type:'button', text:'Actualizar datos', onclick:'sincronizar()'})));
     }
+    const contador = $('materias-contador');
+    if(contador) contador.textContent = d.materias.length + (d.materias.length === 1 ? ' materia' : ' materias');
     for(const m of d.materias){
-      const fila = el('div', {class:'materia'},
+      const categoria = categoriaMateria(m.nombre);
+      const fila = el('div', {class:'materia materia-' + categoria},
+        el('span', {class:'materia-icono', 'aria-hidden':'true'}, iconoMateria(categoria)),
         el('div', {class:'nombre', text:m.nombre}),
         el('div', {class:'cifra', title: sinNota(m) ? 'El ERP aún no consolida la nota de este periodo' : ''},
           el('b', {class:'num', text: sinNota(m) ? '—' : num(m.nota_final)}), el('span', {text: sinNota(m) ? 'sin consolidar' : 'nota ERP'})),
