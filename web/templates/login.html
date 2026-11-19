@@ -10,34 +10,6 @@
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:600; font-display:swap; src:url('/static/fonts/poppins-latin-600-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:700; font-display:swap; src:url('/static/fonts/poppins-latin-700-normal.woff2') format('woff2')}
-  :root{
-    /* Paleta oficial UNEMI (Manual de identidad corporativa V1): azul oscuro #002E45, naranja #FF6900 */
-    --brand:#002E45; --orange:#FF6900; --orange-bg:#FFF0E5; --orange-ink:#8A3A00;
-    --canvas:#F2F5F8; --surface:#FFFFFF; --ink:#002E45; --muted:#4F6676; --line:#D3DEE6;
-    --accent:#335F7F; --accent-ink:#FFFFFF; --accent-bg:#E4EEF5;
-    --ok:#1B7F4B; --ok-bg:#E3F3EA; --warn:#8F5600; --warn-bg:#FCEFD6; --bad:#B3261E; --bad-bg:#FBE4E2;
-    --stub:#002E45; --stub-ink:#E8F0F5; --stub-muted:#A9C0CF;
-    --side:#002E45; --side-ink:#FFFFFF; --side-muted:#B5C9D6; --side-line:#264763; --side-hover:rgba(255,255,255,.1);
-  }
-  :root[data-theme="dark"]{
-    --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
-    --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
-    --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
-    --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-    --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
-    --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --brand:#002E45; --orange:#FF6900; --orange-bg:#33210F; --orange-ink:#FFB27A;
-      --canvas:#0A1A24; --surface:#0F2634; --ink:#E6EEF3; --muted:#9FB3C1; --line:#24404F;
-      --accent:#4597BF; --accent-ink:#00202F; --accent-bg:#14364A;
-      --ok:#82BE9B; --ok-bg:#1F2E27; --warn:#D2A862; --warn-bg:#33291A; --bad:#DE8C85; --bad-bg:#37221F;
-      --stub:#061219; --stub-ink:#E6EEF3; --stub-muted:#9FB3C1;
-      --side:#061A26; --side-ink:#FFFFFF; --side-muted:#9FB8C8; --side-line:#1C3A4D; --side-hover:rgba(255,255,255,.08);
-    }
-  }
-
   .icono{display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; padding:0; flex:none; position:relative;
     border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; cursor:pointer}
   .icono:hover{border-color:var(--accent)}
@@ -172,6 +144,8 @@
   // no permite guardar preferencias, simplemente sigue el tema del sistema.
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
 </script>
+<link rel="stylesheet" href="{{ url_for('static', filename='academia-shell.css', v='3') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='academia-login.css', v='1') }}">
 </head>
 <body>
 
