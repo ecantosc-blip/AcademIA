@@ -746,3 +746,47 @@
 @media(max-width:1200px) { #v-datos .datos-layout { grid-template-columns:minmax(0,1fr); } #v-datos .datos-guardado { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 @media(max-width:760px) { #v-datos .datos-guardado { grid-template-columns:repeat(2,minmax(0,1fr)); } #v-datos .datos-permisos-grid { grid-template-columns:1fr; } #v-datos .datos-card { padding:16px; } #v-datos .datos-hero { padding:22px 17px; min-height:155px; } }
 @media(max-width:440px) { #v-datos .datos-actions button { width:100%; } #v-datos .datos-actions form { width:100%; } #v-datos .datos-control .datos-actions { width:100%; } #v-datos .datos-control .datos-actions button { width:100%; } }
+
+/* AcademIA finish pass — unified visual language across all panel views. */
+:root { --premium-shadow:0 10px 30px rgba(0,38,63,.07); --premium-radius:17px; }
+.app main, .contenido { min-width:0; }
+#v-inicio,#v-materias,#v-agenda,#v-novedades,#v-plan,#v-datos { min-width:0; }
+#v-inicio .card,#v-materias .card,#v-agenda .card,#v-novedades .card,#v-plan .card,#v-datos .card { border:1px solid var(--line); border-radius:var(--premium-radius); box-shadow:var(--premium-shadow); }
+#v-inicio h2,#v-materias h2,#v-agenda h2,#v-novedades h2,#v-plan h2,#v-datos h2 { letter-spacing:-.015em; line-height:1.35; }
+#v-inicio button,#v-materias button,#v-agenda button,#v-novedades button,#v-plan button,#v-datos button { transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .15s ease; }
+#v-inicio button:focus-visible,#v-materias button:focus-visible,#v-agenda button:focus-visible,#v-novedades button:focus-visible,#v-plan button:focus-visible,#v-datos button:focus-visible { outline:3px solid #ff7900; outline-offset:2px; }
+#v-inicio .premium-hero,#v-materias .materias-hero,#v-agenda .agenda-hero,#v-novedades .novedades-hero,#v-plan .plan-hero,#v-datos .datos-hero { border-radius:19px; box-shadow:0 13px 28px rgba(0,39,64,.11); overflow:hidden; }
+#v-inicio .kpi,#v-novedades .novedades-metrica,#v-agenda .agenda-metrics > div { border-radius:13px; }
+#v-materias .materias-current { min-height:0 !important; }
+#v-materias #materias { min-height:0 !important; }
+#v-materias .materia { min-width:0; overflow-wrap:anywhere; }
+#v-agenda .agenda-grid > *,#v-novedades .novedades-grid > * { min-width:0; }
+#v-agenda .agenda-tab,#v-novedades .novedades-filtros button { min-height:39px; }
+#v-novedades .novedades-metrica { padding:18px; }
+#v-novedades .novedades-metrica b { font-variant-numeric:tabular-nums; }
+#v-plan .cuadricula-wrap { box-shadow:var(--premium-shadow); scrollbar-color:#a6bfce transparent; }
+#v-plan #hor-otros-det,#v-plan .pop-ajustes { box-shadow:var(--premium-shadow); }
+#v-datos .datos-layout { grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); }
+#v-datos .datos-card { border:1px solid var(--line); }
+#v-datos .datos-guardado li { min-width:0; }
+#v-datos .datos-guardado li b { font-variant-numeric:tabular-nums; }
+#v-datos .datos-conn { border:1px solid var(--line); }
+#v-datos .datos-control .btn-peligro { background:transparent; color:var(--bad); border:1px solid var(--bad); }
+#v-datos .datos-control .btn-peligro:hover { background:var(--bad-bg); }
+@media(max-width:1250px) {
+ #v-datos .datos-layout { grid-template-columns:1fr; }
+ #v-datos .datos-guardado { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:760px) {
+ #v-datos .datos-guardado { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ #v-datos .datos-permisos-grid { grid-template-columns:1fr; }
+ #v-agenda .agenda-tabs,#v-materias .materias-toolbar { overflow-x:auto; scrollbar-width:thin; }
+}
+@media(max-width:480px) {
+ #v-datos .datos-guardado li { padding:11px; min-height:88px; }
+ #v-datos .datos-guardado li b { font-size:1.3rem; }
+ #v-plan .hor-botones button { flex:1 1 auto; }
+}
+@media(prefers-reduced-motion:reduce) {
+ #v-inicio button,#v-materias button,#v-agenda button,#v-novedades button,#v-plan button,#v-datos button { transition:none; }
+}
