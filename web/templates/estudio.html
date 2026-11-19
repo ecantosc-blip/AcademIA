@@ -477,13 +477,44 @@ body { padding-left:220px; }
 :root[data-theme="dark"] .tutor form { background:#202020; border-color:#3d3d3d; }
 :root[data-theme="dark"] .icono { background:#252525; color:#eee; border-color:#484848; }
 
+
+/* Study navigation uses the same geometry, active state and collapse preference as dashboard. */
+.estudio-sidebar { width:220px; background:var(--side); border-right:1px solid var(--side-line); box-shadow:none; padding:18px 12px; }
+.estudio-sidebrand { padding:0 5px 26px; gap:10px; }
+.estudio-sidebrand img { border-radius:50%; background:#fff; }
+.estudio-sidelinks { gap:5px; }
+.estudio-sidelinks a { border-radius:10px; min-height:39px; padding:10px 12px; font-weight:600; border-left:3px solid transparent; }
+.estudio-sidelinks a.actual { background:var(--side-hover); border-left-color:var(--orange); }
+.estudio-sidefoot { color:var(--side-muted); }
+.estudio-side-toggle { display:flex; align-items:center; justify-content:center; position:absolute; right:10px; top:20px; width:29px; height:29px; border:1px solid var(--side-line); border-radius:9px; background:transparent; color:var(--side-ink); cursor:pointer; }
+.estudio-side-toggle:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+@media(min-width:851px) {
+ body { padding-left:220px; }
+ :root[data-lateral="plegada"] body { padding-left:76px; }
+ :root[data-lateral="plegada"] .estudio-sidebar { width:76px; padding:18px 9px; }
+ :root[data-lateral="plegada"] .estudio-sidebrand span,
+ :root[data-lateral="plegada"] .estudio-sidelinks a .side-label,
+ :root[data-lateral="plegada"] .estudio-sidefoot { display:none; }
+ :root[data-lateral="plegada"] .estudio-sidebrand { padding:0 0 32px; justify-content:center; }
+ :root[data-lateral="plegada"] .estudio-sidebrand img { width:36px; height:36px; }
+ :root[data-lateral="plegada"] .estudio-sidelinks a { text-align:center; padding:11px 3px; font-size:0; }
+ :root[data-lateral="plegada"] .estudio-sidelinks a .side-icon { font-size:17px; }
+ :root[data-lateral="plegada"] .estudio-side-toggle { top:66px; right:24px; width:28px; height:27px; }
+}
+.estudio-sidelinks a .side-icon { display:inline-flex; justify-content:center; align-items:center; width:22px; margin-right:9px; font-size:17px; font-weight:500; color:var(--side-muted); }
+.estudio-sidelinks a.actual .side-icon { color:var(--orange); }
+@media(max-width:850px) { .estudio-sidebar { width:100%; } .estudio-side-toggle { right:12px; } .estudio-sidelinks a .side-icon { margin-right:5px; } }
+:root[data-theme="dark"] .estudio-sidebar { background:#0b0b0b!important; }
+:root[data-theme="dark"] .estudio-sidelinks a.actual { background:#272727; }
+:root[data-theme="dark"] .estudio-side-toggle { border-color:#454545; color:#eee; }
+
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
 </script>
 </head>
 <body>
-<nav class="estudio-sidebar" aria-label="Navegación AcademIA"><a class="estudio-sidebrand" href="/"><img src="/static/tigre-azul-chat.png" alt="" width="38" height="38"><span><strong>AcademIA</strong><small>Asistente académico UNEMI</small></span></a><div class="estudio-sidelinks"><a href="/#inicio">Inicio</a><a href="/#materias">Materias</a><a href="/#agenda">Agenda</a><a href="/#novedades">Novedades</a><a href="/#plan">Plan</a><a class="actual" href="/estudio" aria-current="page">Estudio</a><a href="/#datos">Mis datos</a></div><p class="estudio-sidefoot">Proyecto académico de titulación.<br>No es un sitio oficial de la UNEMI.</p></nav>
+<nav class="estudio-sidebar" aria-label="Navegación AcademIA"><button class="estudio-side-toggle" type="button" id="estudio-plegar" aria-label="Contraer barra lateral" aria-expanded="true">‹</button><a class="estudio-sidebrand" href="/"><img src="/static/tigre-azul-chat.png" alt="" width="38" height="38"><span><strong>AcademIA</strong><small>Asistente académico UNEMI</small></span></a><div class="estudio-sidelinks"><a href="/#inicio"><span class="side-icon" aria-hidden="true">⌂</span><span class="side-label">Inicio</span></a><a href="/#materias"><span class="side-icon" aria-hidden="true">▤</span><span class="side-label">Materias</span></a><a href="/#agenda"><span class="side-icon" aria-hidden="true">▦</span><span class="side-label">Agenda</span></a><a href="/#novedades"><span class="side-icon" aria-hidden="true">♧</span><span class="side-label">Novedades</span></a><a href="/#plan"><span class="side-icon" aria-hidden="true">☷</span><span class="side-label">Plan</span></a><a class="actual" href="/estudio" aria-current="page"><span class="side-icon" aria-hidden="true">◇</span><span class="side-label">Estudio</span></a><a href="/#datos"><span class="side-icon" aria-hidden="true">◉</span><span class="side-label">Mis datos</span></a></div><p class="estudio-sidefoot">Proyecto académico de titulación.<br>No es un sitio oficial de la UNEMI.</p></nav>
 <div class="bar">
   <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="40" height="40"><p class="brand">AcademIA</p></div>
   <div style="display:flex; align-items:center">
@@ -759,6 +790,14 @@ body { padding-left:220px; }
   });
 
   cargarMaterias();
+</script>
+<script>
+(function(){
+ const root=document.documentElement, button=document.getElementById('estudio-plegar');
+ try { if(localStorage.getItem('lateral')==='plegada') root.setAttribute('data-lateral','plegada'); } catch(e){}
+ function update(){ const folded=root.getAttribute('data-lateral')==='plegada'; button.setAttribute('aria-expanded',String(!folded));button.setAttribute('aria-label',folded?'Expandir barra lateral':'Contraer barra lateral');button.textContent=folded?'›':'‹';}
+ button.addEventListener('click',function(){const folded=root.getAttribute('data-lateral')==='plegada';if(folded)root.removeAttribute('data-lateral');else root.setAttribute('data-lateral','plegada');try{localStorage.setItem('lateral',folded?'abierta':'plegada');}catch(e){}update();});update();
+})();
 </script>
 </body>
 </html>
