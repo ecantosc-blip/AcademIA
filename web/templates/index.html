@@ -2207,28 +2207,54 @@
   }
 
   // ---- Chat ----
+  // Markdown académico seguro: solo construye nodos de texto; nunca interpreta HTML del modelo.
+  function inlineRico(nodo, texto){
+    const partes=String(texto).split(/(\*\*[^*\n]+\*\*|`[^`\n]+`|\*[^*\n]+\*)/g);
+    for(const p of partes){
+      if(/^\*\*[^*\n]+\*\*$/.test(p)) nodo.append(el('strong',{text:p.slice(2,-2)}));
+      else if(/^`[^`\n]+`$/.test(p)) nodo.append(el('code',{text:p.slice(1,-1)}));
+      else if(/^\*[^*\n]+\*$/.test(p)) nodo.append(el('em',{text:p.slice(1,-1)}));
+      else if(p) nodo.append(document.createTextNode(p));
+    }
+    return nodo;
+  }
   function textoRico(texto){
-    // Formato minimo y seguro: **negrita**, listas con "- " y saltos de linea.
-    const cont = document.createDocumentFragment();
-    let lista = null;
-    for(const linea of String(texto).split('\n')){
-      const item = linea.match(/^\s*[-•]\s+(.*)$/);
-      if(item){
-        if(!lista){ lista = el('ul'); cont.append(lista); }
-        lista.append(conNegrita(el('li'), item[1]));
-      } else {
-        lista = null;
-        if(linea.trim()) cont.append(conNegrita(el('p'), linea));
+    const cont=document.createDocumentFragment();
+    const lineas=String(texto||'').replace(/\r\n?/g,'\n').split('\n');
+    let lista=null, tipoLista='';
+    const celda=t=>String(t).trim().replace(/^\\\|/,'|').replace(/\\\|$/,'|');
+    const partesFila=linea=>linea.trim().replace(/^\|/,'').replace(/\|$/,'').split(/(?<!\\)\|/).map(celda);
+    const esSeparador=linea=>/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(linea);
+    for(let i=0;i<lineas.length;i++){
+      const raw=lineas[i],t=raw.trim();
+      if(!t){lista=null;tipoLista='';continue;}
+      // Tablas Markdown: cabecera, separador y filas; con scroll horizontal.
+      if(i+1<lineas.length && t.includes('|') && esSeparador(lineas[i+1])){
+        const headers=partesFila(t), tabla=el('table',{class:'chat-tabla'});
+        const head=el('thead'),tr=el('tr');
+        headers.forEach(h=>tr.append(inlineRico(el('th',{scope:'col'}),h)));
+        head.append(tr);tabla.append(head);const body=el('tbody');i+=2;
+        for(;i<lineas.length;i++){
+          if(!lineas[i].trim().includes('|'))break;
+          const celdas=partesFila(lineas[i]);const fila=el('tr');
+          headers.forEach((_,k)=>fila.append(inlineRico(el('td'),celdas[k]||'')));
+          body.append(fila);
+        }
+        tabla.append(body);cont.append(el('div',{class:'chat-tabla-wrap'},tabla));i--;lista=null;tipoLista='';continue;
       }
+      if(/^(-{3,}|\*{3,}|_{3,})$/.test(t)){cont.append(el('hr'));lista=null;continue;}
+      const h=t.match(/^(#{1,4})\s+(.+)$/);
+      if(h){cont.append(inlineRico(el('h'+Math.min(4,h[1].length+2)),h[2]));lista=null;continue;}
+      const li=raw.match(/^\s*(?:([-*•])|(\d+)\.)\s+(.+)$/);
+      if(li){
+        const tipo=li[2]?'ol':'ul';
+        if(!lista||tipo!==tipoLista){lista=el(tipo);cont.append(lista);tipoLista=tipo;}
+        lista.append(inlineRico(el('li'),li[3]));continue;
+      }
+      lista=null;tipoLista='';
+      cont.append(inlineRico(el('p'),t));
     }
     return cont;
-  }
-  function conNegrita(nodo, texto){
-    texto.split(/(\*\*[^*]+\*\*)/).forEach(parte => {
-      if(/^\*\*[^*]+\*\*$/.test(parte)) nodo.append(el('b', {text:parte.slice(2,-2)}));
-      else if(parte) nodo.append(document.createTextNode(parte));
-    });
-    return nodo;
   }
   function agregar(clase, contenido, fuentes, acciones, opciones){
     const m = el('div', {class:'msg ' + clase});
