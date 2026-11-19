@@ -362,6 +362,74 @@ body { padding-left:210px; }
 @media(max-width:850px) { body { padding-left:0; } .estudio-sidebar { position:static; width:100%; padding:10px 15px; } .estudio-sidebrand { padding:0; } .estudio-sidelinks { display:flex; overflow-x:auto; gap:5px; margin-top:9px; } .estudio-sidelinks a { white-space:nowrap; padding:9px 12px; } .estudio-sidefoot { display:none; } .rej-e { grid-template-columns:minmax(0,1fr); grid-template-areas:"elige" "practica" "ayuda"; } .c-ayuda .tutor { height:400px; } .c-practica #zona { min-height:280px; } }
 @media(max-width:550px) { .bar .quien { display:none; } .cab-pag { min-height:155px; padding:22px 17px; } .cab-pag p { font-size:.82rem; } .rej-e .card { padding:15px; } .c-ayuda .tutor { padding:0; } }
 
+
+/* Premium final pass: coherent study page, with original IDs and event handlers intact. */
+body { font-size:15px; }
+.estudio-sidebar { width:220px; padding:18px 13px; box-shadow:5px 0 24px rgba(0,31,50,.09); }
+.estudio-sidebrand { gap:10px; padding:3px 7px 25px; }
+.estudio-sidebrand img { width:39px; height:39px; object-fit:contain; }
+.estudio-sidebrand strong { font-size:1.05rem; }
+.estudio-sidelinks { gap:5px; }
+.estudio-sidelinks a { position:relative; font-size:.88rem; padding:11px 14px; }
+.estudio-sidelinks a.actual { border-left:3px solid #ff6900; background:#21495e; }
+body { padding-left:220px; }
+.bar { min-height:57px; justify-content:flex-end; padding:9px 22px; }
+.bar .marca { display:none; }
+.bar .enlace { border-color:#376078; background:rgba(255,255,255,.07); }
+.wrap { padding:0 clamp(17px,2vw,36px) 45px; }
+.cab-pag { min-height:205px; margin:20px 0; box-shadow:0 12px 30px rgba(0,38,63,.11); }
+.cab-pag h1 { font-size:clamp(2rem,3vw,2.8rem); letter-spacing:-.025em; }
+.cab-pag p { font-size:.94rem; line-height:1.6; }
+.rej-e { grid-template-columns:minmax(245px,.95fr) minmax(0,1.65fr) minmax(285px,1fr); gap:18px; }
+.rej-e .card { padding:22px; border-radius:17px; box-shadow:0 9px 25px rgba(0,39,63,.07); }
+.rej-e .card h2 { font-size:1.14rem; letter-spacing:-.01em; }
+.estudio-card-sub { font-size:.84rem; line-height:1.55; }
+.c-elige .mat-op span { padding:15px; border-radius:12px; transition:border-color .15s,box-shadow .15s,background .15s; }
+.c-elige .mat-op b { font-size:.88rem; }
+.c-elige .mat-op small { font-size:.79rem; }
+.c-elige .mat-op input:checked + span { background:var(--accent-bg); border-color:#ff7900; box-shadow:inset 4px 0 #ff7900; }
+.c-elige .mat-op input:focus-visible + span { outline:3px solid #ff7900; outline-offset:2px; }
+.c-elige .entrada { min-height:43px; }
+.c-elige .btn-p.full { background:#ff6900; color:#fff; min-height:47px; }
+.c-elige .reglas { font-size:.81rem; line-height:1.7; }
+.c-practica #zona { min-height:540px; }
+.c-practica .estudio-practica-titulo { font-size:1.2rem; margin-bottom:8px; }
+.c-practica .vacio-e { min-height:340px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:38px 22px; }
+.c-practica .vacio-e::before { content:""; display:block; width:62px; height:62px; margin:0 auto 19px; border:2px solid #ffae75; border-radius:18px; background:linear-gradient(145deg,#fff3e9,#ffe0c5); box-shadow:0 8px 18px rgba(255,105,0,.1); }
+.c-ayuda { gap:16px; }
+.c-ayuda .tutor { height:530px; overflow:hidden; border-radius:17px; }
+.c-ayuda .tutor header { padding:17px; }
+.c-ayuda .tutor .log { padding:15px; }
+.c-ayuda .tutor .burbuja { max-width:95%; line-height:1.55; }
+.c-ayuda .tutor form { padding:11px; }
+.c-ayuda .tutor form input { min-width:0; }
+.c-ayuda > .card:not(.tutor) { padding:20px; }
+.c-ayuda #btn-vid { min-height:42px; }
+@media(max-width:1300px) {
+ .rej-e { grid-template-columns:minmax(220px,.9fr) minmax(0,1.5fr); grid-template-areas:"elige practica" "ayuda practica"; }
+ .c-ayuda .tutor { height:440px; }
+}
+@media(max-width:850px) {
+ body { padding-left:0; }
+ .estudio-sidebar { position:static; width:100%; padding:10px 13px; box-shadow:none; }
+ .estudio-sidebrand { padding:0; }
+ .estudio-sidelinks { display:flex; overflow-x:auto; }
+ .estudio-sidelinks a { white-space:nowrap; }
+ .bar { min-height:49px; }
+ .rej-e { grid-template-columns:1fr; grid-template-areas:"elige" "practica" "ayuda"; }
+ .c-practica #zona { min-height:300px; }
+ .c-practica .vacio-e { min-height:210px; }
+ .c-ayuda .tutor { height:430px; }
+}
+@media(max-width:520px) {
+ .cab-pag { min-height:165px; }
+ .cab-pag h1 { font-size:1.85rem; }
+ .rej-e .card { padding:16px; }
+ .c-ayuda .tutor { padding:0; }
+ .bar { padding:7px 12px; }
+}
+@media(prefers-reduced-motion:reduce) { .c-elige .mat-op span { transition:none; } }
+
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
