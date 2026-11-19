@@ -288,3 +288,10 @@
   #v-inicio .premium-access-column .modulos { grid-template-columns:repeat(2,minmax(0,1fr)); }
   #v-inicio .premium-task-column,#v-inicio .premium-event-column { padding:16px; }
 }
+
+#v-inicio .premium-task-column:has(#card-alertas:not([hidden])) .premium-empty-alerts { display:none; }
+#v-inicio .premium-empty-alerts { margin:22px 0; text-align:center; font-size:.88rem; color:var(--muted); }
+#v-inicio .premium-task-column #card-alertas .barra { display:flex; justify-content:flex-end; margin:0 0 8px; }
+#v-inicio .premium-task-column #card-alertas .barra h2 { display:none; }
+#v-inicio .premium-task-column #card-alertas .barra button { font-size:.72rem; }
+#v-inicio .premium-task-column #btn-alertas-mas:not([hidden]) { display:block; margin-top:10px; }
