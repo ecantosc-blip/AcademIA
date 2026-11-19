@@ -861,61 +861,74 @@
 
     <!-- MIS DATOS -->
     <section class="vista" id="v-datos" aria-labelledby="t-datos" hidden>
-      <h1 id="t-datos">Mis datos</h1>
-      <p class="sub">Tu acceso es de solo lectura y no guarda tu contraseña. Aquí ves qué se guardó, y puedes llevártelo o borrarlo.</p>
-      <div class="cols2">
-        <div class="col">
-          <section class="card" aria-labelledby="h-con">
-            <h2 id="h-con">Conexiones</h2>
-            <div class="conn2" id="c-moodle">
-              <h3><span class="punto" id="p-moodle"></span>Moodle</h3>
-              <p class="linea" id="l-moodle">Cargando…</p>
+      <header class="datos-hero">
+        <div class="datos-hero-content">
+          <p class="datos-eyebrow">Privacidad y control</p>
+          <h1 id="t-datos">Mis <span>datos</span></h1>
+          <p>Consulta la información que AcademIA guarda, revisa tus conexiones académicas y controla tus datos personales. El acceso es de solo lectura y no almacena tu contraseña.</p>
+        </div>
+      </header>
+      <div class="datos-layout">
+        <div class="datos-col datos-col-left">
+          <section class="card datos-card" aria-labelledby="h-con">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">↔</span><div><h2 id="h-con">Conexiones académicas</h2><p>Estado real de las lecturas y del acceso a tus sistemas.</p></div></div>
+            <div class="datos-conexiones">
+              <div class="conn2 datos-conn" id="c-moodle">
+                <h3><span class="punto" id="p-moodle"></span>Moodle</h3>
+                <p class="datos-conn-desc">Materias, tareas y recursos académicos.</p>
+                <p class="linea" id="l-moodle">Cargando…</p>
+              </div>
+              <div class="conn2 datos-conn" id="c-erp">
+                <h3><span class="punto" id="p-erp"></span>ERP académico</h3>
+                <p class="datos-conn-desc">Horario y otros datos institucionales.</p>
+                <p class="cuenta mono num" id="t-erp">--:--:--</p>
+                <div class="riel" aria-hidden="true"><i id="r-erp"></i></div>
+                <p class="linea" id="l-erp">Cargando…</p>
+              </div>
             </div>
-            <div class="conn2" id="c-erp">
-              <h3><span class="punto" id="p-erp"></span>ERP académico</h3>
-              <p class="cuenta mono num" id="t-erp">--:--:--</p>
-              <div class="riel" aria-hidden="true"><i id="r-erp"></i></div>
-              <p class="linea" id="l-erp">Cargando…</p>
-            </div>
-            <div class="botones">
+            <div class="botones datos-actions">
               <button class="btn-p" type="button" id="btn-sync">Actualizar datos</button>
               <form method="POST" action="/logout"><button class="btn-o" type="submit">Cerrar acceso</button></form>
             </div>
           </section>
-
-          <section class="card" aria-labelledby="h-perm">
-            <h2 id="h-perm">Qué puede ver el asistente</h2>
-            <p class="sub-t" style="margin-top:0">Puede leer</p>
-            <ul class="permisos">
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tus notas y asistencia</li>
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tareas y fechas de Moodle</li>
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu horario de clases</li>
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu historial y malla</li>
-            </ul>
-            <p class="sub-t">No puede</p>
-            <ul class="permisos">
-              <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cambiar ni enviar nada por ti</li>
-              <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Ver finanzas</li>
-              <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Guardar tu contraseña</li>
-            </ul>
+          <section class="card datos-card" aria-labelledby="h-perm">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">✓</span><div><h2 id="h-perm">Qué puede ver el asistente</h2><p>Permisos y límites de acceso de AcademIA.</p></div></div>
+            <div class="datos-permisos-grid">
+              <div class="datos-perm-panel datos-perm-si"><h3>Puede leer</h3>
+                <ul class="permisos">
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tus notas y asistencia</li>
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tareas y fechas de Moodle</li>
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu horario de clases</li>
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu historial y malla</li>
+                </ul>
+              </div>
+              <div class="datos-perm-panel datos-perm-no"><h3>No puede</h3>
+                <ul class="permisos">
+                  <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cambiar ni enviar nada por ti</li>
+                  <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Ver finanzas</li>
+                  <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Guardar tu contraseña</li>
+                </ul>
+              </div>
+            </div>
             <p class="nota-token">El acceso se cierra solo cuando vence el token del ERP. Tú también puedes cerrarlo cuando quieras.</p>
           </section>
         </div>
-
-        <div class="col">
-          <section class="card" aria-labelledby="h-gua">
-            <h2 id="h-gua">Lo que AcademIA guarda de ti</h2>
-            <ul class="guardado" id="guardado"><li><span>Cargando…</span></li></ul>
+        <div class="datos-col datos-col-right">
+          <section class="card datos-card" aria-labelledby="h-gua">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">▤</span><div><h2 id="h-gua">Lo que AcademIA guarda de ti</h2><p>Registros reales almacenados en este servidor.</p></div></div>
+            <ul class="guardado datos-guardado" id="guardado"><li><span>Cargando…</span></li></ul>
             <p class="pie-nota" id="guardado-pie"></p>
-            <div class="botones">
+          </section>
+          <section class="card datos-card" aria-labelledby="h-lec">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">◷</span><div><h2 id="h-lec">Últimas lecturas</h2><p>Historial real de sincronizaciones de Moodle y ERP.</p></div></div>
+            <ul class="lect datos-lecturas" id="lecturas"><li><small>Cargando…</small></li></ul>
+          </section>
+          <section class="card datos-card datos-control" aria-labelledby="h-control-datos">
+            <div class="datos-control-text"><h2 id="h-control-datos">Control de tus datos</h2><p>Descarga una copia de tus datos o solicita su eliminación del servidor.</p></div>
+            <div class="botones datos-actions">
               <button class="btn-o" type="button" id="btn-exportar">Descargar mis datos</button>
               <button class="btn-peligro" type="button" id="btn-borrar">Borrar mis datos</button>
             </div>
-          </section>
-
-          <section class="card" aria-labelledby="h-lec">
-            <h2 id="h-lec">Últimas lecturas</h2>
-            <ul class="lect" id="lecturas"><li><small>Cargando…</small></li></ul>
           </section>
         </div>
       </div>
