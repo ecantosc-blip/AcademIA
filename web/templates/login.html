@@ -142,7 +142,7 @@
 <script>
   // Aplica el tema guardado antes de pintar (evita parpadeo). Si el navegador
   // no permite guardar preferencias, simplemente sigue el tema del sistema.
-  try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
+  try{ const t = localStorage.getItem('tema'); document.documentElement.setAttribute('data-theme', t || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')); }catch(e){}
 </script>
 <link rel="stylesheet" href="{{ url_for('static', filename='academia-shell.css', v='3') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='academia-login.css', v='1') }}">
