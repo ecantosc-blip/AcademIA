@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conectar — AcademIA</title>
-<link rel="icon" type="image/png" href="/static/tiger-avatar.png">
+<link rel="icon" type="image/png" href="/static/tigre-azul-chat.png">
 <style>
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:400; font-display:swap; src:url('/static/fonts/poppins-latin-400-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
@@ -159,6 +159,13 @@
   summary{color:var(--accent)}
   .oficial{color:var(--side-muted); font-size:.78rem; margin:0; max-width:46ch}
   @media (max-width:900px){ .side .mascota{display:none} }
+  /* Identidad de carga: tigre azul, separado del tigre naranja del dashboard. */
+  .overlay > div { background:transparent; border:0; padding:0; border-radius:0; box-shadow:none; max-width:390px; }
+  .premium-loading-mark { width:140px; height:140px; margin:0 auto; position:relative; display:grid; place-items:center; background:transparent; }
+  .premium-loading-ring { position:absolute; inset:4px; border-radius:50%; border:8px solid var(--line); border-top-color:#3E80A2; animation:giro 1.2s linear infinite; }
+  .premium-loading-mark img { width:90px; height:90px; object-fit:contain; }
+  .overlay h3 { font-size:1rem; margin-top:12px; color:var(--ink); }
+  @media(prefers-reduced-motion:reduce){.premium-loading-ring{animation:none}}
 </style>
 <script>
   // Aplica el tema guardado antes de pintar (evita parpadeo). Si el navegador
@@ -169,7 +176,7 @@
 <body>
 
 <aside class="side">
-  <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="56" height="56"><div><p class="brand">AcademIA</p><small>Asistente académico para estudiantes de la UNEMI</small></div></div>
+  <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="56" height="56"><div><p class="brand">AcademIA</p><small>Asistente académico para estudiantes de la UNEMI</small></div></div>
   <div>
     <h1>Entra con tu cuenta de Moodle.</h1>
     <p class="lead">AcademIA consulta tus datos con un permiso temporal de solo lectura. Tu contraseña se usa una sola vez para pedirlo y no se guarda.</p>
@@ -231,8 +238,8 @@
 
 <div class="overlay" id="cargando" role="status" aria-live="polite">
   <div>
-    <div class="spin" aria-hidden="true"></div>
-    <h3>Leyendo tus datos</h3>
+    <div class="premium-loading-mark" aria-hidden="true"><div class="premium-loading-ring"></div><img src="/static/tigre-azul-chat.png" onerror="this.onerror=null;this.src='/static/tiger-chat-blue.svg'" alt="" width="92" height="92"></div>
+    <h3>Cargando, espere por favor...</h3>
     <p>Estamos consultando tus aulas virtuales. Puede tardar hasta un minuto.</p>
   </div>
 </div>

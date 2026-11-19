@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Espacio de estudio — AcademIA</title>
-<link rel="icon" type="image/png" href="/static/tiger-avatar.png">
+<link rel="icon" type="image/png" href="/static/tigre-azul-chat.png">
 <style>
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:400; font-display:swap; src:url('/static/fonts/poppins-latin-400-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
@@ -297,7 +297,7 @@
   .tigre{width:44px; height:44px; border-radius:50%; background:#fff; border:2px solid var(--orange); object-fit:cover; flex:none; display:block}
 
   .msg.ia{display:grid; grid-template-columns:30px minmax(0,1fr); column-gap:8px; align-items:start; max-width:96%}
-  .msg.ia::before{content:""; grid-column:1; grid-row:1; width:30px; height:30px; border-radius:50%; background:#fff url('/static/tiger-avatar.png') center/cover no-repeat; border:1.5px solid var(--orange)}
+  .msg.ia::before{content:""; grid-column:1; grid-row:1; width:30px; height:30px; border-radius:50%; background:#fff url('/static/tigre-azul-chat.png') center/cover no-repeat; border:1.5px solid var(--orange)}
   .msg.ia > *{grid-column:2}
   .msg.yo{background:var(--brand); color:#fff}
   :root[data-theme="dark"] .msg.yo{background:var(--accent); color:var(--accent-ink)}
@@ -316,14 +316,129 @@
   .tutor header{display:flex; align-items:center; gap:12px; background:var(--brand); color:#fff; border-bottom:3px solid var(--orange)}
   .tutor header h2{color:#fff} .tutor header p{color:var(--side-muted)}
   .tutor header .tigre{width:40px; height:40px}
+
+/* Premium study workspace: isolated to this standalone template. */
+body { padding-left:210px; }
+.estudio-sidebar { position:fixed; z-index:40; top:0; left:0; bottom:0; width:210px; box-sizing:border-box; display:flex; flex-direction:column; background:linear-gradient(180deg,#001d32,#00324a); color:#fff; padding:18px 13px; }
+.estudio-sidebrand { display:flex; align-items:center; gap:9px; text-decoration:none; color:#fff; padding:0 4px 26px; }
+.estudio-sidebrand span { display:flex; flex-direction:column; min-width:0; }
+.estudio-sidebrand strong { font-size:1rem; }
+.estudio-sidebrand small { font-size:.62rem; line-height:1.35; color:#c2d8e7; }
+.estudio-sidelinks { display:grid; gap:6px; }
+.estudio-sidelinks a { color:#e2edf5; text-decoration:none; font-size:.86rem; font-weight:600; border-radius:10px; padding:12px 14px; }
+.estudio-sidelinks a:hover { background:rgba(255,255,255,.1); }
+.estudio-sidelinks a.actual { background:#244b62; border-left:3px solid #ff6900; color:#fff; }
+.estudio-sidefoot { margin:auto 4px 0; color:#b6cbd9; font-size:.66rem; line-height:1.6; }
+.bar { background:#002e45; color:white; border-bottom:2px solid #ff6900; padding:9px clamp(18px,2vw,34px); }
+.bar .brand { color:white; } .bar .quien { color:#d1e1eb; }
+.bar .enlace { color:#fff; }
+.wrap { max-width:none; padding:0 clamp(16px,2vw,34px) 45px; }
+.cab-pag { position:relative; isolation:isolate; overflow:hidden; box-sizing:border-box; min-height:190px; display:flex; flex-direction:column; justify-content:center; padding:30px clamp(20px,3vw,42px); margin:18px 0; border-radius:18px; background:#002e45; color:#fff; }
+.cab-pag::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.97) 33%,rgba(0,42,69,.42) 73%,rgba(0,42,69,.08)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-repeat:no-repeat; background-size:100% 100%,auto 100%; background-position:center,right center; }
+.cab-pag h1 { color:#fff; margin:0 0 10px; font-size:clamp(1.8rem,2.6vw,2.6rem); }
+.cab-pag h1 span { color:#ff7900; }
+.cab-pag p { color:#e0edf5; max-width:650px; margin:0; }
+.rej-e { grid-template-columns:minmax(230px,.95fr) minmax(0,1.8fr) minmax(260px,1.08fr); gap:16px; align-items:start; }
+.rej-e .col { min-width:0; }
+.rej-e .card { border-radius:17px; padding:20px; box-shadow:0 8px 24px rgba(0,36,60,.055); }
+.rej-e .card h2 { font-size:1.13rem; margin:0 0 9px; }
+.estudio-card-sub { font-size:.78rem; line-height:1.5; color:var(--muted); margin:0 0 16px; }
+.c-elige .mat-op span { padding:15px 13px; border-radius:12px; }
+.c-elige .mat-op input:checked + span { border-color:#ff6900; background:var(--orange-bg); box-shadow:inset 3px 0 0 #ff6900; }
+.c-elige .btn-p.full { min-height:45px; background:#ff6900; color:#fff; border-radius:11px; font-weight:700; }
+.c-elige .reglas { line-height:1.7; }
+.c-practica #zona { min-height:470px; }
+.c-practica .estudio-practica-titulo { padding-left:12px; border-left:4px solid #ff6900; }
+.c-practica .vacio-e { padding:70px 20px; text-align:center; }
+.c-ayuda { display:flex; flex-direction:column; gap:16px; }
+.c-ayuda .tutor { order:0; padding:0; height:480px; }
+.c-ayuda > .card:not(.tutor) { order:1; }
+.c-ayuda .tutor header { background:#002e45; color:white; padding:15px; }
+.c-ayuda .tutor header h2 { color:white; }
+.c-ayuda .tutor header p { color:#d8e7f0; }
+.c-ayuda .tutor .log { min-height:0; }
+.c-ayuda #btn-vid { width:100%; }
+@media(max-width:1250px) { .rej-e { grid-template-columns:minmax(210px,.9fr) minmax(0,1.5fr); grid-template-areas:"elige practica" "ayuda practica"; } .c-ayuda .tutor { height:380px; } }
+@media(max-width:850px) { body { padding-left:0; } .estudio-sidebar { position:static; width:100%; padding:10px 15px; } .estudio-sidebrand { padding:0; } .estudio-sidelinks { display:flex; overflow-x:auto; gap:5px; margin-top:9px; } .estudio-sidelinks a { white-space:nowrap; padding:9px 12px; } .estudio-sidefoot { display:none; } .rej-e { grid-template-columns:minmax(0,1fr); grid-template-areas:"elige" "practica" "ayuda"; } .c-ayuda .tutor { height:400px; } .c-practica #zona { min-height:280px; } }
+@media(max-width:550px) { .bar .quien { display:none; } .cab-pag { min-height:155px; padding:22px 17px; } .cab-pag p { font-size:.82rem; } .rej-e .card { padding:15px; } .c-ayuda .tutor { padding:0; } }
+
+
+/* Premium final pass: coherent study page, with original IDs and event handlers intact. */
+body { font-size:15px; }
+.estudio-sidebar { width:220px; padding:18px 13px; box-shadow:5px 0 24px rgba(0,31,50,.09); }
+.estudio-sidebrand { gap:10px; padding:3px 7px 25px; }
+.estudio-sidebrand img { width:39px; height:39px; object-fit:contain; }
+.estudio-sidebrand strong { font-size:1.05rem; }
+.estudio-sidelinks { gap:5px; }
+.estudio-sidelinks a { position:relative; font-size:.88rem; padding:11px 14px; }
+.estudio-sidelinks a.actual { border-left:3px solid #ff6900; background:#21495e; }
+body { padding-left:220px; }
+.bar { min-height:57px; justify-content:flex-end; padding:9px 22px; }
+.bar .marca { display:none; }
+.bar .enlace { border-color:#376078; background:rgba(255,255,255,.07); }
+.wrap { padding:0 clamp(17px,2vw,36px) 45px; }
+.cab-pag { min-height:205px; margin:20px 0; box-shadow:0 12px 30px rgba(0,38,63,.11); }
+.cab-pag h1 { font-size:clamp(2rem,3vw,2.8rem); letter-spacing:-.025em; }
+.cab-pag p { font-size:.94rem; line-height:1.6; }
+.rej-e { grid-template-columns:minmax(245px,.95fr) minmax(0,1.65fr) minmax(285px,1fr); gap:18px; }
+.rej-e .card { padding:22px; border-radius:17px; box-shadow:0 9px 25px rgba(0,39,63,.07); }
+.rej-e .card h2 { font-size:1.14rem; letter-spacing:-.01em; }
+.estudio-card-sub { font-size:.84rem; line-height:1.55; }
+.c-elige .mat-op span { padding:15px; border-radius:12px; transition:border-color .15s,box-shadow .15s,background .15s; }
+.c-elige .mat-op b { font-size:.88rem; }
+.c-elige .mat-op small { font-size:.79rem; }
+.c-elige .mat-op input:checked + span { background:var(--accent-bg); border-color:#ff7900; box-shadow:inset 4px 0 #ff7900; }
+.c-elige .mat-op input:focus-visible + span { outline:3px solid #ff7900; outline-offset:2px; }
+.c-elige .entrada { min-height:43px; }
+.c-elige .btn-p.full { background:#ff6900; color:#fff; min-height:47px; }
+.c-elige .reglas { font-size:.81rem; line-height:1.7; }
+.c-practica #zona { min-height:540px; }
+.c-practica .estudio-practica-titulo { font-size:1.2rem; margin-bottom:8px; }
+.c-practica .vacio-e { min-height:340px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:38px 22px; }
+.c-practica .vacio-e::before { content:""; display:block; width:62px; height:62px; margin:0 auto 19px; border:2px solid #ffae75; border-radius:18px; background:linear-gradient(145deg,#fff3e9,#ffe0c5); box-shadow:0 8px 18px rgba(255,105,0,.1); }
+.c-ayuda { gap:16px; }
+.c-ayuda .tutor { height:530px; overflow:hidden; border-radius:17px; }
+.c-ayuda .tutor header { padding:17px; }
+.c-ayuda .tutor .log { padding:15px; }
+.c-ayuda .tutor .burbuja { max-width:95%; line-height:1.55; }
+.c-ayuda .tutor form { padding:11px; }
+.c-ayuda .tutor form input { min-width:0; }
+.c-ayuda > .card:not(.tutor) { padding:20px; }
+.c-ayuda #btn-vid { min-height:42px; }
+@media(max-width:1300px) {
+ .rej-e { grid-template-columns:minmax(220px,.9fr) minmax(0,1.5fr); grid-template-areas:"elige practica" "ayuda practica"; }
+ .c-ayuda .tutor { height:440px; }
+}
+@media(max-width:850px) {
+ body { padding-left:0; }
+ .estudio-sidebar { position:static; width:100%; padding:10px 13px; box-shadow:none; }
+ .estudio-sidebrand { padding:0; }
+ .estudio-sidelinks { display:flex; overflow-x:auto; }
+ .estudio-sidelinks a { white-space:nowrap; }
+ .bar { min-height:49px; }
+ .rej-e { grid-template-columns:1fr; grid-template-areas:"elige" "practica" "ayuda"; }
+ .c-practica #zona { min-height:300px; }
+ .c-practica .vacio-e { min-height:210px; }
+ .c-ayuda .tutor { height:430px; }
+}
+@media(max-width:520px) {
+ .cab-pag { min-height:165px; }
+ .cab-pag h1 { font-size:1.85rem; }
+ .rej-e .card { padding:16px; }
+ .c-ayuda .tutor { padding:0; }
+ .bar { padding:7px 12px; }
+}
+@media(prefers-reduced-motion:reduce) { .c-elige .mat-op span { transition:none; } }
+
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
 </script>
 </head>
 <body>
+<nav class="estudio-sidebar" aria-label="Navegación AcademIA"><a class="estudio-sidebrand" href="/"><img src="/static/tigre-azul-chat.png" alt="" width="38" height="38"><span><strong>AcademIA</strong><small>Asistente académico UNEMI</small></span></a><div class="estudio-sidelinks"><a href="/#inicio">Inicio</a><a href="/#materias">Materias</a><a href="/#agenda">Agenda</a><a href="/#novedades">Novedades</a><a href="/#plan">Plan</a><a class="actual" href="/estudio" aria-current="page">Estudio</a><a href="/#datos">Mis datos</a></div><p class="estudio-sidefoot">Proyecto académico de titulación.<br>No es un sitio oficial de la UNEMI.</p></nav>
 <div class="bar">
-  <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="40" height="40"><p class="brand">AcademIA</p></div>
+  <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="40" height="40"><p class="brand">AcademIA</p></div>
   <div style="display:flex; align-items:center">
     <a class="enlace" href="/">Mi panel</a>
     <span class="quien">{{ nombre }}</span>
@@ -333,14 +448,14 @@
 
 <div class="wrap">
   <div class="cab-pag">
-    <h1>Espacio de estudio</h1>
+    <h1>Espacio de <span>estudio</span></h1>
     <p>Practica por materia, aclara dudas y refuerza con videos. Aquí se estudia: no se resuelven tests, tareas ni exámenes.</p>
   </div>
 
   <div class="rej-e">
     <aside class="col c-elige">
       <section class="card" aria-labelledby="h-elige">
-        <h2 id="h-elige">¿Qué quieres estudiar?</h2>
+        <h2 id="h-elige">Mis materias</h2><p class="estudio-card-sub">Selecciona la materia y configura tu práctica.</p>
         <fieldset class="lista-mat" id="materias" style="border:0;padding:0;margin:0 0 14px"><legend class="campo">Materia</legend><p class="vacio">Cargando…</p></fieldset>
         <label class="campo" for="tema-in">Tema (opcional)</label>
         <input class="entrada" id="tema-in" maxlength="120" placeholder="Ej.: derivadas, normalización…" autocomplete="off">
@@ -364,21 +479,21 @@
     </aside>
 
     <main class="col c-practica">
-      <section class="card" id="zona" aria-live="polite">
+      <section class="card" id="zona" aria-live="polite"><h2 class="estudio-practica-titulo">Práctica de estudio</h2><p class="estudio-card-sub">Responde preguntas nuevas y revisa las explicaciones.</p>
         <div class="vacio-e"><b>Elige una materia y empieza</b>Te haré preguntas de práctica y, al responder, te explico cada una.</div>
       </section>
     </main>
 
     <aside class="col c-ayuda">
       <section class="card" aria-labelledby="h-vid">
-        <h2 id="h-vid">Videos para reforzar</h2>
+        <h2 id="h-vid">Videos para reforzar</h2><p class="estudio-card-sub">Busca recursos educativos en YouTube.</p>
         <button class="btn-o" type="button" id="btn-vid" disabled>Buscar videos de este tema</button>
         <div id="videos" style="margin-top:12px"></div>
         <p class="nota-v">Son búsquedas en YouTube: tú eliges el video que más te sirva.</p>
       </section>
       <section class="card tutor" aria-label="Tutor">
         <header>
-          <img class="tigre" src="/static/tiger-avatar.png" alt="" width="40" height="40">
+          <img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="40" height="40">
           <div style="flex:1;min-width:0"><h2>Pregúntale al tutor</h2><p>Dudas de teoría de la materia elegida.</p></div>
           <button class="icono" type="button" id="limpiar-t" data-tip="Limpiar charla" aria-label="Limpiar charla" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/></svg></button>
         </header>

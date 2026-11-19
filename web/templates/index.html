@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mi panel — AcademIA</title>
-<link rel="icon" type="image/png" href="/static/tiger-avatar.png">
+<link rel="icon" type="image/png" href="/static/tigre-azul-chat.png">
 <style>
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:400; font-display:swap; src:url('/static/fonts/poppins-latin-400-normal.woff2') format('woff2')}
   @font-face{font-family:'Poppins'; font-style:normal; font-weight:500; font-display:swap; src:url('/static/fonts/poppins-latin-500-normal.woff2') format('woff2')}
@@ -372,7 +372,7 @@
   .tigre{width:44px; height:44px; border-radius:50%; background:#fff; border:2px solid var(--orange); object-fit:cover; flex:none; display:block}
 
   .msg.ia{display:grid; grid-template-columns:30px minmax(0,1fr); column-gap:8px; align-items:start; max-width:96%}
-  .msg.ia::before{content:""; grid-column:1; grid-row:1; width:30px; height:30px; border-radius:50%; background:#fff url('/static/tiger-avatar.png') center/cover no-repeat; border:1.5px solid var(--orange)}
+  .msg.ia::before{content:""; grid-column:1; grid-row:1; width:30px; height:30px; border-radius:50%; background:#fff url('/static/tigre-azul-chat.png') center/cover no-repeat; border:1.5px solid var(--orange)}
   .msg.ia > *{grid-column:2}
   .msg.yo{background:var(--brand); color:#fff}
   :root[data-theme="dark"] .msg.yo{background:var(--accent); color:var(--accent-ink)}
@@ -530,12 +530,13 @@
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
   try{ if(localStorage.getItem('lateral')==='plegada') document.documentElement.setAttribute('data-lateral','plegada'); }catch(e){}
 </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='academia-premium.css', v='20261119-premium-all-v3') }}">
 </head>
 <body>
 <div class="app">
 
   <aside class="lateral" aria-label="Navegación">
-    <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="44" height="44"><div class="marca-txt"><p class="brand">AcademIA</p><small>Asistente académico UNEMI</small></div></div>
+    <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="44" height="44"><div class="marca-txt"><p class="brand">AcademIA</p><small>Asistente académico UNEMI</small></div></div>
     <button class="plegar" type="button" id="plegar" aria-expanded="true" aria-controls="menu" aria-label="Ocultar barra lateral" title="Ocultar barra lateral"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <nav class="menu" id="menu">
       <a href="#inicio" data-vista="inicio" title="Inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg><span class="et">Inicio</span></a>
@@ -556,7 +557,7 @@
 
   <main class="principal">
     <div class="topm">
-      <div class="marca"><img class="tigre" src="/static/tiger-avatar.png" alt="" width="36" height="36"><p class="brand">AcademIA</p></div>
+      <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="36" height="36"><p class="brand">AcademIA</p></div>
       <button class="icono" type="button" id="tema-m" aria-label="Cambiar tema"></button>
     </div>
 
@@ -568,47 +569,32 @@
 
     <!-- INICIO: solo lo esencial -->
     <section class="vista" id="v-inicio" aria-labelledby="t-inicio">
-      <h1 id="t-inicio">Hola{% if nombre %}, {{ nombre.split()[0]|capitalize }}{% endif %}</h1>
-      <p class="sub">Esto es lo importante de hoy.</p>
+      <div class="premium-topbar">
+        <button type="button" class="premium-top-search" onclick="document.getElementById('fab').click()" aria-label="Abrir asistente AcademIA">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+          <span>Pregúntale algo a AcademIA...</span>
+        </button>
+        <span class="premium-top-brand">ACADEMIA <strong>IA</strong></span>
+      </div>
+      <header class="premium-hero">
+        <div class="premium-hero-copy">
+          <p class="premium-eyebrow">TU ESPACIO ACADÉMICO</p>
+          <h1 id="t-inicio">Hola{% if nombre %}, <em>{{ nombre.split()[0]|capitalize }}</em>{% endif %}</h1>
+          <p class="sub">Tu asistente académico de la UNEMI, siempre contigo.</p>
+        </div>
+        <div class="premium-hero-art" aria-hidden="true"></div>
+      </header>
       <div class="kpis">
-        <div class="kpi" id="k-vence" data-ir="#agenda" role="link" tabindex="0"><span class="et">Vence esta semana</span><span class="gran num" id="k-vence-n">—</span><span class="det" id="k-vence-d">Cargando…</span></div>
+        <div class="kpi" id="k-vence" data-ir="#agenda" role="link" tabindex="0"><span class="et">Tareas pendientes</span><span class="gran num" id="k-vence-n">—</span><span class="det" id="k-vence-d">Cargando…</span></div>
         <div class="kpi" id="k-clase" data-ir="#agenda" role="link" tabindex="0"><span class="et">Próxima clase</span><span class="gran mid" id="k-clase-n">—</span><span class="det" id="k-clase-d">Cargando…</span></div>
         <div class="kpi" id="k-prom" data-ir="#materias" role="link" tabindex="0"><span class="et">Tu promedio</span><span class="gran num" id="k-prom-n">—</span><span class="det" id="k-prom-d">Materias aprobadas</span></div>
-        <div class="kpi" id="k-estado" data-ir="#datos" role="link" tabindex="0"><span class="et">Tus datos</span><span class="gran mid" id="k-estado-n">—</span><span class="det" id="k-estado-d">Cargando…</span></div>
+        <div class="kpi" id="k-estado" data-ir="#datos" role="link" tabindex="0"><span class="et">Estado académico</span><span class="gran mid" id="k-estado-n">—</span><span class="det" id="k-estado-d">Cargando…</span></div>
       </div>
 
-      <h2 class="h-modulos">Módulos</h2>
-      <nav class="modulos" aria-label="Módulos de AcademIA">
-        <a class="modulo" href="#materias"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3zM4 16a3 3 0 0 1 3-3h11"/></svg><span>Materias</span></a>
-        <a class="modulo" href="#agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Agenda</span></a>
-        <a class="modulo" href="#novedades"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9zM10 20a2 2 0 0 0 4 0"/></svg><span>Novedades</span></a>
-        <a class="modulo" href="#plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Plan</span></a>
-        <a class="modulo" href="/estudio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l10 5-10 5L2 9zM6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg><span>Estudio</span></a>
-        <a class="modulo" href="#datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.3 8-8 9-4.7-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Mis datos</span></a>
-      </nav>
-
-      <section class="card" aria-labelledby="h-semana">
-        <h2 id="h-semana">Mi semana académica</h2>
-        <p class="sub" style="margin-top:0">Tus próximos 7 días: clases, tareas y evaluaciones en un vistazo. El día más cargado queda marcado.</p>
-        <div class="semana-tira" id="semana-tira" role="tablist" aria-label="Días de la semana"></div>
-        <div id="semana-detalle"></div>
-      </section>
-
-      <section class="card" aria-labelledby="h-reco">
-        <h2 id="h-reco">Recomendación de estudio</h2>
-        <p class="sub" style="margin-top:0">Según tus tareas y evaluaciones próximas, esto es lo que conviene estudiar primero.</p>
-        <div id="reco-cont"><p class="vacio">Cargando…</p></div>
-        <a class="ver-mas" href="#plan">Ver mi plan completo</a>
-      </section>
-
-      <section class="card" aria-labelledby="h-resumen-ia">
-        <h2 id="h-resumen-ia">Tu resumen semanal con IA</h2>
-        <p class="sub" style="margin-top:0">Un repaso de tu semana redactado por IA, pero solo con lo que ya está verificado: no inventa tareas ni notas, y no juzga tu rendimiento.</p>
-        <div id="resumen-ia-cont"><p class="vacio">Pulsa el botón para generarlo.</p></div>
-        <button type="button" class="btn-o" id="btn-resumen-ia">Generar resumen semanal</button>
-      </section>
-
-      <section class="card" id="card-alertas" aria-labelledby="h-alertas" hidden>
+      <div class="premium-home-grid">
+        <section class="premium-task-column" aria-label="Pendientes">
+          <div class="premium-card-heading"><h2>Mis pendientes</h2><a href="#agenda">Ver todas →</a></div>
+          <section class="card" id="card-alertas" aria-labelledby="h-alertas" hidden>
         <div class="barra">
           <h2 id="h-alertas">Alertas</h2>
           <button type="button" class="btn-o" id="btn-alertas-todas">Descartar todas</button>
@@ -616,7 +602,58 @@
         <div id="alertas"></div>
         <button type="button" class="btn-o" id="btn-alertas-mas" hidden></button>
       </section>
-      <section class="card" aria-labelledby="h-seg">
+          <p class="premium-empty-alerts">No tienes alertas pendientes por ahora.</p>
+        </section>
+        <section class="premium-event-column" aria-label="Próximos eventos">
+          <div class="premium-card-heading"><h2>Próximos eventos</h2><a href="#agenda">Ver agenda →</a></div>
+          <section class="card" aria-labelledby="h-prox">
+        <h2 id="h-prox">Lo próximo</h2>
+        <div id="prox"><p class="vacio">Cargando…</p></div>
+        <a class="ver-mas" href="#agenda">Ver toda la agenda</a>
+      </section>
+        
+        </section>
+        <div class="premium-ai-column"><section class="premium-ai-card" aria-label="Asistente AcademIA">
+            <div class="premium-ai-text">
+              <span class="premium-ai-kicker">✦ INTELIGENCIA ARTIFICIAL</span>
+              <h2>Asistente Academ<span class="premium-accent">IA</span></h2>
+              <p>Pregúntame sobre tus tareas, notas, horario o cualquier tema académico.</p>
+              <button type="button" class="premium-ai-action" onclick="document.getElementById('fab').click()">Iniciar conversación <span aria-hidden="true">↗</span></button>
+            </div>
+            <img src="/static/tigre-naranja-unemi.png" onerror="this.onerror=null;this.src='/static/tiger-mascot-premium.svg'" alt="Mascota tigre de AcademIA" width="110" height="110" loading="lazy">
+          </section>
+          </div>
+        <section class="premium-access-column"><h2 class="h-modulos">Accesos principales</h2><nav class="modulos" aria-label="Módulos de AcademIA">
+        <a class="modulo" href="#materias"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3zM4 16a3 3 0 0 1 3-3h11"/></svg><span>Materias</span></a>
+        <a class="modulo" href="#agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Agenda</span></a>
+        <a class="modulo" href="#novedades"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9zM10 20a2 2 0 0 0 4 0"/></svg><span>Novedades</span></a>
+        <a class="modulo" href="#plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Plan</span></a>
+        <a class="modulo" href="/estudio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l10 5-10 5L2 9zM6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg><span>Estudio</span></a>
+        <a class="modulo" href="#datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.3 8-8 9-4.7-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Mis datos</span></a>
+      </nav></section>
+        <div class="premium-tip-column"><section class="premium-tip" aria-label="Consejo de estudio"><span aria-hidden="true">✦</span><div><h2>Tip de estudio</h2><p>Organiza tus tareas por prioridad y dedica bloques de tiempo sin distracciones.</p></div></section>
+        </div>
+      </div>
+      <details class="premium-extra">
+        <summary>Explorar mi semana y herramientas de seguimiento <span aria-hidden="true">⌄</span></summary>
+        <div class="premium-extra-grid">
+          <div class="premium-main-stack"><section class="card" aria-labelledby="h-semana">
+        <h2 id="h-semana">Mi semana académica</h2>
+        <p class="sub" style="margin-top:0">Tus próximos 7 días: clases, tareas y evaluaciones en un vistazo. El día más cargado queda marcado.</p>
+        <div class="semana-tira" id="semana-tira" role="tablist" aria-label="Días de la semana"></div>
+        <div id="semana-detalle"></div>
+      </section><section class="card" aria-labelledby="h-reco">
+        <h2 id="h-reco">Recomendación de estudio</h2>
+        <p class="sub" style="margin-top:0">Según tus tareas y evaluaciones próximas, esto es lo que conviene estudiar primero.</p>
+        <div id="reco-cont"><p class="vacio">Cargando…</p></div>
+        <a class="ver-mas" href="#plan">Ver mi plan completo</a>
+      </section></div>
+          <div class="premium-side-stack"><section class="card" aria-labelledby="h-resumen-ia">
+        <h2 id="h-resumen-ia">Tu resumen semanal con IA</h2>
+        <p class="sub" style="margin-top:0">Un repaso de tu semana redactado por IA, pero solo con lo que ya está verificado: no inventa tareas ni notas, y no juzga tu rendimiento.</p>
+        <div id="resumen-ia-cont"><p class="vacio">Pulsa el botón para generarlo.</p></div>
+        <button type="button" class="btn-o" id="btn-resumen-ia">Generar resumen semanal</button>
+      </section><section class="card" aria-labelledby="h-seg">
         <h2 id="h-seg">Tu seguimiento</h2>
         <p class="seg-res" id="seg-res">Cargando…</p>
         <details id="seg-det" class="seg-det">
@@ -624,87 +661,152 @@
           <div id="seg"></div>
           <p class="sub" style="margin-top:10px">Son reglas simples sobre datos verificados, no una predicción. Abre «¿Por qué?» para ver cada regla.</p>
         </details>
-      </section>
-      <section class="card" aria-labelledby="h-prox">
-        <h2 id="h-prox">Lo próximo</h2>
-        <div id="prox"><p class="vacio">Cargando…</p></div>
-        <a class="ver-mas" href="#agenda">Ver toda la agenda</a>
-      </section>
+      </section></div>
+        </div>
+      </details>
     </section>
 
-    <!-- MATERIAS -->
-    <section class="vista" id="v-materias" aria-labelledby="t-materias" hidden>
-      <h1 id="t-materias">Tus materias</h1>
-      <p class="sub">Notas, asistencia y avance de tu carrera.</p>
-      <div class="cols2">
-        <section class="card" aria-labelledby="h-mat">
-          <h2 id="h-mat">Lo que cursas ahora</h2>
+    <!-- MATERIAS: premium presentation, existing data bindings preserved -->
+    <section class="vista premium-materias" id="v-materias" aria-labelledby="t-materias" hidden>
+      <header class="materias-hero">
+        <div class="materias-hero-content">
+          <h1 id="t-materias"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-3.5-2.3-6.5-2.5-10-1v15c3.5-1.5 6.5-1.3 10 1 3.5-2.3 6.5-2.5 10-1V4c-3.5-1.5-6.5-1.3-10 1Zm0 0v15"/></svg>Mis <span>materias</span></h1>
+          <p class="sub">Notas, asistencia y avance de tu carrera.</p>
+        </div>
+      </header>
+      <div class="materias-toolbar" aria-label="Navegación académica">
+        <a class="materias-tab active" href="#materias" aria-current="page">Materias actuales</a>
+        <a class="materias-tab" href="#plan">Plan de estudio</a>
+        <a class="materias-tab" href="#datos">Mi información</a>
+      </div>
+      <div class="materias-layout">
+        <section class="card materias-current" aria-labelledby="h-mat">
+          <div class="materias-section-heading"><h2 id="h-mat">Materias que cursas ahora</h2><span id="materias-contador" class="materias-contador" aria-live="polite"></span></div>
           <div id="materias"><p class="vacio">Cargando…</p></div>
           <div class="malla" id="malla" hidden></div>
         </section>
-        <section class="card" id="card-sem" aria-labelledby="h-sem" hidden>
-          <h2 id="h-sem">Tu promedio por semestre</h2>
-          <div class="barras" id="semestres"></div>
-          <p class="pie-nota">Solo materias aprobadas, según tu historial.</p>
-        </section>
-        <section class="card" aria-labelledby="h-rend">
-          <h2 id="h-rend">Mi rendimiento académico</h2>
-          <div class="kpis" style="grid-template-columns:1fr 1fr; margin-bottom:16px">
-            <div class="kpi" style="cursor:default"><span class="et">Actividades completadas</span><span class="gran num" id="rend-entregadas">—</span><span class="det">Confirmadas por Moodle</span></div>
-            <div class="kpi" style="cursor:default"><span class="et">Promedio general</span><span class="gran num" id="rend-promedio">—</span><span class="det">Materias aprobadas</span></div>
-          </div>
-          <h3 class="sub-t" style="margin-top:0">Materias con menor porcentaje en Moodle</h3>
-          <div id="rend-atencion"><p class="vacio">Cargando…</p></div>
-          <p class="pie-nota">Es solo el porcentaje que informa Moodle de lo que cursas ahora, sin mínimos ni veredictos: AcademIA no decide si "está mal", muestra el dato para que tú lo juzgues.</p>
-        </section>
+        <div class="materias-aside">
+          <section class="card materias-performance" aria-labelledby="h-rend">
+            <h2 id="h-rend">Mi rendimiento académico</h2>
+            <div class="kpis materias-metrics">
+              <div class="kpi" style="cursor:default"><span class="et">Actividades completadas</span><span class="gran num" id="rend-entregadas">—</span><span class="det">Confirmadas por Moodle</span></div>
+              <div class="kpi" style="cursor:default"><span class="et">Promedio general</span><span class="gran num" id="rend-promedio">—</span><span class="det">Materias aprobadas</span></div>
+            </div>
+            <h3 class="sub-t">Materias con menor porcentaje en Moodle</h3>
+            <div id="rend-atencion"><p class="vacio">Cargando…</p></div>
+            <p class="pie-nota">Se muestra únicamente el porcentaje informado por Moodle. AcademIA no asigna mínimos ni juzga tu rendimiento.</p>
+          </section>
+          <nav class="card materias-shortcuts" aria-label="Accesos académicos">
+            <h2>Accesos rápidos</h2>
+            <div class="materias-shortcut-grid">
+              <a href="#agenda">Ver agenda <span aria-hidden="true">→</span></a>
+              <a href="#plan">Plan de estudio <span aria-hidden="true">→</span></a>
+              <a href="/estudio">Espacio de estudio <span aria-hidden="true">→</span></a>
+              <a href="#datos">Mis datos <span aria-hidden="true">→</span></a>
+            </div>
+          </nav>
+        </div>
       </div>
+      <section class="card materias-history" id="card-sem" aria-labelledby="h-sem" hidden>
+        <h2 id="h-sem">Tu promedio por semestre</h2>
+        <div class="barras" id="semestres"></div>
+        <p class="pie-nota">Solo materias aprobadas, según tu historial.</p>
+      </section>
     </section>
 
     <!-- AGENDA -->
     <section class="vista" id="v-agenda" aria-labelledby="t-agenda" hidden>
-      <h1 id="t-agenda">Tu agenda</h1>
-      <p class="sub">Entregas, eventos y clases de la semana.</p>
-      <div class="col">
-        <section class="card" aria-labelledby="h-centro">
-          <h2 id="h-centro">Centro de pendientes</h2>
-          <p class="sub">Tus tareas de Moodle y tus propios compromisos, juntos pero sin mezclar su origen.</p>
-          <div id="centro-pendientes"><p class="vacio">Cargando…</p></div>
-        </section>
-        <section class="card" aria-labelledby="h-fec">
-          <h2 id="h-fec">Lo que viene</h2>
-          <div id="fechas"><p class="vacio">Cargando…</p></div>
-        </section>
-        <section class="card" aria-labelledby="h-hor">
-          <h2 id="h-hor">Tu semana</h2>
-          <div id="horario"><p class="vacio">Cargando…</p></div>
-        </section>
+      <header class="agenda-hero">
+        <div class="agenda-hero-content">
+          <h1 id="t-agenda">Mi <span>Agenda</span></h1>
+          <p class="sub">Entregas, eventos y clases según los datos sincronizados de tus plataformas académicas.</p>
+        </div>
+      </header>
+      <div class="agenda-tabs" role="tablist" aria-label="Vistas de agenda">
+        <button type="button" class="agenda-tab active" data-agenda-tab="resumen" aria-selected="true">Resumen</button>
+        <button type="button" class="agenda-tab" data-agenda-tab="calendario" aria-selected="false">Calendario</button>
+        <button type="button" class="agenda-tab" data-agenda-tab="lista" aria-selected="false">Lista de actividades</button>
+      </div>
+      <div class="agenda-grid">
+        <div class="agenda-column">
+          <section class="card agenda-resumen" aria-labelledby="agenda-resumen-t">
+            <h2 id="agenda-resumen-t">Próximas actividades</h2>
+            <div class="agenda-metrics" aria-live="polite">
+              <div><b id="agenda-c-tareas">—</b><span>Tareas Moodle</span></div>
+              <div><b id="agenda-c-eventos">—</b><span>Eventos Moodle</span></div>
+              <div><b id="agenda-c-personal">—</b><span>Personales</span></div>
+            </div>
+            <p class="sub">Contadores basados en las actividades disponibles; no indican entregas verificadas.</p>
+          </section>
+          <section class="card agenda-pendientes" aria-labelledby="h-centro">
+            <h2 id="h-centro">Centro de pendientes</h2>
+            <p class="sub">Actividades de Moodle y compromisos personales, identificados por su origen.</p>
+            <div id="centro-pendientes"><p class="vacio">Cargando…</p></div>
+          </section>
+          <section class="card agenda-lista" aria-labelledby="h-fec">
+            <h2 id="h-fec">Lo que viene</h2>
+            <div id="fechas"><p class="vacio">Cargando…</p></div>
+          </section>
+        </div>
+        <div class="agenda-column">
+          <section class="card agenda-calendario" aria-labelledby="agenda-cal-t">
+            <div class="agenda-cal-head"><h2 id="agenda-cal-t">Calendario académico</h2><div class="agenda-cal-nav"><button type="button" id="agenda-prev" aria-label="Mes anterior">‹</button><strong id="agenda-mes"></strong><button type="button" id="agenda-next" aria-label="Mes siguiente">›</button></div></div>
+            <div id="agenda-cal-grid" class="agenda-cal-grid" aria-live="polite"></div>
+            <p class="sub">Fechas provenientes de las actividades sincronizadas; sin eventos de ejemplo.</p>
+          </section>
+          <section class="card agenda-horario" aria-labelledby="h-hor">
+            <h2 id="h-hor">Tu semana</h2>
+            <p class="sub">Clases del horario académico, cuando estén disponibles.</p>
+            <div id="horario"><p class="vacio">Cargando…</p></div>
+          </section>
+        </div>
       </div>
     </section>
 
     <!-- NOVEDADES -->
     <section class="vista" id="v-novedades" aria-labelledby="t-novedades" hidden>
-      <h1 id="t-novedades">Novedades</h1>
-      <p class="sub">Lo que cambió en Moodle o el ERP entre una lectura y la siguiente.</p>
-      <div class="col">
-        <section class="card" aria-labelledby="h-nov">
-          <div class="barra">
-            <h2 id="h-nov">Desde tu última visita</h2>
-            <button type="button" class="btn-o" id="btn-vistas" hidden>Marcar como vistas</button>
-          </div>
-          <div id="nov-nuevas"><p class="vacio">Cargando…</p></div>
-        </section>
-        <section class="card" id="card-nov-ant" aria-labelledby="h-nov-ant" hidden>
-          <h2 id="h-nov-ant">Anteriores</h2>
-          <div id="nov-anteriores"></div>
-        </section>
-        <p class="sub">Solo se comparan lecturas exitosas: si una lectura falla, no se toma como un cambio. La primera lectura únicamente guarda tu punto de partida.</p>
+      <header class="novedades-hero">
+        <div><h1 id="t-novedades">Novedades</h1><p class="sub">Cambios detectados en Moodle y SGA entre sincronizaciones exitosas.</p></div>
+      </header>
+      <div class="novedades-metricas" aria-label="Resumen de cambios detectados">
+        <div class="novedades-metrica"><b id="nov-c-tareas">—</b><span>Tareas</span></div>
+        <div class="novedades-metrica"><b id="nov-c-notas">—</b><span>Calificaciones</span></div>
+        <div class="novedades-metrica"><b id="nov-c-eventos">—</b><span>Eventos</span></div>
+        <div class="novedades-metrica"><b id="nov-c-otros">—</b><span>Otros cambios</span></div>
+      </div>
+      <div class="novedades-grid">
+        <div class="novedades-principal">
+          <section class="card" aria-labelledby="h-nov">
+            <div class="barra"><h2 id="h-nov">Desde tu última visita</h2><button type="button" class="btn-o" id="btn-vistas" hidden>Marcar como vistas</button></div>
+            <div class="novedades-filtros" role="group" aria-label="Filtrar novedades">
+              <button type="button" class="nov-filtro active" data-nov-filtro="todas" aria-pressed="true">Todas</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="tareas" aria-pressed="false">Tareas</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="notas" aria-pressed="false">Calificaciones</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="eventos" aria-pressed="false">Eventos</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="otros" aria-pressed="false">Otros</button>
+            </div>
+            <div id="nov-nuevas"><p class="vacio">Cargando…</p></div>
+          </section>
+          <section class="card" id="card-nov-ant" aria-labelledby="h-nov-ant" hidden><h2 id="h-nov-ant">Anteriores</h2><div id="nov-anteriores"></div></section>
+        </div>
+        <aside class="novedades-aside">
+          <section class="card"><h2>Estado de sincronización</h2>
+            <div class="nov-fuente"><strong>Moodle</strong><span id="nov-sync-moodle">Consultando información…</span></div>
+            <div class="nov-fuente"><strong>SGA / ERP</strong><span id="nov-sync-erp">Consultando información…</span></div>
+          </section>
+          <section class="card nov-info"><h2>Cómo funcionan las novedades</h2><p>Solo se comparan lecturas exitosas. Si una lectura falla, no se considera un cambio. La primera sincronización establece el punto de partida.</p></section>
+        </aside>
       </div>
     </section>
 
     <!-- PLAN -->
     <section class="vista" id="v-plan" aria-labelledby="t-plan" hidden>
-      <h1 id="t-plan">Plan de estudio</h1>
-      <p class="sub">Conversa con el asistente para armar tu horario. Cada bloque dice por qué está ahí.</p>
+      <header class="plan-hero">
+        <div class="plan-hero-content">
+          <h1 id="t-plan">Plan de <span>estudio</span></h1>
+          <p class="sub">Organiza tus clases, tu rutina y tus sesiones de estudio con ayuda de AcademIA.</p>
+        </div>
+      </header>
       <div class="pestanas" role="tablist" aria-label="Plan de estudio">
         <button type="button" role="tab" id="tab-conv" aria-selected="true" aria-controls="pan-conv">Conversación</button>
         <button type="button" role="tab" id="tab-hor" aria-selected="false" aria-controls="pan-hor">Horario<span class="punto" id="punto-hor" hidden aria-label="Hay cambios"></span></button>
@@ -725,7 +827,7 @@
           <button type="button" class="btn-o" id="btn-libre">+ Agregar horas libres</button>
           <button type="button" class="btn-o" id="btn-soltar" hidden>Soltar bloques fijados</button>
         </div>
-        <p class="sub" id="hor-ayuda">Toca una celda vacía para agregar algo en ese horario. Arrastra un bloque de estudio para moverlo: queda fijado y el plan acomoda lo demás alrededor.</p>
+        <p class="sub" id="hor-ayuda">Toca una celda vacía para agregar tu rutina. Toca un bloque de rutina para editar su hora de inicio, fin o duración. Los bloques de estudio se pueden arrastrar para reubicarlos.</p>
         <div class="cuadricula-wrap"><div class="cuadricula" id="cuadricula"></div></div>
         <section class="card" id="detalle-bloque" hidden aria-live="polite"></section>
         <details class="pop" id="libres-det" hidden><summary id="libres-sum">Mis horas libres</summary><div id="libres-lista"></div></details>
@@ -759,61 +861,74 @@
 
     <!-- MIS DATOS -->
     <section class="vista" id="v-datos" aria-labelledby="t-datos" hidden>
-      <h1 id="t-datos">Mis datos</h1>
-      <p class="sub">Tu acceso es de solo lectura y no guarda tu contraseña. Aquí ves qué se guardó, y puedes llevártelo o borrarlo.</p>
-      <div class="cols2">
-        <div class="col">
-          <section class="card" aria-labelledby="h-con">
-            <h2 id="h-con">Conexiones</h2>
-            <div class="conn2" id="c-moodle">
-              <h3><span class="punto" id="p-moodle"></span>Moodle</h3>
-              <p class="linea" id="l-moodle">Cargando…</p>
+      <header class="datos-hero">
+        <div class="datos-hero-content">
+          <p class="datos-eyebrow">Privacidad y control</p>
+          <h1 id="t-datos">Mis <span>datos</span></h1>
+          <p>Consulta la información que AcademIA guarda, revisa tus conexiones académicas y controla tus datos personales. El acceso es de solo lectura y no almacena tu contraseña.</p>
+        </div>
+      </header>
+      <div class="datos-layout">
+        <div class="datos-col datos-col-left">
+          <section class="card datos-card" aria-labelledby="h-con">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">↔</span><div><h2 id="h-con">Conexiones académicas</h2><p>Estado real de las lecturas y del acceso a tus sistemas.</p></div></div>
+            <div class="datos-conexiones">
+              <div class="conn2 datos-conn" id="c-moodle">
+                <h3><span class="punto" id="p-moodle"></span>Moodle</h3>
+                <p class="datos-conn-desc">Materias, tareas y recursos académicos.</p>
+                <p class="linea" id="l-moodle">Cargando…</p>
+              </div>
+              <div class="conn2 datos-conn" id="c-erp">
+                <h3><span class="punto" id="p-erp"></span>ERP académico</h3>
+                <p class="datos-conn-desc">Horario y otros datos institucionales.</p>
+                <p class="cuenta mono num" id="t-erp">--:--:--</p>
+                <div class="riel" aria-hidden="true"><i id="r-erp"></i></div>
+                <p class="linea" id="l-erp">Cargando…</p>
+              </div>
             </div>
-            <div class="conn2" id="c-erp">
-              <h3><span class="punto" id="p-erp"></span>ERP académico</h3>
-              <p class="cuenta mono num" id="t-erp">--:--:--</p>
-              <div class="riel" aria-hidden="true"><i id="r-erp"></i></div>
-              <p class="linea" id="l-erp">Cargando…</p>
-            </div>
-            <div class="botones">
+            <div class="botones datos-actions">
               <button class="btn-p" type="button" id="btn-sync">Actualizar datos</button>
               <form method="POST" action="/logout"><button class="btn-o" type="submit">Cerrar acceso</button></form>
             </div>
           </section>
-
-          <section class="card" aria-labelledby="h-perm">
-            <h2 id="h-perm">Qué puede ver el asistente</h2>
-            <p class="sub-t" style="margin-top:0">Puede leer</p>
-            <ul class="permisos">
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tus notas y asistencia</li>
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tareas y fechas de Moodle</li>
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu horario de clases</li>
-              <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu historial y malla</li>
-            </ul>
-            <p class="sub-t">No puede</p>
-            <ul class="permisos">
-              <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cambiar ni enviar nada por ti</li>
-              <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Ver finanzas</li>
-              <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Guardar tu contraseña</li>
-            </ul>
+          <section class="card datos-card" aria-labelledby="h-perm">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">✓</span><div><h2 id="h-perm">Qué puede ver el asistente</h2><p>Permisos y límites de acceso de AcademIA.</p></div></div>
+            <div class="datos-permisos-grid">
+              <div class="datos-perm-panel datos-perm-si"><h3>Puede leer</h3>
+                <ul class="permisos">
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tus notas y asistencia</li>
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tareas y fechas de Moodle</li>
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu horario de clases</li>
+                  <li class="si"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Tu historial y malla</li>
+                </ul>
+              </div>
+              <div class="datos-perm-panel datos-perm-no"><h3>No puede</h3>
+                <ul class="permisos">
+                  <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Cambiar ni enviar nada por ti</li>
+                  <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Ver finanzas</li>
+                  <li class="no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Guardar tu contraseña</li>
+                </ul>
+              </div>
+            </div>
             <p class="nota-token">El acceso se cierra solo cuando vence el token del ERP. Tú también puedes cerrarlo cuando quieras.</p>
           </section>
         </div>
-
-        <div class="col">
-          <section class="card" aria-labelledby="h-gua">
-            <h2 id="h-gua">Lo que AcademIA guarda de ti</h2>
-            <ul class="guardado" id="guardado"><li><span>Cargando…</span></li></ul>
+        <div class="datos-col datos-col-right">
+          <section class="card datos-card" aria-labelledby="h-gua">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">▤</span><div><h2 id="h-gua">Lo que AcademIA guarda de ti</h2><p>Registros reales almacenados en este servidor.</p></div></div>
+            <ul class="guardado datos-guardado" id="guardado"><li><span>Cargando…</span></li></ul>
             <p class="pie-nota" id="guardado-pie"></p>
-            <div class="botones">
+          </section>
+          <section class="card datos-card" aria-labelledby="h-lec">
+            <div class="datos-card-head"><span class="datos-icon" aria-hidden="true">◷</span><div><h2 id="h-lec">Últimas lecturas</h2><p>Historial real de sincronizaciones de Moodle y ERP.</p></div></div>
+            <ul class="lect datos-lecturas" id="lecturas"><li><small>Cargando…</small></li></ul>
+          </section>
+          <section class="card datos-card datos-control" aria-labelledby="h-control-datos">
+            <div class="datos-control-text"><h2 id="h-control-datos">Control de tus datos</h2><p>Descarga una copia de tus datos o solicita su eliminación del servidor.</p></div>
+            <div class="botones datos-actions">
               <button class="btn-o" type="button" id="btn-exportar">Descargar mis datos</button>
               <button class="btn-peligro" type="button" id="btn-borrar">Borrar mis datos</button>
             </div>
-          </section>
-
-          <section class="card" aria-labelledby="h-lec">
-            <h2 id="h-lec">Últimas lecturas</h2>
-            <ul class="lect" id="lecturas"><li><small>Cargando…</small></li></ul>
           </section>
         </div>
       </div>
@@ -822,7 +937,7 @@
     <footer class="pie-app">
       <div class="pie-top">
         <div class="pie-marca">
-          <div class="pie-logo"><img src="/static/tiger-avatar.png" alt="" width="36" height="36"><p class="pie-brand">AcademIA</p></div>
+          <div class="pie-logo"><img src="/static/tigre-azul-chat.png" alt="" width="36" height="36"><p class="pie-brand">AcademIA</p></div>
           <p class="pie-eslogan">Conectando tu vida académica con inteligencia artificial.</p>
         </div>
         <nav class="pie-col" aria-labelledby="pc-plat">
@@ -874,11 +989,11 @@
 
   <!-- Chat flotante: el asistente es un complemento disponible en todas las pantallas -->
   <button class="fab" type="button" id="fab" aria-expanded="false" aria-controls="chat">
-    <img class="tigre" src="/static/tiger-avatar.png" alt="" width="42" height="42"><span>Pregunta</span>
+    <img class="tigre" src="/static/tigre-azul-chat.png" onerror="this.onerror=null;this.src='/static/tiger-chat-blue.svg'" alt="" width="42" height="42"><span>Pregunta</span>
   </button>
   <section class="card chat" id="chat" aria-label="Asistente" hidden>
     <header class="chat-cab">
-      <img class="tigre" src="/static/tiger-avatar.png" alt="" width="42" height="42">
+      <img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="42" height="42">
       <div>
         <h2>Pregúntame lo que quieras</h2>
         <p>Te respondo con lo que leí de Moodle y del ERP.</p>
@@ -1044,13 +1159,49 @@
 
   // ---- Panel ----
   const sinNota = m => m.nota_final == null || Number(m.nota_final) === 0;
+  // Iconos visuales: clasificacion aproximada por nombre, nunca afecta datos academicos.
+  function categoriaMateria(nombre){
+    const n = String(nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    if(/program|software|comput|informatic|algorit|base de datos|sistema de informacion|desarrollo web|inteligencia artificial/.test(n)) return 'codigo';
+    if(/matemat|calculo|algebra|estadistic|fisica|geometr|numerico/.test(n)) return 'ciencia';
+    if(/automatiz|robot|electron|electric|mecanic|industrial|control|neumatic/.test(n)) return 'tecnica';
+    if(/medicin|salud|enfermer|anatom|biolog|farmac|clinica|nutricion/.test(n)) return 'salud';
+    if(/derecho|juridic|legisl|constituc|penal|civil/.test(n)) return 'derecho';
+    if(/educacion|pedagog|didactic|docencia|aprendizaje/.test(n)) return 'educacion';
+    if(/contab|finanz|econom|administr|marketing|empresa/.test(n)) return 'negocios';
+    if(/diseno|arte|arquitect|comunicacion|audiovisual/.test(n)) return 'creativa';
+    return 'general';
+  }
+  function iconoMateria(categoria){
+    const trazos = {
+      codigo:['M8 8 4 12l4 4','M16 8l4 4-4 4','M14 5l-4 14'],
+      ciencia:['M9 3h6','M10 3v7l-5 8a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-8V3','M8 16h8'],
+      tecnica:['M12 2v3','M12 19v3','M4.9 4.9l2.1 2.1','M17 17l2.1 2.1','M2 12h3','M19 12h3','M4.9 19.1L7 17','M17 7l2.1-2.1','M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0-8'],
+      salud:['M12 21s-9-5.8-9-12a5 5 0 0 1 9-3a5 5 0 0 1 9 3c0 6.2-9 12-9 12Z','M12 8v7','M8.5 11.5h7'],
+      derecho:['M12 3v18','M5 7h14','M5 7l-3 6h6l-3-6','M19 7l-3 6h6l-3-6','M8 21h8'],
+      educacion:['M2 9l10-5 10 5-10 5-10-5','M6 11v6c4 3 8 3 12 0v-6','M22 9v7'],
+      negocios:['M4 7h16v13H4z','M9 7V4h6v3','M4 13h16'],
+      creativa:['M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 1-4 2 2 0 0 1 0-4h2a4 4 0 0 0 4-4 9 9 0 0 0-9-6','M7 11h.01','M11 7h.01','M17 9h.01'],
+      general:['M12 5c-3.5-2-6.5-2-10-1v15c3.5-1 6.5-1 10 1 3.5-2 6.5-2 10-1V4c-3.5-1-6.5-1-10 1','M12 5v15']
+    };
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.8');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+    for(const d of (trazos[categoria]||trazos.general)){const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',d);svg.append(p);}
+    return svg;
+  }
+
   function pintarMaterias(d){
     const cont = $('materias'); cont.replaceChildren();
     if(!d.materias.length){
       cont.append(el('p', {class:'vacio'}, 'Aún no hay materias leídas. ', el('button', {type:'button', text:'Actualizar datos', onclick:'sincronizar()'})));
     }
+    const contador = $('materias-contador');
+    if(contador) contador.textContent = d.materias.length + (d.materias.length === 1 ? ' materia' : ' materias');
     for(const m of d.materias){
-      const fila = el('div', {class:'materia'},
+      const categoria = categoriaMateria(m.nombre);
+      const fila = el('div', {class:'materia materia-' + categoria},
+        el('span', {class:'materia-icono', 'aria-hidden':'true'}, iconoMateria(categoria)),
         el('div', {class:'nombre', text:m.nombre}),
         el('div', {class:'cifra', title: sinNota(m) ? 'El ERP aún no consolida la nota de este periodo' : ''},
           el('b', {class:'num', text: sinNota(m) ? '—' : num(m.nota_final)}), el('span', {text: sinNota(m) ? 'sin consolidar' : 'nota ERP'})),
@@ -1079,7 +1230,49 @@
     return '';
   }
 
+  // Agenda visual: solo lee las fechas existentes en el panel, nunca genera datos academicos.
+  let agendaMes = new Date(new Date().getFullYear(),new Date().getMonth(),1);
+  function pintarCalendarioAgenda(){
+    const panel=$('agenda-cal-grid'), titulo=$('agenda-mes');
+    if(!panel||!titulo) return;
+    const yy=agendaMes.getFullYear(),mm=agendaMes.getMonth();
+    titulo.textContent=agendaMes.toLocaleDateString('es-EC',{month:'long',year:'numeric'});
+    panel.replaceChildren();
+    for(const dia of ['L','M','M','J','V','S','D']) panel.append(el('span',{class:'agenda-weekday',text:dia}));
+    const inicio=(new Date(yy,mm,1).getDay()+6)%7;
+    const dias=new Date(yy,mm+1,0).getDate();
+    const eventos=((ultimoPanel&&ultimoPanel.fechas)||[]).filter(x=>x.fecha&& !isNaN(new Date(x.fecha)));
+    for(let i=0;i<inicio;i++)panel.append(el('span',{class:'agenda-empty','aria-hidden':'true'}));
+    for(let d=1;d<=dias;d++){
+      const hoy=new Date(yy,mm,d), delDia=eventos.filter(x=>{const f=new Date(x.fecha);return f.getFullYear()===yy&&f.getMonth()===mm&&f.getDate()===d;});
+      const cel=el('div',{class:'agenda-day'+(delDia.length?' has-events':'')+(hoy.toDateString()===new Date().toDateString()?' today':'')},
+        el('span',{text:String(d)}));
+      if(delDia.length){cel.append(el('i',{'aria-hidden':'true'}));cel.title=delDia.map(x=>x.nombre).join(' · ');cel.setAttribute('aria-label',d+' de '+titulo.textContent+': '+delDia.length+' actividades');}
+      panel.append(cel);
+    }
+  }
+  function iniciarTabsAgenda(){
+    const vista=$('v-agenda');if(!vista||vista.dataset.agendaInit)return;
+    vista.dataset.agendaInit='1';
+    function activar(nombre){
+      vista.dataset.agendaVista=nombre;
+      vista.querySelectorAll('[data-agenda-tab]').forEach(b=>{const activo=b.dataset.agendaTab===nombre;b.classList.toggle('active',activo);b.setAttribute('aria-selected',String(activo));});
+    }
+    vista.querySelectorAll('[data-agenda-tab]').forEach(b=>b.addEventListener('click',()=>activar(b.dataset.agendaTab)));
+    $('agenda-prev').addEventListener('click',()=>{agendaMes=new Date(agendaMes.getFullYear(),agendaMes.getMonth()-1,1);pintarCalendarioAgenda();});
+    $('agenda-next').addEventListener('click',()=>{agendaMes=new Date(agendaMes.getFullYear(),agendaMes.getMonth()+1,1);pintarCalendarioAgenda();});
+    activar('resumen');
+  }
+  function actualizarMetricasAgenda(){
+    const fechas=(ultimoPanel&&ultimoPanel.fechas)||[];
+    const tareas=fechas.filter(x=>String(x.tipo||'').toLowerCase().includes('tarea')).length;
+    $('agenda-c-tareas').textContent=String(tareas);
+    $('agenda-c-eventos').textContent=String(fechas.length-tareas);
+    $('agenda-c-personal').textContent=String(((ultimaAgenda&&ultimaAgenda.actividades)||[]).length);
+  }
+
   function pintarFechas(d){
+    iniciarTabsAgenda(); pintarCalendarioAgenda(); actualizarMetricasAgenda();
     const cont = $('fechas'); cont.replaceChildren();
     if(!d.fechas.length){ cont.append(el('p', {class:'vacio', text:'Nada pendiente por ahora.'})); return; }
     for(const f of d.fechas){
@@ -1136,6 +1329,8 @@
     desfase = d.ahora * 1000 - Date.now();
     vence = d.conexiones.erp.vence; renovable = !!d.conexiones.erp.renovable;
     const um = d.conexiones.moodle.ultima, ue = d.conexiones.erp.ultima;
+    if($('nov-sync-moodle')) $('nov-sync-moodle').textContent = um ? 'Última lectura exitosa: ' + hhmm(um) : 'Aún sin lectura exitosa';
+    if($('nov-sync-erp')) $('nov-sync-erp').textContent = ue ? 'Última lectura exitosa: ' + hhmm(ue) : 'Aún sin lectura exitosa';
     $('p-moodle').className = 'punto ' + (um ? 'ok' : 'warn');
     $('l-moodle').textContent = um ? 'Última lectura: ' + hhmm(um) : 'Aún sin lectura correcta';
     $('l-erp').dataset.ult = ue ? 'Última lectura: ' + hhmm(ue) : 'Aún sin lectura correcta';
@@ -1292,6 +1487,7 @@
   }
   function pintarPendientes(){
     if(!ultimoPanel) return;
+    actualizarMetricasAgenda();
     const cont = $('centro-pendientes'); cont.replaceChildren();
     const items = construirPendientes().slice(0, 12);
     if(!items.length){
@@ -1451,36 +1647,64 @@
     const b = $('ins-nov'); b.hidden = !n; b.textContent = n > 99 ? '99+' : n;
     $('menu').querySelector('[data-vista="novedades"]').setAttribute('aria-label', n ? 'Novedades (' + n + ' sin ver)' : 'Novedades');
   }
-  function filaNovedad(n){
-    const d = new Date(n.detectado_en);
-    const cuandoTxt = isNaN(d) ? '' : d.toLocaleDateString('es-EC',{day:'numeric',month:'short'}) + ', ' + hhmm(n.detectado_en);
-    return el('div', {class:'nov' + (n.visto ? ' visto' : '')},
-      el('div', {class:'cuando', text:cuandoTxt}),
-      el('div', {}, el('div', {class:'que'}, el('span', {class:'etq', text:n.etiqueta}), n.texto),
-                    n.materia ? el('div', {class:'de', text:n.materia}) : null));
+  // Clasificacion visual aproximada; la deteccion de cambios sigue en /api/novedades.
+  function categoriaNovedad(n){
+    const t=((n.etiqueta||'')+' '+(n.tipo||'')+' '+(n.texto||'')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    if(/calific|nota|promedio/.test(t)) return 'notas';
+    if(/tarea|entrega|actividad|asignacion/.test(t)) return 'tareas';
+    if(/evento|calendario|examen|evaluacion|fecha/.test(t)) return 'eventos';
+    return 'otros';
   }
+  let filtroNovedades='todas', novedadesActuales={nuevas:[],anteriores:[]};
+  function filaNovedad(n){
+    const d=new Date(n.detectado_en);
+    const cuandoTxt=isNaN(d)?'':d.toLocaleDateString('es-EC',{day:'numeric',month:'short'})+', '+hhmm(n.detectado_en);
+    return el('div',{class:'nov nov-'+categoriaNovedad(n)+(n.visto?' visto':'')},
+      el('div',{class:'cuando',text:cuandoTxt}),
+      el('div',{},el('div',{class:'que'},el('span',{class:'etq',text:n.etiqueta}),n.texto),
+      n.materia?el('div',{class:'de',text:n.materia}):null));
+  }
+  function renderNovedades(){
+    const nuevas=novedadesActuales.nuevas,anteriores=novedadesActuales.anteriores;
+    const todas=nuevas.concat(anteriores);
+    for(const [cat,id] of [['tareas','nov-c-tareas'],['notas','nov-c-notas'],['eventos','nov-c-eventos'],['otros','nov-c-otros']])
+      $(id).textContent=String(todas.filter(n=>categoriaNovedad(n)===cat).length);
+    const mostrar=lista=>filtroNovedades==='todas'?lista:lista.filter(n=>categoriaNovedad(n)===filtroNovedades);
+    const nu=$('nov-nuevas');nu.replaceChildren();
+    const filtradas=mostrar(nuevas);
+    if(filtradas.length) filtradas.forEach(n=>nu.append(filaNovedad(n)));
+    else nu.append(el('div',{class:'nov-sin-cambios'},el('span',{class:'nov-sin-icono','aria-hidden':'true',text:'✓'}),
+      el('strong',{text:nuevas.length?'No hay cambios de esta categoría':'¡Todo está al día!'}),
+      el('p',{text:nuevas.length?'Prueba otro filtro para ver las novedades detectadas.':'No se han detectado novedades desde tu última visita.'})));
+    $('btn-vistas').hidden=!nuevas.length;
+    const an=$('nov-anteriores');an.replaceChildren();const pasadas=mostrar(anteriores);
+    pasadas.forEach(n=>an.append(filaNovedad(n)));
+    $('card-nov-ant').hidden=!pasadas.length;
+    document.querySelectorAll('#v-novedades [data-nov-filtro]').forEach(b=>{
+      const activo=b.dataset.novFiltro===filtroNovedades;b.classList.toggle('active',activo);b.setAttribute('aria-pressed',String(activo));
+    });
+    pintarInsignia(nuevas.length);
+  }
+  document.querySelectorAll('#v-novedades [data-nov-filtro]').forEach(b=>b.addEventListener('click',()=>{filtroNovedades=b.dataset.novFiltro;renderNovedades();}));
   async function cargarNovedades(){
     try{
-      const r = await fetch('/api/novedades');
-      if(r.status === 401){ location = '/login'; return; }
-      const d = await r.json();
-      const nu = $('nov-nuevas'); nu.replaceChildren();
-      if(d.nuevas.length) d.nuevas.forEach(n => nu.append(filaNovedad(n)));
-      else nu.append(el('p', {class:'vacio', text:'No hay novedades. Cuando algo cambie en Moodle o el ERP, aparecerá aquí.'}));
-      $('btn-vistas').hidden = !d.nuevas.length;
-      const an = $('nov-anteriores'); an.replaceChildren();
-      d.anteriores.forEach(n => an.append(filaNovedad(n)));
-      $('card-nov-ant').hidden = !d.anteriores.length;
-      pintarInsignia(d.nuevas.length);
-    }catch(e){ $('nov-nuevas').replaceChildren(el('p', {class:'vacio', text:'No se pudo cargar: ' + e.message})); }
+      const r=await fetch('/api/novedades');
+      if(r.status===401){location='/login';return;}
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      novedadesActuales={nuevas:Array.isArray(d.nuevas)?d.nuevas:[],anteriores:Array.isArray(d.anteriores)?d.anteriores:[]};
+      renderNovedades();
+    }catch(e){$('nov-nuevas').replaceChildren(el('p',{class:'vacio',text:'No se pudo cargar: '+e.message}));}
   }
-  $('btn-vistas').addEventListener('click', async () => {
-    const b = $('btn-vistas'); b.disabled = true;
-    try{ await fetch('/api/novedades/vistas', {method:'POST'}); }catch(_){}
-    b.disabled = false;
-    await cargarNovedades();
+  $('btn-vistas').addEventListener('click',async()=>{
+    const b=$('btn-vistas');b.disabled=true;
+    try{
+      const r=await fetch('/api/novedades/vistas',{method:'POST'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      await cargarNovedades();
+    }catch(e){mostrarAviso('No se pudieron marcar como vistas: '+e.message,true);}
+    finally{b.disabled=false;}
   });
-
 
   // ---- Alertas (Inicio) ----
   const ALERTAS_VISIBLES = 3;          // la pantalla de inicio no debe saturarse: el resto va plegado
@@ -1545,7 +1769,7 @@
   }
 
   // ---- Horario semanal (cuadrícula 07:00–24:00) ----
-  const H_INI = 7*60, H_FIN = 24*60, PPM = 0.8;
+  const H_INI = 7*60, H_FIN = 24*60, PPM = 0.55;
   const tmin = t => { const [h, m] = t.split(':').map(Number); return h*60 + m; };
   const hm = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
   let bloquesPlan = {};
