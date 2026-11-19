@@ -13,7 +13,7 @@ Metodología de trabajo: **Scrum** (ver sección 7).
 
 | Característica | Qué se hizo | Evidencia en el proyecto |
 |---|---|---|
-| **Adecuación funcional** | Chatbot con datos reales de Moodle/ERP, plan de estudio con horas calculadas, recordatorios, espacio de estudio. | `core/assistant.py`, `core/planificador.py`, `core/estudio.py`; 430 pruebas automáticas. |
+| **Adecuación funcional** | Chatbot con datos reales de Moodle/ERP, plan de estudio con horas calculadas, recordatorios, espacio de estudio. | `core/assistant.py`, `core/planificador.py`, `core/estudio.py`; 462 pruebas automáticas. |
 | **Eficiencia de desempeño** | Cupos de concurrencia (IA 16, sincronización 8), servidor Waitress con hilos configurables, respuestas de API sin caché de datos personales. | `web/limites.py`, `web/app.py` (`serve`), variables `CUPO_IA`, `CUPO_SYNC`, `THREADS`. Sin prueba de carga todavía (sección 8). |
 | **Compatibilidad / interoperabilidad** | Integración con dos sistemas externos (Moodle Web Services y ERP/SGA) más Telegram y Claude, cada uno aislado en su cliente. | `moodle/client.py`, `sga/client.py`, `core/telegram.py`. |
 | **Usabilidad** | Interfaz con tema claro/oscuro, barra lateral plegable, diseño adaptable a móvil, etiquetas ARIA, mensajes de error claros, inicio con lo importante primero (alertas resumidas, seguimiento plegable). | `web/templates/index.html`, `web/templates/login.html`. |
@@ -92,7 +92,7 @@ Correspondencia con 12207 (procesos): requisitos (sección 5), diseño (`docs/Ac
 
 ## 8. ISO/IEC/IEEE 29119: pruebas
 
-- **Pruebas automáticas:** 430 casos con `pytest` (unidad e integración con servicios simulados) que se ejecutan en cada subida mediante GitHub Actions.
+- **Pruebas automáticas:** 462 casos con `pytest` (unidad e integración con servicios simulados) que se ejecutan en cada subida mediante GitHub Actions.
 - **Qué cubren:** planificador, notas de Moodle, sincronización, cambios detectados, límites, privacidad, sesión, Telegram, edición de horario, login por credenciales y exportación/borrado de datos.
 - **Pruebas manuales/visuales:** capturas de las pantallas con un navegador automatizado.
 

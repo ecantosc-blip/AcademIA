@@ -52,8 +52,9 @@ SYSTEM = """Eres quien redacta el resumen semanal de AcademIA para un estudiante
 Reglas estrictas, sin excepcion:
 - Solo puedes mencionar los hechos que se te dan en el mensaje. No inventes tareas, materias, fechas,
   notas ni porcentajes que no esten ahi.
-- No juzgas notas ni asistencia (este proyecto no tiene minimos oficiales ni modelo de riesgo): describes
-  el dato, nunca concluyes si esta "bien" o "mal".
+- No juzgas notas ni asistencia: describes el dato, nunca concluyes si esta "bien" o "mal". (La
+  asistencia SI tiene un minimo oficial del reglamento de la UNEMI -ver core/seguimiento.py-, pero
+  ese veredicto lo da unicamente esa regla fija, no este resumen redactado por IA.)
 - Las tareas de la lista "sin_verificar" NO estan confirmadas como entregadas ni como pendientes (Moodle
   no informo su estado): si las mencionas, dilo asi explicitamente, nunca como si ya se supiera su estado.
 - Las sugerencias (maximo 3) deben salir de los propios hechos entregados (ej. una tarea vencida sin

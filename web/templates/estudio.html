@@ -26,10 +26,7 @@
   .num{font-variant-numeric:tabular-nums}
   button{font:inherit; cursor:pointer}
 
-  /* ---- Barra superior ---- */
-  .bar{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px clamp(16px,3vw,40px)}
   .brand{font-weight:700; font-size:1.2rem; letter-spacing:-.01em; margin:0}
-  .bar .quien{color:var(--muted); font-size:.92rem; margin-right:12px; text-align:right}
   .btn-sec{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.85rem}
 
   .wrap{padding:0 clamp(16px,3vw,40px) 48px; max-width:1680px; margin:0 auto; --wrap-x:clamp(16px,3vw,40px)}
@@ -181,7 +178,6 @@
   }
   @media (max-width: 560px){
     .pase{grid-template-columns:1fr}
-    .bar .quien{display:none}
     .materia{grid-template-columns:1fr auto}
     .materia .cifra.asis{display:none}
   }
@@ -261,7 +257,6 @@
   }
   @media (max-width:820px){
     .rej-e{grid-template-columns:1fr; grid-template-areas:"elige" "practica" "ayuda"}
-    .bar .quien{display:none}
   }
 
   /* ---- Tema UNEMI ---- */
@@ -276,13 +271,6 @@
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .msg.yo{background:var(--accent); color:var(--accent-ink)} }
   .fuente{font-family:ui-monospace,Consolas,monospace}
 
-  .bar{background:var(--side); border-bottom:3px solid var(--orange); margin-bottom:24px}
-  .bar .marca{display:flex; align-items:center; gap:12px}
-  .bar .brand{color:#fff}
-  .bar .quien{color:var(--side-muted)}
-  .bar .enlace{background:transparent; color:#fff; border-color:var(--side-line)}
-  .bar .enlace:hover{border-color:var(--orange)}
-  .bar .icono{background:transparent; border-color:var(--side-line); color:#fff}
   .barra .pista i{background:var(--orange)}
   .btn-p:hover{filter:brightness(1.12)}
   .tutor header{display:flex; align-items:center; gap:12px; background:var(--brand); color:#fff; border-bottom:3px solid var(--orange)}
@@ -290,7 +278,6 @@
   .tutor header .tigre{width:40px; height:40px}
 
 /* Premium study workspace: isolated to this standalone template. */
-body { padding-left:210px; }
 .wrap { max-width:none; padding:0 clamp(16px,2vw,34px) 45px; --wrap-x:clamp(16px,2vw,34px); }
 .cab-pag { position:relative; isolation:isolate; overflow:hidden; box-sizing:border-box; min-height:190px; display:flex; flex-direction:column; justify-content:center; padding:30px clamp(20px,3vw,42px); margin:18px 0; border-radius:18px; background:#002e45; color:#fff; }
 .cab-pag::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.97) 33%,rgba(0,42,69,.42) 73%,rgba(0,42,69,.08)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-repeat:no-repeat; background-size:100% 100%,auto 100%; background-position:center,right center; }
@@ -318,23 +305,12 @@ body { padding-left:210px; }
 .c-ayuda .tutor .log { min-height:0; }
 .c-ayuda #btn-vid { width:100%; }
 @media(max-width:1250px) { .rej-e { grid-template-columns:minmax(210px,.9fr) minmax(0,1.5fr); grid-template-areas:"elige practica" "ayuda practica"; } .c-ayuda .tutor { height:380px; } }
-@media(max-width:850px) { body { padding-left:0; } .estudio-sidebar { position:static; width:100%; padding:10px 15px; } .estudio-sidebrand { padding:0; } .estudio-sidelinks { display:flex; overflow-x:auto; gap:5px; margin-top:9px; } .estudio-sidelinks a { white-space:nowrap; padding:9px 12px; } .estudio-sidefoot { display:none; } .rej-e { grid-template-columns:minmax(0,1fr); grid-template-areas:"elige" "practica" "ayuda"; } .c-ayuda .tutor { height:400px; } .c-practica #zona { min-height:280px; } }
-@media(max-width:550px) { .bar .quien { display:none; } .cab-pag { min-height:155px; padding:22px 17px; } .cab-pag p { font-size:.82rem; } .rej-e .card { padding:15px; } .c-ayuda .tutor { padding:0; } }
+@media(max-width:850px) { .rej-e { grid-template-columns:minmax(0,1fr); grid-template-areas:"elige" "practica" "ayuda"; } .c-ayuda .tutor { height:400px; } .c-practica #zona { min-height:280px; } }
+@media(max-width:550px) { .cab-pag { min-height:155px; padding:22px 17px; } .cab-pag p { font-size:.82rem; } .rej-e .card { padding:15px; } .c-ayuda .tutor { padding:0; } }
 
 
 /* Premium final pass: coherent study page, with original IDs and event handlers intact. */
 body { font-size:15px; }
-.estudio-sidebar { width:220px; padding:18px 13px; box-shadow:5px 0 24px rgba(0,31,50,.09); }
-.estudio-sidebrand { gap:10px; padding:3px 7px 25px; }
-.estudio-sidebrand img { width:39px; height:39px; object-fit:contain; }
-.estudio-sidebrand strong { font-size:1.05rem; }
-.estudio-sidelinks { gap:5px; }
-.estudio-sidelinks a { position:relative; font-size:.88rem; padding:11px 14px; }
-.estudio-sidelinks a.actual { border-left:3px solid #ff6900; background:#21495e; }
-body { padding-left:220px; }
-.bar { min-height:57px; justify-content:flex-end; padding:9px 22px; }
-.bar .marca { display:none; }
-.bar .enlace { border-color:#376078; background:rgba(255,255,255,.07); }
 .wrap { padding:0 clamp(17px,2vw,36px) 45px; --wrap-x:clamp(17px,2vw,36px); }
 .cab-pag { min-height:205px; margin:20px 0; box-shadow:0 12px 30px rgba(0,38,63,.11); }
 .cab-pag h1 { font-size:clamp(2rem,3vw,2.8rem); letter-spacing:-.025em; }
@@ -369,12 +345,6 @@ body { padding-left:220px; }
  .c-ayuda .tutor { height:440px; }
 }
 @media(max-width:850px) {
- body { padding-left:0; }
- .estudio-sidebar { position:static; width:100%; padding:10px 13px; box-shadow:none; }
- .estudio-sidebrand { padding:0; }
- .estudio-sidelinks { display:flex; overflow-x:auto; }
- .estudio-sidelinks a { white-space:nowrap; }
- .bar { min-height:49px; }
  .rej-e { grid-template-columns:1fr; grid-template-areas:"elige" "practica" "ayuda"; }
  .c-practica #zona { min-height:300px; }
  .c-practica .vacio-e { min-height:210px; }
@@ -385,7 +355,6 @@ body { padding-left:220px; }
  .cab-pag h1 { font-size:1.85rem; }
  .rej-e .card { padding:16px; }
  .c-ayuda .tutor { padding:0; }
- .bar { padding:7px 12px; }
 }
 @media(prefers-reduced-motion:reduce) { .c-elige .mat-op span { transition:none; } }
 
@@ -402,12 +371,6 @@ body { padding-left:220px; }
  --side-line:#303030; --side-hover:#242424;
 }
 :root[data-theme="dark"] body { background:#090909; color:var(--ink); }
-:root[data-theme="dark"] .estudio-sidebar { background:#0b0b0b; color:#eee; border-right:1px solid #303030; box-shadow:none; }
-:root[data-theme="dark"] .estudio-sidelinks a { color:#c7c7c7; }
-:root[data-theme="dark"] .estudio-sidelinks a.actual { background:#262626; color:#f5f5f5; border-left-color:#c28a61; }
-:root[data-theme="dark"] .estudio-sidelinks a:hover { background:#222; color:#fff; }
-:root[data-theme="dark"] .bar { background:#121212; border-bottom-color:#3c3c3c; }
-:root[data-theme="dark"] .bar .enlace { background:#252525; border-color:#424242; color:#eee; }
 :root[data-theme="dark"] .cab-pag { background:#151515; }
 :root[data-theme="dark"] .cab-pag::before {
  background-image:linear-gradient(90deg,rgba(0,0,0,.97),rgba(0,0,0,.85) 45%,rgba(0,0,0,.35)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
@@ -438,11 +401,9 @@ body { padding-left:220px; }
 
 /* Encabezado de borde a borde (mismo criterio aplicado en el panel principal,
    18 nov 2026): el banner de "Espacio de estudio" llega hasta ambos bordes
-   del contenido y se une directo con la barra superior, sin el recuadro
-   redondeado con margen que tenía antes. --wrap-x ya se fija junto a cada
-   regla de .wrap de arriba, así que el hueco que se cancela aquí siempre
-   coincide con su padding real. */
-.bar { margin-bottom:0; }
+   del contenido, sin el recuadro redondeado con margen que tenía antes.
+   --wrap-x ya se fija junto a cada regla de .wrap de arriba, así que el
+   hueco que se cancela aquí siempre coincide con su padding real. */
 .cab-pag {
   box-sizing:border-box;
   width:calc(100% + 2 * var(--wrap-x, 0px));
