@@ -395,3 +395,36 @@
  #v-inicio .premium-hero-copy { max-width:75%; }
  #v-inicio .premium-hero-art { inset:0 0 0 40%; opacity:.55; }
 }
+
+/* Materias premium — scoped to its own view, with no changes to application logic. */
+#v-materias { width:100%; }
+#v-materias .materias-hero { position:relative; min-height:175px; margin:-18px -8px 20px; padding:42px 32px; display:flex; align-items:center; overflow:hidden; isolation:isolate; border-radius:20px; background:#002e45; color:white; }
+#v-materias .materias-hero::before { content:""; position:absolute; z-index:-1; inset:0; background:linear-gradient(90deg,#001c34 0%,#00324f 37%,rgba(0,46,69,.42) 65%,rgba(0,46,69,.03) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png') center right/cover no-repeat; }
+#v-materias .materias-hero h1 { display:flex; align-items:center; gap:13px; font-size:clamp(1.7rem,2.6vw,2.65rem); color:white; margin:0 0 8px; }
+#v-materias .materias-hero h1 span { color:#ff7900; margin-left:-7px; }
+#v-materias .materias-hero h1 svg { width:43px; height:43px; fill:none; stroke:#ff7900; stroke-width:1.8; stroke-linejoin:round; flex:none; }
+#v-materias .materias-hero .sub { color:#f0f6fc; font-size:1.04rem; margin:0; }
+#v-materias .materias-toolbar { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+#v-materias .materias-tab { display:inline-flex; align-items:center; justify-content:center; padding:12px 20px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); text-decoration:none; font-weight:700; font-size:.88rem; box-shadow:0 5px 13px rgba(0,34,58,.055); }
+#v-materias .materias-tab.active { border-color:#ff7900; box-shadow:inset 0 0 0 1px #ff7900; background:linear-gradient(130deg,#fff,#fff3e9); }
+#v-materias .materias-tab:hover { border-color:#ff7900; }
+#v-materias .materias-layout { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:18px; align-items:stretch; }
+#v-materias .materias-current,#v-materias .materias-performance,#v-materias .materias-shortcuts,#v-materias .materias-history { padding:21px; border-radius:20px; border:1px solid var(--line); background:var(--surface); box-shadow:0 8px 23px rgba(0,34,58,.07); }
+#v-materias .materias-current > h2,#v-materias .materias-performance > h2,#v-materias .materias-shortcuts > h2 { font-size:1.14rem; margin:0 0 18px; padding-left:12px; border-left:4px solid #ff7900; }
+#v-materias .materias-aside { display:flex; flex-direction:column; gap:16px; min-width:0; }
+#v-materias .materias-metrics { display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:12px; margin:0 0 17px!important; }
+#v-materias .materias-metrics .kpi { min-width:0; padding:19px; min-height:112px; border-radius:15px; border:0; background:linear-gradient(120deg,#e9f5ff,#f4f9ff); box-shadow:none; }
+#v-materias .materias-metrics .kpi:nth-child(2) { background:linear-gradient(120deg,#fff0e6,#fff8f3); }
+#v-materias .materias-metrics .et { font-size:.78rem; }
+#v-materias .materias-metrics .gran { font-size:1.9rem; }
+#v-materias .materias-performance .sub-t { margin:10px 0; font-size:.9rem; }
+#v-materias .materias-performance .pie-nota { line-height:1.6; }
+#v-materias .materias-shortcut-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+#v-materias .materias-shortcut-grid a { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px; border:1px solid var(--line); border-radius:12px; background:var(--canvas); color:var(--ink); font-size:.85rem; font-weight:700; text-decoration:none; }
+#v-materias .materias-shortcut-grid a:hover { border-color:#ff7900; }
+#v-materias .materias-shortcut-grid a span { color:#ff7900; font-size:1.2rem; }
+#v-materias .materias-history { margin-top:18px; }
+#v-materias #materias { min-height:220px; }
+#v-materias #materias > * { max-width:100%; }
+@media(max-width:1100px){#v-materias .materias-layout { grid-template-columns:1fr; }#v-materias .materias-hero { margin:0 0 18px; }}
+@media(max-width:600px){#v-materias .materias-hero { padding:26px 18px; min-height:145px; }#v-materias .materias-hero h1 svg { width:31px; height:31px; }#v-materias .materias-toolbar { display:grid; grid-template-columns:1fr 1fr; }#v-materias .materias-tab { padding:10px; font-size:.78rem; }#v-materias .materias-metrics { grid-template-columns:1fr 1fr!important; }#v-materias .materias-metrics .kpi { padding:12px; }#v-materias .materias-shortcut-grid { grid-template-columns:1fr; }}
