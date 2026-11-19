@@ -569,8 +569,18 @@
 
     <!-- INICIO: solo lo esencial -->
     <section class="vista" id="v-inicio" aria-labelledby="t-inicio">
-      <h1 id="t-inicio">Hola{% if nombre %}, {{ nombre.split()[0]|capitalize }}{% endif %}</h1>
-      <p class="sub">Esto es lo importante de hoy.</p>
+      <div class="premium-hero">
+        <div class="premium-hero-copy">
+          <p class="premium-eyebrow">TU ESPACIO ACADÉMICO</p>
+          <h1 id="t-inicio">Hola{% if nombre %}, {{ nombre.split()[0]|capitalize }}{% endif %} <span aria-hidden="true">👋</span></h1>
+          <p class="sub">Tu vida académica, más clara y organizada.</p>
+        </div>
+        <button type="button" class="premium-search" onclick="document.getElementById('fab').click()" aria-label="Abrir el asistente AcademIA">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+          <span>Pregúntale algo a AcademIA...</span>
+          <span class="premium-search-key">IA</span>
+        </button>
+      </div>
       <div class="kpis">
         <div class="kpi" id="k-vence" data-ir="#agenda" role="link" tabindex="0"><span class="et">Vence esta semana</span><span class="gran num" id="k-vence-n">—</span><span class="det" id="k-vence-d">Cargando…</span></div>
         <div class="kpi" id="k-clase" data-ir="#agenda" role="link" tabindex="0"><span class="et">Próxima clase</span><span class="gran mid" id="k-clase-n">—</span><span class="det" id="k-clase-d">Cargando…</span></div>
@@ -611,6 +621,16 @@
       </section>
         </div>
         <div class="inicio-col inicio-col-asistente">
+          <section class="premium-ai-card" aria-label="Asistente AcademIA">
+            <div class="premium-ai-text">
+              <span class="premium-ai-kicker">✦ INTELIGENCIA ARTIFICIAL</span>
+              <h2>Tu asistente AcademIA</h2>
+              <p>Consulta tus tareas, notas y horario desde un solo lugar.</p>
+              <button type="button" class="premium-ai-action" onclick="document.getElementById('fab').click()">Iniciar conversación <span aria-hidden="true">↗</span></button>
+            </div>
+            <img src="/static/tiger-avatar.png" alt="" width="110" height="110" loading="lazy">
+          </section>
+
           <section class="card" aria-labelledby="h-reco">
         <h2 id="h-reco">Recomendación de estudio</h2>
         <p class="sub" style="margin-top:0">Según tus tareas y evaluaciones próximas, esto es lo que conviene estudiar primero.</p>
