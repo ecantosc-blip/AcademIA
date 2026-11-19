@@ -12,7 +12,7 @@
     </nav>
     <p class="oficial">Proyecto académico de titulación. No es un sitio oficial de la UNEMI.</p>
     <div class="lateral-pie">
-      <span class="avatar" aria-hidden="true"><span class="ini">{% set p = nombre.split() %}{{ (p[0][0] ~ (p[1][0] if p|length > 1 else ''))|upper if p else '?' }}</span>{% if tiene_foto %}<img src="/api/foto" alt="" width="36" height="36" onerror="this.remove()">{% endif %}</span>
+      <span class="avatar" aria-hidden="true"><span class="ini">{% set p = nombre.split() %}{{ (p[0][0] ~ (p[1][0] if p|length > 1 else ''))|upper if p else '?' }}</span><img src="/api/foto" alt="" width="36" height="36" loading="lazy" onerror="this.remove()"></span>
       <span class="quien" title="{{ nombre }}">{{ nombre }}</span>
       <button class="icono" type="button" id="tema" aria-label="Cambiar tema"></button>
     </div>
