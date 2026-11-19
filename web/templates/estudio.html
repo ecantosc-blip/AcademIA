@@ -461,6 +461,24 @@ body { padding-left:220px; }
 .lateral { background:linear-gradient(165deg,#001b31 0%,#002e45 53%,#00172b 100%)!important; }
 :root[data-theme="dark"] .lateral { background:#0b0b0b!important; }
 
+/* Misma foto de fondo del encabezado que el resto de vistas (academia-premium.css,
+   que esta página no carga): "cover" en vez de "auto 100%" para que el edificio
+   se vea con el mismo encuadre/zoom en las 6 vistas, no solo en 5. */
+.cab-pag::before {
+  background-image:
+    linear-gradient(90deg,rgba(0,25,43,.98) 0%,rgba(0,32,54,.94) 27%,rgba(0,43,69,.72) 52%,rgba(0,42,69,.22) 80%,rgba(0,37,60,.07) 100%),
+    url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+  background-size:100% 100%,cover;
+  background-position:center,center 44%;
+  background-repeat:no-repeat;
+}
+@media(max-width:700px){
+  .cab-pag::before {
+    background-position:center,65% center;
+    background-image:linear-gradient(90deg,rgba(0,25,43,.98),rgba(0,35,59,.84) 72%,rgba(0,37,60,.55)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+  }
+}
+
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
