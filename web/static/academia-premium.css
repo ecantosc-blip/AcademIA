@@ -376,8 +376,8 @@
 }
 #v-inicio .premium-hero-unemi,#v-inicio .premium-hero-arc { display:none; }
 #v-inicio .premium-hero-copy { max-width:58%; }
-#v-inicio .premium-hero h1 { color:#002E45; }
-#v-inicio .premium-hero .sub { color:#344e64; }
+#v-inicio .premium-hero h1 { color:var(--ink); }
+#v-inicio .premium-hero .sub { color:var(--muted); }
 /* Depth: saturated UNEMI navy, stronger orange accents and layered surfaces. */
 .lateral { background:linear-gradient(165deg,#001b31 0%,#002e45 53%,#00172b 100%)!important; }
 #v-inicio .premium-ai-column .premium-ai-card {
@@ -939,6 +939,21 @@
 :root[data-theme="dark"] #v-novedades .nov-filtro.active,
 :root[data-theme="dark"] #v-materias .materias-tab.active {
  background:var(--orange-bg); border-color:var(--orange); color:var(--ink); box-shadow:none;
+}
+:root[data-theme="dark"] #v-materias .materias-contador,
+:root[data-theme="dark"] #v-agenda .agenda-metrics > div,
+:root[data-theme="dark"] #v-novedades .novedades-metrica {
+ background:var(--surface); color:var(--ink); border:1px solid var(--line);
+}
+/* La franja clara que se veía atravesando la foto del encabezado de Inicio en
+   modo oscuro: el degradado de .premium-hero-art estaba fijo en tonos claros
+   (rgba(242,245,248,...), el --canvas del modo claro) y nunca se adaptó al
+   modo oscuro, así que quedaba un tramo gris claro de fondo oscuro -> gris ->
+   foto en vez de fondo oscuro -> foto. Se repite el mismo degradado con los
+   tonos oscuros. */
+:root[data-theme="dark"] #v-inicio .premium-hero-art {
+ background-image:linear-gradient(90deg,var(--canvas) 0%,rgba(9,9,9,.88) 11%,rgba(9,9,9,.08) 45%,rgba(9,9,9,0) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+ background-position:center,right center; background-repeat:no-repeat; background-size:cover,cover;
 }
 :root[data-theme="dark"] #v-plan .b-rutina { background:#263b4b; color:#dce7ee; border-color:#587587; }
 :root[data-theme="dark"] #v-plan .b-estudio { background:#40332c; color:#f1dfd2; border-color:#a77756; border-left-color:#bd8358; }
