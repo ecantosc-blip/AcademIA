@@ -430,6 +430,53 @@ body { padding-left:220px; }
 }
 @media(prefers-reduced-motion:reduce) { .c-elige .mat-op span { transition:none; } }
 
+
+/* AcademIA true-black mode shared with the dashboard. No hard-coded academic data. */
+:root[data-theme="dark"] {
+ color-scheme:dark;
+ --canvas:#090909; --surface:#171717; --ink:#f0f0f0; --muted:#b6b6b6; --line:#353535;
+ --brand:#111111; --accent:#a6a6a6; --accent-ink:#101010; --accent-bg:#292929;
+ --orange:#c28a61; --orange-bg:#30241c; --orange-ink:#e4b28f;
+ --ok:#91b29c; --ok-bg:#22392f; --warn:#c5a17b; --warn-bg:#3a3027;
+ --bad:#c48e8b; --bad-bg:#402b2c;
+ --side:#0b0b0b; --side-ink:#f0f0f0; --side-muted:#c4c4c4;
+ --side-line:#303030; --side-hover:#242424;
+}
+:root[data-theme="dark"] body { background:#090909; color:var(--ink); }
+:root[data-theme="dark"] .estudio-sidebar { background:#0b0b0b; color:#eee; border-right:1px solid #303030; box-shadow:none; }
+:root[data-theme="dark"] .estudio-sidelinks a { color:#c7c7c7; }
+:root[data-theme="dark"] .estudio-sidelinks a.actual { background:#262626; color:#f5f5f5; border-left-color:#c28a61; }
+:root[data-theme="dark"] .estudio-sidelinks a:hover { background:#222; color:#fff; }
+:root[data-theme="dark"] .bar { background:#121212; border-bottom-color:#3c3c3c; }
+:root[data-theme="dark"] .bar .enlace { background:#252525; border-color:#424242; color:#eee; }
+:root[data-theme="dark"] .cab-pag { background:#151515; }
+:root[data-theme="dark"] .cab-pag::before {
+ background-image:linear-gradient(90deg,rgba(0,0,0,.97),rgba(0,0,0,.85) 45%,rgba(0,0,0,.35)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+}
+:root[data-theme="dark"] .rej-e .card,
+:root[data-theme="dark"] .tutor { background:#171717; color:#f0f0f0; border:1px solid #353535; box-shadow:none; }
+:root[data-theme="dark"] .c-ayuda .tutor header { background:#242424; color:#f0f0f0; border-bottom:1px solid #3a3a3a; }
+:root[data-theme="dark"] .c-ayuda .tutor header h2 { color:#f0f0f0; }
+:root[data-theme="dark"] .c-ayuda .tutor header p { color:#bdbdbd; }
+:root[data-theme="dark"] .mat-op span { background:#242424; color:#f0f0f0; border-color:#454545; }
+:root[data-theme="dark"] .mat-op input:checked + span,
+:root[data-theme="dark"] .c-elige .mat-op input:checked + span { background:#352a23; color:#f5eee9; border-color:#a47a5b; box-shadow:inset 4px 0 #c28a61; }
+:root[data-theme="dark"] .entrada,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea { background:#242424; color:#f0f0f0; border-color:#494949; }
+:root[data-theme="dark"] .entrada::placeholder,
+:root[data-theme="dark"] textarea::placeholder { color:#aaa; }
+:root[data-theme="dark"] .btn-p,
+:root[data-theme="dark"] .c-elige .btn-p.full { background:#8e6549; color:#fff; }
+:root[data-theme="dark"] .btn-o { background:#252525; color:#eee; border-color:#484848; }
+:root[data-theme="dark"] .vacio-e { color:#c7c7c7; }
+:root[data-theme="dark"] .c-practica .vacio-e::before { background:#342b25; border-color:#80634e; box-shadow:none; }
+:root[data-theme="dark"] .tutor .log { background:#171717; }
+:root[data-theme="dark"] .tutor .msg { color:#f0f0f0; }
+:root[data-theme="dark"] .tutor .msg.yo { background:#383838; color:#f5f5f5; }
+:root[data-theme="dark"] .tutor form { background:#202020; border-color:#3d3d3d; }
+:root[data-theme="dark"] .icono { background:#252525; color:#eee; border-color:#484848; }
+
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
