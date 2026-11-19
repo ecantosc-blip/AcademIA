@@ -46,3 +46,7 @@ body.estudio-page .lateral { position:fixed; }
  :root[data-lateral="plegada"] body.estudio-page .lateral .lateral-pie .avatar { display:none; }
  :root[data-lateral="plegada"] body.estudio-page .lateral .lateral-pie { justify-content:center; }
 }
+
+/* Keep study navigation scrollable without displaying the redundant vertical track. */
+body.estudio-page .lateral { scrollbar-width:none; -ms-overflow-style:none; }
+body.estudio-page .lateral::-webkit-scrollbar { display:none; width:0; height:0; }
