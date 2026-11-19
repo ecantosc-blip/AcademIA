@@ -235,3 +235,10 @@
   #v-inicio .modulo { min-height:56px; padding:11px; }
   #v-inicio .premium-ai-card img { width:100px; height:145px; }
 }
+
+/* Correct grid sizing: sidebar occupies its own grid track. */
+@media(min-width:1101px) {
+  .app { grid-template-columns:220px minmax(0,1fr); }
+  .lateral { width:auto!important; padding:24px 15px; }
+  .principal { grid-column:2; width:100%!important; margin:0!important; max-width:none!important; min-width:0; }
+}
