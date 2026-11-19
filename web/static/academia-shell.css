@@ -1,0 +1,22 @@
+/* Shared design tokens and navigation for dashboard and study. */
+:root { --brand:#002e45; --orange:#ff6900; --orange-bg:#fff0e5; --orange-ink:#8a3a00; --canvas:#f2f5f8; --surface:#fff; --ink:#002e45; --muted:#4f6676; --line:#d3dee6; --accent:#335f7f; --accent-ink:#fff; --accent-bg:#e4eef5; --ok:#1b7f4b; --ok-bg:#e3f3ea; --warn:#8f5600; --warn-bg:#fcefd6; --bad:#b3261e; --bad-bg:#fbe4e2; --side:#002e45; --side-ink:#fff; --side-muted:#b5c9d6; --side-line:#264763; --side-hover:rgba(255,255,255,.1); }
+:root[data-theme="dark"] { color-scheme:dark; --brand:#111; --orange:#c28a61; --orange-bg:#30241c; --orange-ink:#e4b28f; --canvas:#090909; --surface:#171717; --ink:#f0f0f0; --muted:#b6b6b6; --line:#353535; --accent:#a6a6a6; --accent-ink:#101010; --accent-bg:#292929; --ok:#91b29c; --ok-bg:#22392f; --warn:#c5a17b; --warn-bg:#3a3027; --bad:#c48e8b; --bad-bg:#402b2c; --side:#0b0b0b; --side-ink:#f0f0f0; --side-muted:#c4c4c4; --side-line:#303030; --side-hover:#242424; }
+.lateral { background:var(--side); color:var(--side-ink); }
+.lateral .menu a { color:var(--side-muted); }
+.lateral .menu a[aria-current="page"], .lateral .menu a:hover { background:var(--side-hover); color:var(--side-ink); }
+.lateral .menu a[aria-current="page"] { border-left:3px solid var(--orange); }
+.lateral .menu a[aria-current="page"] svg { stroke:var(--orange); }
+body.estudio-page { padding-left:220px; }
+body.estudio-page .lateral { position:fixed; top:0; bottom:0; left:0; z-index:40; width:220px; height:100vh; overflow-y:auto; }
+body.estudio-page .lateral .marca { flex-shrink:0; }
+body.estudio-page .lateral .lateral-pie { margin-top:auto; }
+@media(min-width:861px) {
+ :root[data-lateral="plegada"] body.estudio-page { padding-left:76px; }
+ :root[data-lateral="plegada"] body.estudio-page .lateral { width:76px; padding:24px 10px; }
+ :root[data-lateral="plegada"] body.estudio-page .lateral .marca-txt,
+ :root[data-lateral="plegada"] body.estudio-page .lateral .menu a .et,
+ :root[data-lateral="plegada"] body.estudio-page .lateral .oficial,
+ :root[data-lateral="plegada"] body.estudio-page .lateral-pie .quien { display:none; }
+ :root[data-lateral="plegada"] body.estudio-page .lateral .menu a { justify-content:center; }
+}
+@media(max-width:860px) { body.estudio-page { padding-left:0; } body.estudio-page .lateral { position:relative; width:100%; height:auto; max-height:none; } }
