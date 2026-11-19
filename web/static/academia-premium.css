@@ -838,3 +838,53 @@
 #v-plan #hor-ayuda { line-height:1.55; font-size:.82rem; color:var(--muted); }
 @media(max-width:900px){#v-materias #semestres { grid-template-columns:1fr; gap:8px; }}
 @media(max-width:600px){#v-materias .materias-history { padding:17px; } #v-plan .cuadricula { min-width:850px; }}
+
+/* Shared layout tokens: honor the sidebar state persisted by the existing JS. */
+:root { --academia-sidebar-expanded:220px; --academia-sidebar-collapsed:76px; --academia-hero-radius:20px; --academia-hero-shadow:0 14px 32px rgba(0,32,52,.13); }
+@media(min-width:861px) {
+ :root[data-lateral="plegada"] .app { grid-template-columns:var(--academia-sidebar-collapsed) minmax(0,1fr) !important; }
+ :root[data-lateral="plegada"] .lateral { width:auto!important; padding:24px 10px!important; }
+ :root[data-lateral="plegada"] .principal { grid-column:2; min-width:0; }
+ :root[data-lateral="plegada"] .lateral .marca-txt,
+ :root[data-lateral="plegada"] .lateral .menu a .et,
+ :root[data-lateral="plegada"] .lateral .oficial,
+ :root[data-lateral="plegada"] .lateral-pie .quien { display:none!important; }
+ :root[data-lateral="plegada"] .lateral .menu a { justify-content:center; }
+ :root[data-lateral="plegada"] .lateral .plegar { position:static; margin:4px auto 12px; }
+ :root:not([data-lateral="plegada"]) .app { grid-template-columns:var(--academia-sidebar-expanded) minmax(0,1fr); }
+}
+/* One design system for all dashboard section headings, without changing data. */
+#v-inicio .premium-hero,
+#v-materias .materias-hero,
+#v-agenda .agenda-hero,
+#v-novedades .novedades-hero,
+#v-plan .plan-hero,
+#v-datos .datos-hero {
+ box-sizing:border-box; border-radius:var(--academia-hero-radius);
+ box-shadow:var(--academia-hero-shadow); min-width:0;
+ min-height:clamp(176px,16vw,220px); padding:clamp(24px,3vw,38px);
+ margin-bottom:20px; overflow:hidden;
+}
+#v-inicio .premium-hero h1,
+#v-materias .materias-hero h1,
+#v-agenda .agenda-hero h1,
+#v-novedades .novedades-hero h1,
+#v-plan .plan-hero h1,
+#v-datos .datos-hero h1 {
+ font-size:clamp(1.7rem,2.5vw,2.65rem); font-weight:800;
+ line-height:1.14; letter-spacing:-.035em; margin:0 0 12px;
+ text-wrap:balance;
+}
+#v-inicio .premium-hero .sub,
+#v-materias .materias-hero .sub,
+#v-agenda .agenda-hero .sub,
+#v-novedades .novedades-hero .sub,
+#v-plan .plan-hero .sub,
+#v-datos .datos-hero .sub {
+ max-width:610px; line-height:1.6; font-size:clamp(.88rem,1.1vw,.98rem);
+}
+@media(max-width:860px) {
+ :root[data-lateral="plegada"] .app { grid-template-columns:minmax(0,1fr)!important; }
+ #v-inicio .premium-hero,#v-materias .materias-hero,#v-agenda .agenda-hero,
+ #v-novedades .novedades-hero,#v-plan .plan-hero,#v-datos .datos-hero { min-height:155px; padding:22px; }
+}
