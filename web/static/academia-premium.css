@@ -396,24 +396,35 @@
  #v-inicio .premium-hero-art { inset:0 0 0 40%; opacity:.55; }
 }
 
-/* Materias premium — scoped to its own view, with no changes to application logic. */
-#v-materias { width:100%; }
-#v-materias .materias-hero { position:relative; min-height:175px; margin:-18px -8px 20px; padding:42px 32px; display:flex; align-items:center; overflow:hidden; isolation:isolate; border-radius:20px; background:#002e45; color:white; }
-#v-materias .materias-hero::before { content:""; position:absolute; z-index:-1; inset:0; background:linear-gradient(90deg,#001c34 0%,#00324f 37%,rgba(0,46,69,.42) 65%,rgba(0,46,69,.03) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png') center right/cover no-repeat; }
-#v-materias .materias-hero h1 { display:flex; align-items:center; gap:13px; font-size:clamp(1.7rem,2.6vw,2.65rem); color:white; margin:0 0 8px; }
+/* Materias: single authoritative responsive hero + layout. */
+#v-materias { width:100%; min-width:0; }
+#v-materias .materias-hero {
+ position:relative; isolation:isolate; overflow:hidden; box-sizing:border-box;
+ width:100%; min-height:clamp(180px,17vw,260px); margin:0 0 20px; padding:clamp(22px,3vw,42px);
+ display:flex; align-items:center; border-radius:20px;
+ background:linear-gradient(105deg,#001b30 0%,#003e61 100%); color:#fff;
+}
+#v-materias .materias-hero::before {
+ content:""; position:absolute; z-index:-1; inset:0;
+ background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.96) 27%,rgba(0,42,69,.56) 52%,rgba(0,39,67,.08) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+ background-repeat:no-repeat,no-repeat;
+ background-size:100% 100%,auto 100%;
+ background-position:center,right center;
+}
+#v-materias .materias-hero-content { position:relative; z-index:1; width:min(100%,690px); }
+#v-materias .materias-hero h1 { display:flex; align-items:center; gap:12px; margin:0 0 10px; font-size:clamp(1.7rem,2.6vw,2.55rem); color:white; }
 #v-materias .materias-hero h1 span { color:#ff7900; margin-left:-7px; }
-#v-materias .materias-hero h1 svg { width:43px; height:43px; fill:none; stroke:#ff7900; stroke-width:1.8; stroke-linejoin:round; flex:none; }
-#v-materias .materias-hero .sub { color:#f0f6fc; font-size:1.04rem; margin:0; }
+#v-materias .materias-hero h1 svg { width:42px; height:42px; flex:none; fill:none; stroke:#ff7900; stroke-width:1.8; stroke-linejoin:round; }
+#v-materias .materias-hero .sub { color:#f0f6fc; font-size:clamp(.85rem,1.2vw,1.04rem); margin:0; }
 #v-materias .materias-toolbar { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
-#v-materias .materias-tab { display:inline-flex; align-items:center; justify-content:center; padding:12px 20px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); text-decoration:none; font-weight:700; font-size:.88rem; box-shadow:0 5px 13px rgba(0,34,58,.055); }
-#v-materias .materias-tab.active { border-color:#ff7900; box-shadow:inset 0 0 0 1px #ff7900; background:linear-gradient(130deg,#fff,#fff3e9); }
-#v-materias .materias-tab:hover { border-color:#ff7900; }
-#v-materias .materias-layout { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:18px; align-items:stretch; }
-#v-materias .materias-current,#v-materias .materias-performance,#v-materias .materias-shortcuts,#v-materias .materias-history { padding:21px; border-radius:20px; border:1px solid var(--line); background:var(--surface); box-shadow:0 8px 23px rgba(0,34,58,.07); }
-#v-materias .materias-current > h2,#v-materias .materias-performance > h2,#v-materias .materias-shortcuts > h2 { font-size:1.14rem; margin:0 0 18px; padding-left:12px; border-left:4px solid #ff7900; }
+#v-materias .materias-tab { display:inline-flex; justify-content:center; align-items:center; padding:12px 20px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); text-decoration:none; font-weight:700; font-size:.88rem; }
+#v-materias .materias-tab.active { border-color:#ff7900; background:linear-gradient(130deg,#fff,#fff3e9); }
+#v-materias .materias-layout { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:18px; align-items:start; min-width:0; }
 #v-materias .materias-aside { display:flex; flex-direction:column; gap:16px; min-width:0; }
+#v-materias .materias-current,#v-materias .materias-performance,#v-materias .materias-shortcuts,#v-materias .materias-history { min-width:0; padding:21px; border-radius:20px; border:1px solid var(--line); background:var(--surface); box-shadow:0 8px 23px rgba(0,34,58,.07); }
+#v-materias .materias-performance > h2,#v-materias .materias-shortcuts > h2 { font-size:1.14rem; margin:0 0 18px; padding-left:12px; border-left:4px solid #ff7900; }
 #v-materias .materias-metrics { display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:12px; margin:0 0 17px!important; }
-#v-materias .materias-metrics .kpi { min-width:0; padding:19px; min-height:112px; border-radius:15px; border:0; background:linear-gradient(120deg,#e9f5ff,#f4f9ff); box-shadow:none; }
+#v-materias .materias-metrics .kpi { min-width:0; padding:16px; min-height:110px; border-radius:15px; border:0; background:linear-gradient(120deg,#e9f5ff,#f4f9ff); box-shadow:none; }
 #v-materias .materias-metrics .kpi:nth-child(2) { background:linear-gradient(120deg,#fff0e6,#fff8f3); }
 #v-materias .materias-metrics .et { font-size:.78rem; }
 #v-materias .materias-metrics .gran { font-size:1.9rem; }
@@ -424,71 +435,20 @@
 #v-materias .materias-shortcut-grid a:hover { border-color:#ff7900; }
 #v-materias .materias-shortcut-grid a span { color:#ff7900; font-size:1.2rem; }
 #v-materias .materias-history { margin-top:18px; }
-#v-materias #materias { min-height:220px; }
+#v-materias #materias { min-height:0; }
 #v-materias #materias > * { max-width:100%; }
-@media(max-width:1100px){#v-materias .materias-layout { grid-template-columns:1fr; }#v-materias .materias-hero { margin:0 0 18px; }}
-@media(max-width:600px){#v-materias .materias-hero { padding:26px 18px; min-height:145px; }#v-materias .materias-hero h1 svg { width:31px; height:31px; }#v-materias .materias-toolbar { display:grid; grid-template-columns:1fr 1fr; }#v-materias .materias-tab { padding:10px; font-size:.78rem; }#v-materias .materias-metrics { grid-template-columns:1fr 1fr!important; }#v-materias .materias-metrics .kpi { padding:12px; }#v-materias .materias-shortcut-grid { grid-template-columns:1fr; }}
-
-/* Responsive shell correction: preserve the existing persisted sidebar toggle. */
-@media(min-width:1101px) {
- :root:not([data-lateral="plegada"]) .app { grid-template-columns:clamp(210px,15vw,250px) minmax(0,1fr)!important; }
- :root[data-lateral="plegada"] .app { grid-template-columns:76px minmax(0,1fr)!important; }
- :root[data-lateral="plegada"] .lateral { padding:20px 10px!important; }
- :root[data-lateral="plegada"] .lateral .marca-txt,
- :root[data-lateral="plegada"] .lateral .menu a .et,
- :root[data-lateral="plegada"] .lateral .oficial,
- :root[data-lateral="plegada"] .lateral .lateral-pie .quien { display:none!important; }
- :root[data-lateral="plegada"] .lateral .marca { justify-content:center; }
- :root[data-lateral="plegada"] .lateral .menu a { justify-content:center; padding:11px 0; }
- :root[data-lateral="plegada"] .lateral .plegar { position:static; margin:8px auto 0; }
-}
-@media(min-width:861px) and (max-width:1100px) {
- :root:not([data-lateral="plegada"]) .app { grid-template-columns:210px minmax(0,1fr)!important; }
- :root[data-lateral="plegada"] .app { grid-template-columns:76px minmax(0,1fr)!important; }
- :root[data-lateral="plegada"] .lateral .marca-txt,
- :root[data-lateral="plegada"] .lateral .menu a .et,
- :root[data-lateral="plegada"] .lateral .oficial,
- :root[data-lateral="plegada"] .lateral .lateral-pie .quien { display:none!important; }
- :root[data-lateral="plegada"] .lateral .menu a { justify-content:center; }
-}
-@media(max-width:860px) {
- :root[data-lateral="plegada"] .app { grid-template-columns:1fr!important; }
- .principal { width:100%!important; margin:0!important; min-width:0; }
-}
-/* Full-width Materias header: image spans the entire hero and remains readable. */
-#v-materias .materias-hero {
- min-height:clamp(185px,18vw,275px);
- margin:0 0 20px;
- padding:clamp(24px,3vw,44px);
- border-radius:18px;
- background:linear-gradient(90deg,#001b32,#003e62);
-}
-#v-materias .materias-hero::before {
- background-image:linear-gradient(90deg,rgba(0,24,45,.96) 0%,rgba(0,38,68,.88) 33%,rgba(0,43,70,.28) 68%,rgba(0,36,61,.08) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
- background-size:cover,cover;
- background-position:center,right center;
-}
-#v-materias .materias-hero-content { position:relative; z-index:1; width:min(100%,700px); }
-#v-materias .materias-layout { min-width:0; }
-#v-materias .materias-current,#v-materias .materias-aside { min-width:0; }
-@media(max-width:860px) {
- #v-materias .materias-hero { min-height:185px; margin:0 0 16px; padding:26px 20px; }
- #v-materias .materias-hero::before { background-position:center,right center; }
- #v-materias .materias-layout { grid-template-columns:minmax(0,1fr); }
-}
-@media(max-width:560px) {
- #v-materias .materias-hero { min-height:155px; padding:20px 16px; }
- #v-materias .materias-hero::before { background-image:linear-gradient(90deg,rgba(0,27,49,.98),rgba(0,40,68,.80) 55%,rgba(0,40,68,.42)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); }
- #v-materias .materias-hero h1 { font-size:1.65rem; gap:8px; }
+@media(max-width:1100px) { #v-materias .materias-layout { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:680px) {
+ #v-materias .materias-hero { min-height:160px; padding:22px 16px; }
+ #v-materias .materias-hero::before { background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.95) 43%,rgba(0,42,69,.45) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); }
  #v-materias .materias-hero h1 svg { width:30px; height:30px; }
- #v-materias .materias-hero .sub { font-size:.82rem; }
- #v-materias .materias-toolbar { display:flex; flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px; }
- #v-materias .materias-tab { flex:0 0 auto; }
- #v-materias .materias-metrics { grid-template-columns:1fr!important; }
+ #v-materias .materias-toolbar { flex-wrap:nowrap; overflow-x:auto; padding-bottom:5px; }
+ #v-materias .materias-tab { flex:none; padding:10px 12px; font-size:.8rem; }
+ #v-materias .materias-metrics { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+ #v-materias .materias-metrics .kpi { padding:12px; }
  #v-materias .materias-current,#v-materias .materias-performance,#v-materias .materias-shortcuts { padding:15px; }
  #v-materias .materias-shortcut-grid { grid-template-columns:1fr; }
 }
-
 /* Materias v2: visual course cards with no invented academic data. */
 #v-materias .materias-current { min-height:390px; }
 #v-materias #materias { display:grid; align-content:start; gap:13px; }
