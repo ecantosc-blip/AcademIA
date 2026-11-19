@@ -569,18 +569,21 @@
 
     <!-- INICIO: solo lo esencial -->
     <section class="vista" id="v-inicio" aria-labelledby="t-inicio">
-      <div class="premium-hero">
-        <div class="premium-hero-copy">
-          <p class="premium-eyebrow">TU ESPACIO ACADÉMICO</p>
-          <h1 id="t-inicio">Hola{% if nombre %}, {{ nombre.split()[0]|capitalize }}{% endif %} <span aria-hidden="true">👋</span></h1>
-          <p class="sub">Tu vida académica, más clara y organizada.</p>
-        </div>
-        <button type="button" class="premium-search" onclick="document.getElementById('fab').click()" aria-label="Abrir el asistente AcademIA">
+      <div class="premium-topbar">
+        <button type="button" class="premium-top-search" onclick="document.getElementById('fab').click()" aria-label="Abrir asistente AcademIA">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
           <span>Pregúntale algo a AcademIA...</span>
-          <span class="premium-search-key">IA</span>
         </button>
+        <span class="premium-top-brand">ACADEMIA <strong>IA</strong></span>
       </div>
+      <header class="premium-hero">
+        <div class="premium-hero-copy">
+          <p class="premium-eyebrow">TU ESPACIO ACADÉMICO</p>
+          <h1 id="t-inicio">Hola{% if nombre %}, <em>{{ nombre.split()[0]|capitalize }}</em>{% endif %} <span aria-hidden="true">👋</span></h1>
+          <p class="sub">Tu asistente académico de la UNEMI, siempre contigo.</p>
+        </div>
+        <div class="premium-hero-art" aria-hidden="true"><span class="premium-hero-unemi">UNEMI</span><span class="premium-hero-arc"></span></div>
+      </header>
       <div class="kpis">
         <div class="kpi" id="k-vence" data-ir="#agenda" role="link" tabindex="0"><span class="et">Vence esta semana</span><span class="gran num" id="k-vence-n">—</span><span class="det" id="k-vence-d">Cargando…</span></div>
         <div class="kpi" id="k-clase" data-ir="#agenda" role="link" tabindex="0"><span class="et">Próxima clase</span><span class="gran mid" id="k-clase-n">—</span><span class="det" id="k-clase-d">Cargando…</span></div>
