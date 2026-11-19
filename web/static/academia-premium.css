@@ -612,3 +612,42 @@
 #v-novedades .nov-sin-cambios p { margin:0; color:var(--muted); }
 @media(max-width:1100px) { #v-novedades .novedades-grid { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:700px) { #v-novedades .novedades-metricas { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } #v-novedades .novedades-metrica { padding:15px; } #v-novedades .novedades-hero { padding:22px 16px; min-height:160px; } #v-novedades .novedades-grid .card { padding:15px; } #v-novedades .novedades-filtros { flex-wrap:nowrap; overflow-x:auto; padding-bottom:5px; } #v-novedades .nov-filtro { flex:none; } #v-novedades .nov { grid-template-columns:1fr; gap:5px; } }
+
+/* Plan de estudio premium. Scoped to existing functional markup. */
+#v-plan { min-width:0; }
+#v-plan .plan-hero { position:relative; isolation:isolate; overflow:hidden; display:flex; align-items:center; min-height:200px; margin-bottom:18px; padding:clamp(22px,3vw,40px); border-radius:20px; background:#002e45; color:#fff; }
+#v-plan .plan-hero::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.95) 30%,rgba(0,40,67,.4) 70%,rgba(0,40,67,.1)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-repeat:no-repeat; background-size:100% 100%,auto 100%; background-position:center,right center; }
+#v-plan .plan-hero-content { max-width:690px; }
+#v-plan .plan-hero h1 { margin:0 0 12px; color:#fff; font-size:clamp(1.8rem,3vw,2.7rem); }
+#v-plan .plan-hero h1 span { color:#ff7900; }
+#v-plan .plan-hero .sub { color:#e9f3fb; font-size:1rem; margin:0; }
+#v-plan .pestanas { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:7px; margin:0 0 20px; background:var(--surface); border:1px solid var(--line); border-radius:17px; }
+#v-plan .pestanas [role="tab"] { border:1px solid transparent; border-radius:12px; padding:13px 16px; font-weight:750; color:var(--ink); background:transparent; cursor:pointer; }
+#v-plan .pestanas [role="tab"][aria-selected="true"] { border-color:#ff7900; background:#fff0e5; color:#002e45; box-shadow:0 3px 10px rgba(255,121,0,.1); }
+#v-plan .plan-chat-intro,#v-plan .plan-hor-intro { border-radius:17px 17px 0 0; padding:20px 24px; background:linear-gradient(110deg,#002b45,#064a72); color:#fff; }
+#v-plan .plan-chat-intro h2,#v-plan .plan-hor-intro h2 { color:#fff; margin:0 0 7px; font-size:1.2rem; }
+#v-plan .plan-chat-intro p,#v-plan .plan-hor-intro p { margin:0; font-size:.87rem; color:#dcecf7; }
+#v-plan #pan-conv { width:min(100%,980px); margin:0 auto; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:0 10px 26px rgba(0,35,60,.08); overflow:hidden; }
+#v-plan #plan-chat-slot { min-width:0; }
+#v-plan #pan-hor { min-width:0; }
+#v-plan .plan-hor-intro { margin-bottom:17px; }
+#v-plan .hor-cab { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+#v-plan .leyenda { display:flex; flex-wrap:wrap; gap:12px; padding:13px 16px; border-radius:12px; background:var(--surface); border:1px solid var(--line); margin-bottom:14px; }
+#v-plan .hor-botones { display:flex; flex-wrap:wrap; gap:9px; margin-bottom:12px; }
+#v-plan .cuadricula-wrap { max-width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:15px; background:var(--surface); }
+#v-plan .cuadricula { min-width:720px; }
+#v-plan #hor-otros-det,#v-plan #libres-det,#v-plan .pop-ajustes { margin-top:15px; border:1px solid var(--line); border-radius:15px; background:var(--surface); overflow:hidden; }
+#v-plan #hor-otros-det > summary,#v-plan #libres-det > summary,#v-plan .pop-ajustes > summary { cursor:pointer; padding:16px 18px; font-weight:750; background:var(--surface); }
+#v-plan .pop-ajustes[open] > summary { border-bottom:1px solid var(--line); }
+#v-plan .pop-ajustes > .card { border:0; box-shadow:none; margin:0; border-radius:0; padding:22px; }
+#v-plan #f-plan { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+#v-plan #f-plan .grupo { min-width:0; border:1px solid var(--line); border-radius:14px; padding:17px; margin:0; }
+#v-plan #f-plan .grupo legend { font-weight:750; padding:0 7px; }
+#v-plan #f-plan .grupo input,#v-plan #f-plan .grupo select { max-width:100%; box-sizing:border-box; }
+#v-plan #f-plan > .botones,#v-plan #f-plan > #p-msg { grid-column:1/-1; }
+#v-plan #p-disp { grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+#v-plan #p-dif { min-width:0; }
+#v-plan #plan-telegram { overflow-wrap:anywhere; }
+#v-plan #pan-hor > .card { border-radius:15px; margin-top:15px; }
+@media(max-width:950px) { #v-plan #f-plan { grid-template-columns:1fr; } #v-plan #p-disp { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media(max-width:600px) { #v-plan .plan-hero { min-height:160px; padding:22px 16px; } #v-plan .plan-hero .sub { font-size:.85rem; } #v-plan .pestanas { gap:5px; padding:5px; } #v-plan .pestanas [role="tab"] { padding:11px 7px; font-size:.85rem; } #v-plan .plan-chat-intro,#v-plan .plan-hor-intro { padding:16px; } #v-plan .pop-ajustes > .card { padding:13px; } #v-plan #f-plan .grupo { padding:12px; } #v-plan #p-disp { grid-template-columns:repeat(2,minmax(0,1fr)); } #v-plan .leyenda { gap:9px; padding:10px; font-size:.78rem; } }
