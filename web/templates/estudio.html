@@ -445,7 +445,7 @@ body { padding-left:220px; }
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
   try{ if(localStorage.getItem('lateral')==='plegada') document.documentElement.setAttribute('data-lateral','plegada'); }catch(e){}
 </script>
-<link rel="stylesheet" href="{{ url_for('static', filename='academia-shell.css', v='2') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='academia-shell.css', v='4') }}">
 </head>
 <body class="estudio-page">
 {% set panel = false %}
