@@ -316,12 +316,59 @@
   .tutor header{display:flex; align-items:center; gap:12px; background:var(--brand); color:#fff; border-bottom:3px solid var(--orange)}
   .tutor header h2{color:#fff} .tutor header p{color:var(--side-muted)}
   .tutor header .tigre{width:40px; height:40px}
+
+/* Premium study workspace: isolated to this standalone template. */
+body { padding-left:210px; }
+.estudio-sidebar { position:fixed; z-index:40; top:0; left:0; bottom:0; width:210px; box-sizing:border-box; display:flex; flex-direction:column; background:linear-gradient(180deg,#001d32,#00324a); color:#fff; padding:18px 13px; }
+.estudio-sidebrand { display:flex; align-items:center; gap:9px; text-decoration:none; color:#fff; padding:0 4px 26px; }
+.estudio-sidebrand span { display:flex; flex-direction:column; min-width:0; }
+.estudio-sidebrand strong { font-size:1rem; }
+.estudio-sidebrand small { font-size:.62rem; line-height:1.35; color:#c2d8e7; }
+.estudio-sidelinks { display:grid; gap:6px; }
+.estudio-sidelinks a { color:#e2edf5; text-decoration:none; font-size:.86rem; font-weight:600; border-radius:10px; padding:12px 14px; }
+.estudio-sidelinks a:hover { background:rgba(255,255,255,.1); }
+.estudio-sidelinks a.actual { background:#244b62; border-left:3px solid #ff6900; color:#fff; }
+.estudio-sidefoot { margin:auto 4px 0; color:#b6cbd9; font-size:.66rem; line-height:1.6; }
+.bar { background:#002e45; color:white; border-bottom:2px solid #ff6900; padding:9px clamp(18px,2vw,34px); }
+.bar .brand { color:white; } .bar .quien { color:#d1e1eb; }
+.bar .enlace { color:#fff; }
+.wrap { max-width:none; padding:0 clamp(16px,2vw,34px) 45px; }
+.cab-pag { position:relative; isolation:isolate; overflow:hidden; box-sizing:border-box; min-height:190px; display:flex; flex-direction:column; justify-content:center; padding:30px clamp(20px,3vw,42px); margin:18px 0; border-radius:18px; background:#002e45; color:#fff; }
+.cab-pag::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.97) 33%,rgba(0,42,69,.42) 73%,rgba(0,42,69,.08)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-repeat:no-repeat; background-size:100% 100%,auto 100%; background-position:center,right center; }
+.cab-pag h1 { color:#fff; margin:0 0 10px; font-size:clamp(1.8rem,2.6vw,2.6rem); }
+.cab-pag h1 span { color:#ff7900; }
+.cab-pag p { color:#e0edf5; max-width:650px; margin:0; }
+.rej-e { grid-template-columns:minmax(230px,.95fr) minmax(0,1.8fr) minmax(260px,1.08fr); gap:16px; align-items:start; }
+.rej-e .col { min-width:0; }
+.rej-e .card { border-radius:17px; padding:20px; box-shadow:0 8px 24px rgba(0,36,60,.055); }
+.rej-e .card h2 { font-size:1.13rem; margin:0 0 9px; }
+.estudio-card-sub { font-size:.78rem; line-height:1.5; color:var(--muted); margin:0 0 16px; }
+.c-elige .mat-op span { padding:15px 13px; border-radius:12px; }
+.c-elige .mat-op input:checked + span { border-color:#ff6900; background:var(--orange-bg); box-shadow:inset 3px 0 0 #ff6900; }
+.c-elige .btn-p.full { min-height:45px; background:#ff6900; color:#fff; border-radius:11px; font-weight:700; }
+.c-elige .reglas { line-height:1.7; }
+.c-practica #zona { min-height:470px; }
+.c-practica .estudio-practica-titulo { padding-left:12px; border-left:4px solid #ff6900; }
+.c-practica .vacio-e { padding:70px 20px; text-align:center; }
+.c-ayuda { display:flex; flex-direction:column; gap:16px; }
+.c-ayuda .tutor { order:0; padding:0; height:480px; }
+.c-ayuda > .card:not(.tutor) { order:1; }
+.c-ayuda .tutor header { background:#002e45; color:white; padding:15px; }
+.c-ayuda .tutor header h2 { color:white; }
+.c-ayuda .tutor header p { color:#d8e7f0; }
+.c-ayuda .tutor .log { min-height:0; }
+.c-ayuda #btn-vid { width:100%; }
+@media(max-width:1250px) { .rej-e { grid-template-columns:minmax(210px,.9fr) minmax(0,1.5fr); grid-template-areas:"elige practica" "ayuda practica"; } .c-ayuda .tutor { height:380px; } }
+@media(max-width:850px) { body { padding-left:0; } .estudio-sidebar { position:static; width:100%; padding:10px 15px; } .estudio-sidebrand { padding:0; } .estudio-sidelinks { display:flex; overflow-x:auto; gap:5px; margin-top:9px; } .estudio-sidelinks a { white-space:nowrap; padding:9px 12px; } .estudio-sidefoot { display:none; } .rej-e { grid-template-columns:minmax(0,1fr); grid-template-areas:"elige" "practica" "ayuda"; } .c-ayuda .tutor { height:400px; } .c-practica #zona { min-height:280px; } }
+@media(max-width:550px) { .bar .quien { display:none; } .cab-pag { min-height:155px; padding:22px 17px; } .cab-pag p { font-size:.82rem; } .rej-e .card { padding:15px; } .c-ayuda .tutor { padding:0; } }
+
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
 </script>
 </head>
 <body>
+<nav class="estudio-sidebar" aria-label="Navegación AcademIA"><a class="estudio-sidebrand" href="/"><img src="/static/tigre-azul-chat.png" alt="" width="38" height="38"><span><strong>AcademIA</strong><small>Asistente académico UNEMI</small></span></a><div class="estudio-sidelinks"><a href="/#inicio">Inicio</a><a href="/#materias">Materias</a><a href="/#agenda">Agenda</a><a href="/#novedades">Novedades</a><a href="/#plan">Plan</a><a class="actual" href="/estudio" aria-current="page">Estudio</a><a href="/#datos">Mis datos</a></div><p class="estudio-sidefoot">Proyecto académico de titulación.<br>No es un sitio oficial de la UNEMI.</p></nav>
 <div class="bar">
   <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="40" height="40"><p class="brand">AcademIA</p></div>
   <div style="display:flex; align-items:center">
@@ -333,14 +380,14 @@
 
 <div class="wrap">
   <div class="cab-pag">
-    <h1>Espacio de estudio</h1>
+    <h1>Espacio de <span>estudio</span></h1>
     <p>Practica por materia, aclara dudas y refuerza con videos. Aquí se estudia: no se resuelven tests, tareas ni exámenes.</p>
   </div>
 
   <div class="rej-e">
     <aside class="col c-elige">
       <section class="card" aria-labelledby="h-elige">
-        <h2 id="h-elige">¿Qué quieres estudiar?</h2>
+        <h2 id="h-elige">Mis materias</h2><p class="estudio-card-sub">Selecciona la materia y configura tu práctica.</p>
         <fieldset class="lista-mat" id="materias" style="border:0;padding:0;margin:0 0 14px"><legend class="campo">Materia</legend><p class="vacio">Cargando…</p></fieldset>
         <label class="campo" for="tema-in">Tema (opcional)</label>
         <input class="entrada" id="tema-in" maxlength="120" placeholder="Ej.: derivadas, normalización…" autocomplete="off">
@@ -364,14 +411,14 @@
     </aside>
 
     <main class="col c-practica">
-      <section class="card" id="zona" aria-live="polite">
+      <section class="card" id="zona" aria-live="polite"><h2 class="estudio-practica-titulo">Práctica de estudio</h2><p class="estudio-card-sub">Responde preguntas nuevas y revisa las explicaciones.</p>
         <div class="vacio-e"><b>Elige una materia y empieza</b>Te haré preguntas de práctica y, al responder, te explico cada una.</div>
       </section>
     </main>
 
     <aside class="col c-ayuda">
       <section class="card" aria-labelledby="h-vid">
-        <h2 id="h-vid">Videos para reforzar</h2>
+        <h2 id="h-vid">Videos para reforzar</h2><p class="estudio-card-sub">Busca recursos educativos en YouTube.</p>
         <button class="btn-o" type="button" id="btn-vid" disabled>Buscar videos de este tema</button>
         <div id="videos" style="margin-top:12px"></div>
         <p class="nota-v">Son búsquedas en YouTube: tú eliges el video que más te sirva.</p>
