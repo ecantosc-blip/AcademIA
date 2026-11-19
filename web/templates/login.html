@@ -160,11 +160,11 @@
   .oficial{color:var(--side-muted); font-size:.78rem; margin:0; max-width:46ch}
   @media (max-width:900px){ .side .mascota{display:none} }
   /* Identidad de carga: tigre azul, separado del tigre naranja del dashboard. */
-  .overlay > div { background:var(--surface); border:1px solid var(--line); padding:30px 36px; border-radius:20px; box-shadow:0 20px 60px rgba(0,46,69,.14); max-width:390px; }
-  .premium-loading-mark { width:140px; height:140px; margin:0 auto; position:relative; display:grid; place-items:center; }
+  .overlay > div { background:transparent; border:0; padding:0; border-radius:0; box-shadow:none; max-width:390px; }
+  .premium-loading-mark { width:140px; height:140px; margin:0 auto; position:relative; display:grid; place-items:center; background:transparent; }
   .premium-loading-ring { position:absolute; inset:4px; border-radius:50%; border:8px solid var(--line); border-top-color:#3E80A2; animation:giro 1.2s linear infinite; }
   .premium-loading-mark img { width:90px; height:90px; object-fit:contain; }
-  .overlay h3 { font-size:1rem; margin-top:12px; }
+  .overlay h3 { font-size:1rem; margin-top:12px; color:var(--ink); }
   @media(prefers-reduced-motion:reduce){.premium-loading-ring{animation:none}}
 </style>
 <script>
