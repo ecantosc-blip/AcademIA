@@ -888,3 +888,27 @@
  #v-inicio .premium-hero,#v-materias .materias-hero,#v-agenda .agenda-hero,
  #v-novedades .novedades-hero,#v-plan .plan-hero,#v-datos .datos-hero { min-height:155px; padding:22px; }
 }
+
+/* Full-bleed institutional hero artwork, one shared rule instead of section overrides. */
+#v-materias .materias-hero::before,
+#v-agenda .agenda-hero::before,
+#v-novedades .novedades-hero::before,
+#v-plan .plan-hero::before,
+#v-datos .datos-hero::before {
+ background-image:
+  linear-gradient(90deg,rgba(0,25,43,.98) 0%,rgba(0,32,54,.94) 27%,rgba(0,43,69,.72) 52%,rgba(0,42,69,.22) 80%,rgba(0,37,60,.07) 100%),
+  url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+ background-size:100% 100%,cover;
+ background-position:center,center 44%;
+ background-repeat:no-repeat;
+}
+@media(max-width:700px){
+ #v-materias .materias-hero::before,
+ #v-agenda .agenda-hero::before,
+ #v-novedades .novedades-hero::before,
+ #v-plan .plan-hero::before,
+ #v-datos .datos-hero::before {
+  background-position:center,65% center;
+  background-image:linear-gradient(90deg,rgba(0,25,43,.98),rgba(0,35,59,.84) 72%,rgba(0,37,60,.55)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+ }
+}
