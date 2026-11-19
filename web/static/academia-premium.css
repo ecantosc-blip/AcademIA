@@ -1,0 +1,39 @@
+/* AcademIA Premium — primera iteración visual, sin alterar lógica ni datos. */
+@media (min-width: 1101px) {
+  .principal { max-width: 1480px; padding-inline: clamp(24px,3vw,48px); }
+  .pie-top,.pie-bottom { max-width: 1384px; }
+  #v-inicio { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr); gap:18px 22px; align-items:start; }
+  #v-inicio[hidden] { display:none; }
+  #v-inicio > h1,#v-inicio > .sub,#v-inicio > .kpis,#v-inicio > .h-modulos,#v-inicio > .modulos { grid-column:1 / -1; }
+  #v-inicio > .kpis { margin-bottom:4px; }
+  #v-inicio > .h-modulos { margin:4px 0 -8px; }
+  #v-inicio > .modulos { margin-bottom:4px; }
+  #v-inicio > section[aria-labelledby="h-semana"] { grid-column:1; }
+  #v-inicio > section[aria-labelledby="h-reco"] { grid-column:2; }
+  #v-inicio > section[aria-labelledby="h-resumen-ia"] { grid-column:2; }
+  #v-inicio > section[aria-labelledby="h-alertas"] { grid-column:1; }
+  #v-inicio > section[aria-labelledby="h-seg"] { grid-column:2; }
+  #v-inicio > section[aria-labelledby="h-prox"] { grid-column:1; }
+}
+@media (min-width:861px) and (max-width:1100px) {
+  .principal { max-width:100%; padding-inline:28px; }
+}
+.vista > h1 { font-size:clamp(1.65rem,2vw,2.05rem); letter-spacing:-.035em; }
+.vista > .sub { margin-bottom:24px; }
+.kpi,.modulo { border-radius:13px; }
+.kpi { padding:20px 22px; min-height:130px; }
+.kpi .et { letter-spacing:.025em; }
+.modulo { padding:15px 10px; gap:7px; border-top-width:2px; }
+.modulo svg { width:23px; height:23px; }
+.kpi:hover,.kpi:focus-visible { transform:translateY(-2px); box-shadow:0 8px 20px -14px rgba(0,46,69,.35); }
+.modulo:hover,.modulo:focus-visible { transform:translateY(-2px); box-shadow:0 8px 20px -14px rgba(0,46,69,.3); }
+.kpi::after,.modulo::after { display:none; }
+#v-inicio > .card { min-width:0; margin:0; }
+#v-inicio .semana-tira { min-width:0; }
+@media (max-width:860px) {
+  #v-inicio { display:block; }
+  #v-inicio[hidden] { display:none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .kpi,.modulo { transition:none; }
+}
