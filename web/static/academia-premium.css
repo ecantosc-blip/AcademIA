@@ -912,3 +912,62 @@
   background-image:linear-gradient(90deg,rgba(0,25,43,.98),rgba(0,35,59,.84) 72%,rgba(0,37,60,.55)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
  }
 }
+
+/* Dark palette: restrained institutional navy + muted copper, never neon. */
+:root[data-theme="dark"] {
+ color-scheme:dark;
+ --canvas:#101922; --surface:#192632; --ink:#e5ebef; --muted:#abbac5; --line:#354653;
+ --brand:#172c3a; --accent:#7397ab; --accent-ink:#101922; --accent-bg:#253b4a;
+ --orange:#bd8358; --orange-bg:#392d28; --orange-ink:#e1b08c;
+ --ok:#91b29c; --ok-bg:#22392f; --warn:#c5a17b; --warn-bg:#3a3027;
+ --bad:#c48e8b; --bad-bg:#402b2c; --side:#101f2b; --side-line:#354653;
+ --side-hover:#253847; --side-muted:#b3c1ca; --side-ink:#e9eef1;
+ --premium-shadow:0 8px 24px rgba(0,0,0,.16);
+}
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .principal { background:var(--canvas); color:var(--ink); }
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .kpi,
+:root[data-theme="dark"] .modulo,
+:root[data-theme="dark"] .materias-history,
+:root[data-theme="dark"] #v-plan .cuadricula-wrap,
+:root[data-theme="dark"] #v-plan .leyenda,
+:root[data-theme="dark"] #v-plan .pestanas,
+:root[data-theme="dark"] #v-plan #pan-conv { background:var(--surface); border-color:var(--line); color:var(--ink); }
+:root[data-theme="dark"] #v-plan .pestanas [role="tab"][aria-selected="true"],
+:root[data-theme="dark"] #v-agenda .agenda-tab.active,
+:root[data-theme="dark"] #v-novedades .nov-filtro.active,
+:root[data-theme="dark"] #v-materias .materias-tab.active {
+ background:var(--orange-bg); border-color:var(--orange); color:var(--ink); box-shadow:none;
+}
+:root[data-theme="dark"] #v-plan .b-rutina { background:#263b4b; color:#dce7ee; border-color:#587587; }
+:root[data-theme="dark"] #v-plan .b-estudio { background:#40332c; color:#f1dfd2; border-color:#a77756; border-left-color:#bd8358; }
+:root[data-theme="dark"] #v-plan .b-refuerzo { background:#252c33; color:#e5ebef; border-color:#a77756; }
+:root[data-theme="dark"] #v-plan .b-clase { background:#203849; color:#e8f0f4; border-color:#486274; }
+:root[data-theme="dark"] #v-plan .b-libre { background:#1d332e; border-color:#476d5b; }
+:root[data-theme="dark"] #v-materias #semestres .pista { background:#30414d; }
+:root[data-theme="dark"] #v-materias #semestres .pista i { background:#a77c5f; }
+:root[data-theme="dark"] #v-novedades .nov-sin-icono { background:#233a32; color:#a6c1ad; }
+:root[data-theme="dark"] #v-novedades .nov-notas { border-left-color:#9886ad; }
+:root[data-theme="dark"] #v-novedades .nov-eventos { border-left-color:#bd8358; }
+:root[data-theme="dark"] #v-novedades .nov-otros { border-left-color:#83a998; }
+:root[data-theme="dark"] #chat .msg.ia .chat-tabla th,
+:root[data-theme="dark"] #chat .msg.ia .burbuja code { background:#253541; color:var(--ink); }
+:root[data-theme="dark"] #chat .msg.ia .chat-tabla tbody tr:nth-child(even) { background:#20313e; }
+:root[data-theme="dark"] .lateral .menu a[aria-current="page"] { box-shadow:inset 3px 0 var(--orange); }
+:root[data-theme="dark"] .lateral .menu a[aria-current="page"] svg { stroke:var(--orange); }
+:root[data-theme="dark"] #v-inicio .premium-tip { background:var(--orange-bg); }
+:root[data-theme="dark"] #v-inicio .premium-hero { background:linear-gradient(115deg,#1b303e,#263b47); }
+:root[data-theme="dark"] #v-materias .materias-hero::before,
+:root[data-theme="dark"] #v-agenda .agenda-hero::before,
+:root[data-theme="dark"] #v-novedades .novedades-hero::before,
+:root[data-theme="dark"] #v-plan .plan-hero::before,
+:root[data-theme="dark"] #v-datos .datos-hero::before {
+ background-image:linear-gradient(90deg,rgba(10,23,33,.98),rgba(14,30,41,.94) 35%,rgba(18,36,47,.76) 65%,rgba(18,36,47,.40)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+}
+:root[data-theme="dark"] button:focus-visible,
+:root[data-theme="dark"] a:focus-visible { outline-color:var(--orange); }
+
+@media(prefers-color-scheme:dark) {
+ :root:not([data-theme="light"]):not([data-theme="dark"]) { color-scheme:dark; }
+}
