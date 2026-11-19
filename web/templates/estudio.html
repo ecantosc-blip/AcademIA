@@ -454,6 +454,13 @@ body { padding-left:220px; }
 }
 .cab-pag::before { border-radius:0; }
 
+/* El menú lateral aquí venía de academia-shell.css (color plano var(--side)),
+   mientras que en el panel principal academia-premium.css -que esta página
+   no carga- le pone además un degradado. Se iguala a mano para que el menú
+   se vea igual en las dos páginas, en modo claro y oscuro. */
+.lateral { background:linear-gradient(165deg,#001b31 0%,#002e45 53%,#00172b 100%)!important; }
+:root[data-theme="dark"] .lateral { background:#0b0b0b!important; }
+
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}

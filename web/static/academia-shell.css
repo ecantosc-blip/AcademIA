@@ -10,6 +10,14 @@ body.estudio-page { padding-left:220px; }
 body.estudio-page .lateral { position:fixed; top:0; bottom:0; left:0; z-index:40; width:220px; height:100vh; overflow-y:auto; }
 body.estudio-page .lateral .marca { flex-shrink:0; }
 body.estudio-page .lateral .lateral-pie { margin-top:auto; }
+/* El menú del panel principal mide clamp(210px,15vw,250px) desde los 1101px
+   (ver academia-premium.css); esta página lo tenía fijo en 220px, así que en
+   pantallas anchas el contenido no arrancaba en la misma posición que en el
+   resto de vistas. Se iguala aquí. */
+@media(min-width:1101px) {
+ body.estudio-page { padding-left:clamp(210px,15vw,250px); }
+ body.estudio-page .lateral { width:clamp(210px,15vw,250px); }
+}
 @media(min-width:861px) {
  :root[data-lateral="plegada"] body.estudio-page { padding-left:76px; }
  :root[data-lateral="plegada"] body.estudio-page .lateral { width:76px; padding:24px 10px; }
@@ -35,7 +43,7 @@ body.estudio-page .lateral .lateral-pie { margin-top:auto; }
 .lateral .menu a svg { width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .lateral .oficial { margin:0; font-size:.64rem; line-height:1.5; color:var(--side-muted); }
 .lateral .lateral-pie { display:flex; align-items:center; gap:8px; margin-top:auto; min-width:0; }
-.lateral .lateral-pie .quien { flex:1; min-width:0; font-size:.7rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--side-ink); }
+.lateral .lateral-pie .quien { flex:1; min-width:0; font-size:.7rem; line-height:1.25; white-space:normal; overflow-wrap:break-word; color:var(--side-ink); }
 .lateral .lateral-pie .avatar { width:29px; height:29px; border-radius:50%; background:#353535; color:white; flex:none; display:grid; place-items:center; overflow:hidden; }
 .lateral .lateral-pie .avatar img { width:100%; height:100%; object-fit:cover; }
 .lateral .lateral-pie .icono { flex:none; width:31px; height:31px; background:transparent; color:var(--side-ink); border:1px solid var(--side-line); border-radius:9px; display:grid; place-items:center; cursor:pointer; }
