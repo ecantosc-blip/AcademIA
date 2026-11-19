@@ -20,3 +20,29 @@ body.estudio-page .lateral .lateral-pie { margin-top:auto; }
  :root[data-lateral="plegada"] body.estudio-page .lateral .menu a { justify-content:center; }
 }
 @media(max-width:860px) { body.estudio-page { padding-left:0; } body.estudio-page .lateral { position:relative; width:100%; height:auto; max-height:none; } }
+
+/* Shared sidebar component structure (used on both templates). */
+.lateral { display:flex; flex-direction:column; gap:20px; padding:22px 14px; border-right:1px solid var(--side-line); }
+.lateral .marca { display:flex; align-items:center; gap:8px; min-width:0; }
+.lateral .marca .tigre { width:40px; height:40px; object-fit:contain; flex:none; }
+.lateral .marca-txt { min-width:0; }
+.lateral .marca-txt .brand { font-size:1.1rem; color:var(--side-ink); font-weight:700; margin:0; padding:0; }
+.lateral .marca-txt small { display:block; font-size:.63rem; line-height:1.35; color:var(--side-muted); }
+.lateral .plegar { position:absolute; top:20px; right:12px; width:28px; height:28px; border:1px solid var(--side-line); border-radius:8px; color:var(--side-ink); background:transparent; display:grid; place-items:center; cursor:pointer; }
+.lateral .plegar svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; }
+.lateral .menu { display:grid; gap:4px; }
+.lateral .menu a { display:flex; align-items:center; gap:10px; padding:10px 9px; min-height:39px; border-radius:10px; font-size:.82rem; font-weight:600; text-decoration:none; }
+.lateral .menu a svg { width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.lateral .oficial { margin:0; font-size:.64rem; line-height:1.5; color:var(--side-muted); }
+.lateral .lateral-pie { display:flex; align-items:center; gap:8px; margin-top:auto; min-width:0; }
+.lateral .lateral-pie .quien { flex:1; min-width:0; font-size:.7rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--side-ink); }
+.lateral .lateral-pie .avatar { width:29px; height:29px; border-radius:50%; background:#353535; color:white; flex:none; display:grid; place-items:center; overflow:hidden; }
+.lateral .lateral-pie .avatar img { width:100%; height:100%; object-fit:cover; }
+.lateral .lateral-pie .icono { flex:none; width:31px; height:31px; background:transparent; color:var(--side-ink); border:1px solid var(--side-line); border-radius:9px; display:grid; place-items:center; cursor:pointer; }
+.lateral .lateral-pie .icono svg { width:17px; height:17px; }
+body.estudio-page .lateral { position:fixed; }
+@media(min-width:861px) {
+ :root[data-lateral="plegada"] body.estudio-page .lateral .plegar { top:66px; right:23px; }
+ :root[data-lateral="plegada"] body.estudio-page .lateral .lateral-pie .avatar { display:none; }
+ :root[data-lateral="plegada"] body.estudio-page .lateral .lateral-pie { justify-content:center; }
+}
