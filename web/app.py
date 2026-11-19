@@ -95,6 +95,37 @@ def _es_api() -> bool:
     return request.path == "/sync" or request.path.startswith("/api/")
 
 
+def _origen_seguro():
+    """Rechaza POST iniciados desde otros sitios sin cambiar los formularios existentes.
+
+    Los navegadores modernos envian Origin y/o Sec-Fetch-Site. Si ambos faltan,
+    Referer permite comprobar el origen cuando esta disponible. No se confia en
+    X-Forwarded-* salvo cuando ProxyFix esta expresamente habilitado.
+    """
+    if request.method not in ("POST", "PUT", "PATCH", "DELETE"):
+        return True
+    if request.headers.get("Sec-Fetch-Site", "").lower() == "cross-site":
+        return False
+    origen = request.headers.get("Origin")
+    if origen == "null":
+        return False
+    referencia = origen or request.headers.get("Referer")
+    if referencia:
+        partes = urlparse(referencia)
+        return (partes.scheme in ("http", "https")
+                and partes.scheme == request.scheme
+                and partes.netloc.lower() == request.host.lower())
+    return True
+
+
+@app.before_request
+def _proteger_origen():
+    if not _origen_seguro():
+        if _es_api() or request.is_json:
+            return jsonify({"error": "Solicitud rechazada: origen no permitido"}), 403
+        return Response("Solicitud rechazada: origen no permitido", status=403)
+
+
 @app.before_request
 def _limite_general():
     ok, espera = limites.revisar("general", _ip())
@@ -117,7 +148,7 @@ def _cabeceras_seguridad(resp):
         "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'")
     if request.path.startswith("/api/") or request.path in ("/", "/estudio", "/sync", "/login"):
         resp.headers["Cache-Control"] = "no-store"     # datos personales: nunca en cache
-    if COOKIE_SECURE:
+    if request.is_secure:
         resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
     return resp
 
@@ -397,7 +428,7 @@ def login_submit():
         COOKIE_NAME, sid,
         httponly=True, samesite="Lax",
         max_age=sessions_store.TTL_SEGUNDOS,   # la cookie vence junto con la sesion
-        secure=COOKIE_SECURE,
+        secure=(COOKIE_SECURE or request.is_secure),
     )
     return resp
 
