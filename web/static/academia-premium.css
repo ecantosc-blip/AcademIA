@@ -1137,3 +1137,39 @@
 #v-datos .datos-hero::before {
   border-radius: 0;
 }
+
+/* Consistent full-bleed home hero: image and gradient share one surface. */
+#v-inicio .premium-hero {
+ position:relative; isolation:isolate; background:#0b0b0b;
+ color:#fff; overflow:hidden;
+}
+#v-inicio .premium-hero-art {
+ inset:0; border-radius:0; opacity:1;
+ background-image:linear-gradient(90deg,rgba(0,0,0,.97) 0%,rgba(0,0,0,.88) 27%,rgba(0,0,0,.55) 52%,rgba(0,0,0,.12) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+ background-position:center,center 48%; background-size:100% 100%,cover; background-repeat:no-repeat;
+}
+#v-inicio .premium-hero-copy { position:relative; z-index:1; max-width:min(680px,75%); }
+#v-inicio .premium-hero h1 { color:#fff; }
+#v-inicio .premium-hero .sub { color:#e4e7e9; }
+#v-inicio .premium-hero .premium-eyebrow { color:#e0ac88; }
+:root[data-theme="dark"] #v-inicio .premium-hero { background:#090909; }
+:root[data-theme="dark"] #v-inicio .premium-hero-art {
+ background-image:linear-gradient(90deg,rgba(0,0,0,.98),rgba(0,0,0,.91) 30%,rgba(0,0,0,.68) 65%,rgba(0,0,0,.35)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png');
+}
+/* Keep the weekly timetable at a readable width on large monitors. */
+#v-plan .cuadricula-wrap { width:100%; max-width:1320px; margin-left:auto; margin-right:auto; box-sizing:border-box; }
+#v-plan .cuadricula { grid-template-columns:48px repeat(7,minmax(108px,1fr)); }
+#v-plan .bq { box-sizing:border-box; min-width:0; }
+#v-plan .bq.corto { padding:0 5px; line-height:1; min-height:16px; justify-content:center; }
+#v-plan .bq.corto b { font-size:.66rem; line-height:1.1; }
+#v-plan .bq small { font-size:.65rem; line-height:1.15; }
+#v-plan .bq b { overflow:hidden; text-overflow:ellipsis; }
+@media(max-width:900px) {
+ #v-plan .cuadricula-wrap { max-width:100%; }
+ #v-plan .cuadricula { min-width:820px; }
+ #v-inicio .premium-hero-copy { max-width:85%; }
+}
+@media(max-width:600px) {
+ #v-inicio .premium-hero-copy { max-width:100%; }
+ #v-inicio .premium-hero-art { background-position:center,65% center; }
+}
