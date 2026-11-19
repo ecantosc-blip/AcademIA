@@ -511,10 +511,13 @@ body { padding-left:220px; }
 </style>
 <script>
   try{ const t = localStorage.getItem('tema'); if(t) document.documentElement.setAttribute('data-theme', t); }catch(e){}
+  try{ if(localStorage.getItem('lateral')==='plegada') document.documentElement.setAttribute('data-lateral','plegada'); }catch(e){}
 </script>
+<link rel="stylesheet" href="{{ url_for('static', filename='academia-shell.css', v='2') }}">
 </head>
-<body>
-<nav class="estudio-sidebar" aria-label="Navegación AcademIA"><button class="estudio-side-toggle" type="button" id="estudio-plegar" aria-label="Contraer barra lateral" aria-expanded="true">‹</button><a class="estudio-sidebrand" href="/"><img src="/static/tigre-azul-chat.png" alt="" width="38" height="38"><span><strong>AcademIA</strong><small>Asistente académico UNEMI</small></span></a><div class="estudio-sidelinks"><a href="/#inicio"><span class="side-icon" aria-hidden="true">⌂</span><span class="side-label">Inicio</span></a><a href="/#materias"><span class="side-icon" aria-hidden="true">▤</span><span class="side-label">Materias</span></a><a href="/#agenda"><span class="side-icon" aria-hidden="true">▦</span><span class="side-label">Agenda</span></a><a href="/#novedades"><span class="side-icon" aria-hidden="true">♧</span><span class="side-label">Novedades</span></a><a href="/#plan"><span class="side-icon" aria-hidden="true">☷</span><span class="side-label">Plan</span></a><a class="actual" href="/estudio" aria-current="page"><span class="side-icon" aria-hidden="true">◇</span><span class="side-label">Estudio</span></a><a href="/#datos"><span class="side-icon" aria-hidden="true">◉</span><span class="side-label">Mis datos</span></a></div><p class="estudio-sidefoot">Proyecto académico de titulación.<br>No es un sitio oficial de la UNEMI.</p></nav>
+<body class="estudio-page">
+{% set panel = false %}
+{% include '_academia_sidebar.html' %}
 <div class="bar">
   <div class="marca"><img class="tigre" src="/static/tigre-azul-chat.png" alt="" width="40" height="40"><p class="brand">AcademIA</p></div>
   <div style="display:flex; align-items:center">
@@ -791,13 +794,7 @@ body { padding-left:220px; }
 
   cargarMaterias();
 </script>
-<script>
-(function(){
- const root=document.documentElement, button=document.getElementById('estudio-plegar');
- try { if(localStorage.getItem('lateral')==='plegada') root.setAttribute('data-lateral','plegada'); } catch(e){}
- function update(){ const folded=root.getAttribute('data-lateral')==='plegada'; button.setAttribute('aria-expanded',String(!folded));button.setAttribute('aria-label',folded?'Expandir barra lateral':'Contraer barra lateral');button.textContent=folded?'›':'‹';}
- button.addEventListener('click',function(){const folded=root.getAttribute('data-lateral')==='plegada';if(folded)root.removeAttribute('data-lateral');else root.setAttribute('data-lateral','plegada');try{localStorage.setItem('lateral',folded?'abierta':'plegada');}catch(e){}update();});update();
-})();
-</script>
+
+<script src="{{ url_for('static', filename='academia-shell.js', v='1') }}" defer></script>
 </body>
 </html>
