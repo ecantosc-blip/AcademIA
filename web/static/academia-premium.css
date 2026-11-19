@@ -65,3 +65,23 @@
   .lateral .menu { overflow-x:auto; justify-content:flex-start; scrollbar-width:thin; }
   .lateral .menu a { flex:0 0 auto; min-width:64px; }
 }
+
+/* Dashboard v2: columnas independientes para evitar huecos verticales. */
+@media (min-width:1101px) {
+  #v-inicio { display:block; }
+  #v-inicio .inicio-contenido { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr); gap:22px; align-items:start; }
+}
+.inicio-contenido { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
+.inicio-col { display:flex; flex-direction:column; gap:16px; min-width:0; }
+.inicio-col > .card { min-width:0; margin:0; }
+.inicio-col > .card[hidden] { display:none !important; }
+#v-inicio .h-modulos { font-size:.78rem; letter-spacing:.075em; text-transform:uppercase; }
+#v-inicio .modulo { border-top:1px solid var(--line); transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease; }
+#v-inicio .modulo:hover { border-color:var(--orange); }
+#v-inicio .card h2 { letter-spacing:-.015em; }
+#v-inicio .card { box-shadow:0 3px 12px rgba(0,46,69,.025); }
+#v-inicio .card:focus-within { border-color:var(--accent); }
+#v-inicio .card .sub { line-height:1.55; }
+@media (max-width:1100px) {
+  .inicio-contenido { grid-template-columns:1fr; }
+}
