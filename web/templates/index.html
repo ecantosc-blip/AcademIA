@@ -716,22 +716,50 @@
 
     <!-- AGENDA -->
     <section class="vista" id="v-agenda" aria-labelledby="t-agenda" hidden>
-      <h1 id="t-agenda">Tu agenda</h1>
-      <p class="sub">Entregas, eventos y clases de la semana.</p>
-      <div class="col">
-        <section class="card" aria-labelledby="h-centro">
-          <h2 id="h-centro">Centro de pendientes</h2>
-          <p class="sub">Tus tareas de Moodle y tus propios compromisos, juntos pero sin mezclar su origen.</p>
-          <div id="centro-pendientes"><p class="vacio">Cargando…</p></div>
-        </section>
-        <section class="card" aria-labelledby="h-fec">
-          <h2 id="h-fec">Lo que viene</h2>
-          <div id="fechas"><p class="vacio">Cargando…</p></div>
-        </section>
-        <section class="card" aria-labelledby="h-hor">
-          <h2 id="h-hor">Tu semana</h2>
-          <div id="horario"><p class="vacio">Cargando…</p></div>
-        </section>
+      <header class="agenda-hero">
+        <div class="agenda-hero-content">
+          <h1 id="t-agenda">Mi <span>Agenda</span></h1>
+          <p class="sub">Entregas, eventos y clases según los datos sincronizados de tus plataformas académicas.</p>
+        </div>
+      </header>
+      <div class="agenda-tabs" role="tablist" aria-label="Vistas de agenda">
+        <button type="button" class="agenda-tab active" data-agenda-tab="resumen" aria-selected="true">Resumen</button>
+        <button type="button" class="agenda-tab" data-agenda-tab="calendario" aria-selected="false">Calendario</button>
+        <button type="button" class="agenda-tab" data-agenda-tab="lista" aria-selected="false">Lista de actividades</button>
+      </div>
+      <div class="agenda-grid">
+        <div class="agenda-column">
+          <section class="card agenda-resumen" aria-labelledby="agenda-resumen-t">
+            <h2 id="agenda-resumen-t">Próximas actividades</h2>
+            <div class="agenda-metrics" aria-live="polite">
+              <div><b id="agenda-c-tareas">—</b><span>Tareas Moodle</span></div>
+              <div><b id="agenda-c-eventos">—</b><span>Eventos Moodle</span></div>
+              <div><b id="agenda-c-personal">—</b><span>Personales</span></div>
+            </div>
+            <p class="sub">Contadores basados en las actividades disponibles; no indican entregas verificadas.</p>
+          </section>
+          <section class="card agenda-pendientes" aria-labelledby="h-centro">
+            <h2 id="h-centro">Centro de pendientes</h2>
+            <p class="sub">Actividades de Moodle y compromisos personales, identificados por su origen.</p>
+            <div id="centro-pendientes"><p class="vacio">Cargando…</p></div>
+          </section>
+          <section class="card agenda-lista" aria-labelledby="h-fec">
+            <h2 id="h-fec">Lo que viene</h2>
+            <div id="fechas"><p class="vacio">Cargando…</p></div>
+          </section>
+        </div>
+        <div class="agenda-column">
+          <section class="card agenda-calendario" aria-labelledby="agenda-cal-t">
+            <div class="agenda-cal-head"><h2 id="agenda-cal-t">Calendario académico</h2><div class="agenda-cal-nav"><button type="button" id="agenda-prev" aria-label="Mes anterior">‹</button><strong id="agenda-mes"></strong><button type="button" id="agenda-next" aria-label="Mes siguiente">›</button></div></div>
+            <div id="agenda-cal-grid" class="agenda-cal-grid" aria-live="polite"></div>
+            <p class="sub">Fechas provenientes de las actividades sincronizadas; sin eventos de ejemplo.</p>
+          </section>
+          <section class="card agenda-horario" aria-labelledby="h-hor">
+            <h2 id="h-hor">Tu semana</h2>
+            <p class="sub">Clases del horario académico, cuando estén disponibles.</p>
+            <div id="horario"><p class="vacio">Cargando…</p></div>
+          </section>
+        </div>
       </div>
     </section>
 
@@ -1169,7 +1197,49 @@
     return '';
   }
 
+  // Agenda visual: solo lee las fechas existentes en el panel, nunca genera datos academicos.
+  let agendaMes = new Date(new Date().getFullYear(),new Date().getMonth(),1);
+  function pintarCalendarioAgenda(){
+    const panel=$('agenda-cal-grid'), titulo=$('agenda-mes');
+    if(!panel||!titulo) return;
+    const yy=agendaMes.getFullYear(),mm=agendaMes.getMonth();
+    titulo.textContent=agendaMes.toLocaleDateString('es-EC',{month:'long',year:'numeric'});
+    panel.replaceChildren();
+    for(const dia of ['L','M','M','J','V','S','D']) panel.append(el('span',{class:'agenda-weekday',text:dia}));
+    const inicio=(new Date(yy,mm,1).getDay()+6)%7;
+    const dias=new Date(yy,mm+1,0).getDate();
+    const eventos=((ultimoPanel&&ultimoPanel.fechas)||[]).filter(x=>x.fecha&& !isNaN(new Date(x.fecha)));
+    for(let i=0;i<inicio;i++)panel.append(el('span',{class:'agenda-empty','aria-hidden':'true'}));
+    for(let d=1;d<=dias;d++){
+      const hoy=new Date(yy,mm,d), delDia=eventos.filter(x=>{const f=new Date(x.fecha);return f.getFullYear()===yy&&f.getMonth()===mm&&f.getDate()===d;});
+      const cel=el('div',{class:'agenda-day'+(delDia.length?' has-events':'')+(hoy.toDateString()===new Date().toDateString()?' today':'')},
+        el('span',{text:String(d)}));
+      if(delDia.length){cel.append(el('i',{'aria-hidden':'true'}));cel.title=delDia.map(x=>x.nombre).join(' · ');cel.setAttribute('aria-label',d+' de '+titulo.textContent+': '+delDia.length+' actividades');}
+      panel.append(cel);
+    }
+  }
+  function iniciarTabsAgenda(){
+    const vista=$('v-agenda');if(!vista||vista.dataset.agendaInit)return;
+    vista.dataset.agendaInit='1';
+    function activar(nombre){
+      vista.dataset.agendaVista=nombre;
+      vista.querySelectorAll('[data-agenda-tab]').forEach(b=>{const activo=b.dataset.agendaTab===nombre;b.classList.toggle('active',activo);b.setAttribute('aria-selected',String(activo));});
+    }
+    vista.querySelectorAll('[data-agenda-tab]').forEach(b=>b.addEventListener('click',()=>activar(b.dataset.agendaTab)));
+    $('agenda-prev').addEventListener('click',()=>{agendaMes=new Date(agendaMes.getFullYear(),agendaMes.getMonth()-1,1);pintarCalendarioAgenda();});
+    $('agenda-next').addEventListener('click',()=>{agendaMes=new Date(agendaMes.getFullYear(),agendaMes.getMonth()+1,1);pintarCalendarioAgenda();});
+    activar('resumen');
+  }
+  function actualizarMetricasAgenda(){
+    const fechas=(ultimoPanel&&ultimoPanel.fechas)||[];
+    const tareas=fechas.filter(x=>String(x.tipo||'').toLowerCase().includes('tarea')).length;
+    $('agenda-c-tareas').textContent=String(tareas);
+    $('agenda-c-eventos').textContent=String(fechas.length-tareas);
+    $('agenda-c-personal').textContent=String(((ultimaAgenda&&ultimaAgenda.actividades)||[]).length);
+  }
+
   function pintarFechas(d){
+    iniciarTabsAgenda(); pintarCalendarioAgenda(); actualizarMetricasAgenda();
     const cont = $('fechas'); cont.replaceChildren();
     if(!d.fechas.length){ cont.append(el('p', {class:'vacio', text:'Nada pendiente por ahora.'})); return; }
     for(const f of d.fechas){
@@ -1382,6 +1452,7 @@
   }
   function pintarPendientes(){
     if(!ultimoPanel) return;
+    actualizarMetricasAgenda();
     const cont = $('centro-pendientes'); cont.replaceChildren();
     const items = construirPendientes().slice(0, 12);
     if(!items.length){
