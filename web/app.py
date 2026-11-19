@@ -121,6 +121,14 @@ def _origen_seguro():
 @app.before_request
 def _proteger_origen():
     if not _origen_seguro():
+        # Se registra lo que vio el servidor (no datos de la persona) para poder
+        # diagnosticar un rechazo inesperado, por ejemplo un TRUST_PROXY mal
+        # configurado detras de un proxy: ahi el host/esquema que Flask ve no
+        # coincide con el Origin/Referer real del navegador.
+        print(f"[origen] Rechazado: metodo={request.method} ruta={request.path} "
+              f"esquema_visto={request.scheme} host_visto={request.host} "
+              f"origin={request.headers.get('Origin')!r} referer={request.headers.get('Referer')!r} "
+              f"sec-fetch-site={request.headers.get('Sec-Fetch-Site')!r}")
         if _es_api() or request.is_json:
             return jsonify({"error": "Solicitud rechazada: origen no permitido"}), 403
         return Response("Solicitud rechazada: origen no permitido", status=403)
