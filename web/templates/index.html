@@ -588,28 +588,15 @@
         <a class="modulo" href="#datos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.3 8-8 9-4.7-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>Mis datos</span></a>
       </nav>
 
-      <section class="card" aria-labelledby="h-semana">
+      <div class="inicio-contenido">
+        <div class="inicio-col inicio-col-principal">
+          <section class="card" aria-labelledby="h-semana">
         <h2 id="h-semana">Mi semana académica</h2>
         <p class="sub" style="margin-top:0">Tus próximos 7 días: clases, tareas y evaluaciones en un vistazo. El día más cargado queda marcado.</p>
         <div class="semana-tira" id="semana-tira" role="tablist" aria-label="Días de la semana"></div>
         <div id="semana-detalle"></div>
       </section>
-
-      <section class="card" aria-labelledby="h-reco">
-        <h2 id="h-reco">Recomendación de estudio</h2>
-        <p class="sub" style="margin-top:0">Según tus tareas y evaluaciones próximas, esto es lo que conviene estudiar primero.</p>
-        <div id="reco-cont"><p class="vacio">Cargando…</p></div>
-        <a class="ver-mas" href="#plan">Ver mi plan completo</a>
-      </section>
-
-      <section class="card" aria-labelledby="h-resumen-ia">
-        <h2 id="h-resumen-ia">Tu resumen semanal con IA</h2>
-        <p class="sub" style="margin-top:0">Un repaso de tu semana redactado por IA, pero solo con lo que ya está verificado: no inventa tareas ni notas, y no juzga tu rendimiento.</p>
-        <div id="resumen-ia-cont"><p class="vacio">Pulsa el botón para generarlo.</p></div>
-        <button type="button" class="btn-o" id="btn-resumen-ia">Generar resumen semanal</button>
-      </section>
-
-      <section class="card" id="card-alertas" aria-labelledby="h-alertas" hidden>
+          <section class="card" id="card-alertas" aria-labelledby="h-alertas" hidden>
         <div class="barra">
           <h2 id="h-alertas">Alertas</h2>
           <button type="button" class="btn-o" id="btn-alertas-todas">Descartar todas</button>
@@ -617,7 +604,26 @@
         <div id="alertas"></div>
         <button type="button" class="btn-o" id="btn-alertas-mas" hidden></button>
       </section>
-      <section class="card" aria-labelledby="h-seg">
+          <section class="card" aria-labelledby="h-prox">
+        <h2 id="h-prox">Lo próximo</h2>
+        <div id="prox"><p class="vacio">Cargando…</p></div>
+        <a class="ver-mas" href="#agenda">Ver toda la agenda</a>
+      </section>
+        </div>
+        <div class="inicio-col inicio-col-asistente">
+          <section class="card" aria-labelledby="h-reco">
+        <h2 id="h-reco">Recomendación de estudio</h2>
+        <p class="sub" style="margin-top:0">Según tus tareas y evaluaciones próximas, esto es lo que conviene estudiar primero.</p>
+        <div id="reco-cont"><p class="vacio">Cargando…</p></div>
+        <a class="ver-mas" href="#plan">Ver mi plan completo</a>
+      </section>
+          <section class="card" aria-labelledby="h-resumen-ia">
+        <h2 id="h-resumen-ia">Tu resumen semanal con IA</h2>
+        <p class="sub" style="margin-top:0">Un repaso de tu semana redactado por IA, pero solo con lo que ya está verificado: no inventa tareas ni notas, y no juzga tu rendimiento.</p>
+        <div id="resumen-ia-cont"><p class="vacio">Pulsa el botón para generarlo.</p></div>
+        <button type="button" class="btn-o" id="btn-resumen-ia">Generar resumen semanal</button>
+      </section>
+          <section class="card" aria-labelledby="h-seg">
         <h2 id="h-seg">Tu seguimiento</h2>
         <p class="seg-res" id="seg-res">Cargando…</p>
         <details id="seg-det" class="seg-det">
@@ -626,11 +632,8 @@
           <p class="sub" style="margin-top:10px">Son reglas simples sobre datos verificados, no una predicción. Abre «¿Por qué?» para ver cada regla.</p>
         </details>
       </section>
-      <section class="card" aria-labelledby="h-prox">
-        <h2 id="h-prox">Lo próximo</h2>
-        <div id="prox"><p class="vacio">Cargando…</p></div>
-        <a class="ver-mas" href="#agenda">Ver toda la agenda</a>
-      </section>
+        </div>
+      </div>
     </section>
 
     <!-- MATERIAS -->
