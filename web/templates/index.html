@@ -765,21 +765,37 @@
 
     <!-- NOVEDADES -->
     <section class="vista" id="v-novedades" aria-labelledby="t-novedades" hidden>
-      <h1 id="t-novedades">Novedades</h1>
-      <p class="sub">Lo que cambió en Moodle o el ERP entre una lectura y la siguiente.</p>
-      <div class="col">
-        <section class="card" aria-labelledby="h-nov">
-          <div class="barra">
-            <h2 id="h-nov">Desde tu última visita</h2>
-            <button type="button" class="btn-o" id="btn-vistas" hidden>Marcar como vistas</button>
-          </div>
-          <div id="nov-nuevas"><p class="vacio">Cargando…</p></div>
-        </section>
-        <section class="card" id="card-nov-ant" aria-labelledby="h-nov-ant" hidden>
-          <h2 id="h-nov-ant">Anteriores</h2>
-          <div id="nov-anteriores"></div>
-        </section>
-        <p class="sub">Solo se comparan lecturas exitosas: si una lectura falla, no se toma como un cambio. La primera lectura únicamente guarda tu punto de partida.</p>
+      <header class="novedades-hero">
+        <div><h1 id="t-novedades">Novedades</h1><p class="sub">Cambios detectados en Moodle y SGA entre sincronizaciones exitosas.</p></div>
+      </header>
+      <div class="novedades-metricas" aria-label="Resumen de cambios detectados">
+        <div class="novedades-metrica"><b id="nov-c-tareas">—</b><span>Tareas</span></div>
+        <div class="novedades-metrica"><b id="nov-c-notas">—</b><span>Calificaciones</span></div>
+        <div class="novedades-metrica"><b id="nov-c-eventos">—</b><span>Eventos</span></div>
+        <div class="novedades-metrica"><b id="nov-c-otros">—</b><span>Otros cambios</span></div>
+      </div>
+      <div class="novedades-grid">
+        <div class="novedades-principal">
+          <section class="card" aria-labelledby="h-nov">
+            <div class="barra"><h2 id="h-nov">Desde tu última visita</h2><button type="button" class="btn-o" id="btn-vistas" hidden>Marcar como vistas</button></div>
+            <div class="novedades-filtros" role="group" aria-label="Filtrar novedades">
+              <button type="button" class="nov-filtro active" data-nov-filtro="todas" aria-pressed="true">Todas</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="tareas" aria-pressed="false">Tareas</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="notas" aria-pressed="false">Calificaciones</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="eventos" aria-pressed="false">Eventos</button>
+              <button type="button" class="nov-filtro" data-nov-filtro="otros" aria-pressed="false">Otros</button>
+            </div>
+            <div id="nov-nuevas"><p class="vacio">Cargando…</p></div>
+          </section>
+          <section class="card" id="card-nov-ant" aria-labelledby="h-nov-ant" hidden><h2 id="h-nov-ant">Anteriores</h2><div id="nov-anteriores"></div></section>
+        </div>
+        <aside class="novedades-aside">
+          <section class="card"><h2>Estado de sincronización</h2>
+            <div class="nov-fuente"><strong>Moodle</strong><span id="nov-sync-moodle">Consultando información…</span></div>
+            <div class="nov-fuente"><strong>SGA / ERP</strong><span id="nov-sync-erp">Consultando información…</span></div>
+          </section>
+          <section class="card nov-info"><h2>Cómo funcionan las novedades</h2><p>Solo se comparan lecturas exitosas. Si una lectura falla, no se considera un cambio. La primera sincronización establece el punto de partida.</p></section>
+        </aside>
       </div>
     </section>
 
@@ -1296,6 +1312,8 @@
     desfase = d.ahora * 1000 - Date.now();
     vence = d.conexiones.erp.vence; renovable = !!d.conexiones.erp.renovable;
     const um = d.conexiones.moodle.ultima, ue = d.conexiones.erp.ultima;
+    if($('nov-sync-moodle')) $('nov-sync-moodle').textContent = um ? 'Última lectura exitosa: ' + hhmm(um) : 'Aún sin lectura exitosa';
+    if($('nov-sync-erp')) $('nov-sync-erp').textContent = ue ? 'Última lectura exitosa: ' + hhmm(ue) : 'Aún sin lectura exitosa';
     $('p-moodle').className = 'punto ' + (um ? 'ok' : 'warn');
     $('l-moodle').textContent = um ? 'Última lectura: ' + hhmm(um) : 'Aún sin lectura correcta';
     $('l-erp').dataset.ult = ue ? 'Última lectura: ' + hhmm(ue) : 'Aún sin lectura correcta';
@@ -1612,36 +1630,64 @@
     const b = $('ins-nov'); b.hidden = !n; b.textContent = n > 99 ? '99+' : n;
     $('menu').querySelector('[data-vista="novedades"]').setAttribute('aria-label', n ? 'Novedades (' + n + ' sin ver)' : 'Novedades');
   }
-  function filaNovedad(n){
-    const d = new Date(n.detectado_en);
-    const cuandoTxt = isNaN(d) ? '' : d.toLocaleDateString('es-EC',{day:'numeric',month:'short'}) + ', ' + hhmm(n.detectado_en);
-    return el('div', {class:'nov' + (n.visto ? ' visto' : '')},
-      el('div', {class:'cuando', text:cuandoTxt}),
-      el('div', {}, el('div', {class:'que'}, el('span', {class:'etq', text:n.etiqueta}), n.texto),
-                    n.materia ? el('div', {class:'de', text:n.materia}) : null));
+  // Clasificacion visual aproximada; la deteccion de cambios sigue en /api/novedades.
+  function categoriaNovedad(n){
+    const t=((n.etiqueta||'')+' '+(n.tipo||'')+' '+(n.texto||'')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    if(/calific|nota|promedio/.test(t)) return 'notas';
+    if(/tarea|entrega|actividad|asignacion/.test(t)) return 'tareas';
+    if(/evento|calendario|examen|evaluacion|fecha/.test(t)) return 'eventos';
+    return 'otros';
   }
+  let filtroNovedades='todas', novedadesActuales={nuevas:[],anteriores:[]};
+  function filaNovedad(n){
+    const d=new Date(n.detectado_en);
+    const cuandoTxt=isNaN(d)?'':d.toLocaleDateString('es-EC',{day:'numeric',month:'short'})+', '+hhmm(n.detectado_en);
+    return el('div',{class:'nov nov-'+categoriaNovedad(n)+(n.visto?' visto':'')},
+      el('div',{class:'cuando',text:cuandoTxt}),
+      el('div',{},el('div',{class:'que'},el('span',{class:'etq',text:n.etiqueta}),n.texto),
+      n.materia?el('div',{class:'de',text:n.materia}):null));
+  }
+  function renderNovedades(){
+    const nuevas=novedadesActuales.nuevas,anteriores=novedadesActuales.anteriores;
+    const todas=nuevas.concat(anteriores);
+    for(const [cat,id] of [['tareas','nov-c-tareas'],['notas','nov-c-notas'],['eventos','nov-c-eventos'],['otros','nov-c-otros']])
+      $(id).textContent=String(todas.filter(n=>categoriaNovedad(n)===cat).length);
+    const mostrar=lista=>filtroNovedades==='todas'?lista:lista.filter(n=>categoriaNovedad(n)===filtroNovedades);
+    const nu=$('nov-nuevas');nu.replaceChildren();
+    const filtradas=mostrar(nuevas);
+    if(filtradas.length) filtradas.forEach(n=>nu.append(filaNovedad(n)));
+    else nu.append(el('div',{class:'nov-sin-cambios'},el('span',{class:'nov-sin-icono','aria-hidden':'true',text:'✓'}),
+      el('strong',{text:nuevas.length?'No hay cambios de esta categoría':'¡Todo está al día!'}),
+      el('p',{text:nuevas.length?'Prueba otro filtro para ver las novedades detectadas.':'No se han detectado novedades desde tu última visita.'})));
+    $('btn-vistas').hidden=!nuevas.length;
+    const an=$('nov-anteriores');an.replaceChildren();const pasadas=mostrar(anteriores);
+    pasadas.forEach(n=>an.append(filaNovedad(n)));
+    $('card-nov-ant').hidden=!pasadas.length;
+    document.querySelectorAll('#v-novedades [data-nov-filtro]').forEach(b=>{
+      const activo=b.dataset.novFiltro===filtroNovedades;b.classList.toggle('active',activo);b.setAttribute('aria-pressed',String(activo));
+    });
+    pintarInsignia(nuevas.length);
+  }
+  document.querySelectorAll('#v-novedades [data-nov-filtro]').forEach(b=>b.addEventListener('click',()=>{filtroNovedades=b.dataset.novFiltro;renderNovedades();}));
   async function cargarNovedades(){
     try{
-      const r = await fetch('/api/novedades');
-      if(r.status === 401){ location = '/login'; return; }
-      const d = await r.json();
-      const nu = $('nov-nuevas'); nu.replaceChildren();
-      if(d.nuevas.length) d.nuevas.forEach(n => nu.append(filaNovedad(n)));
-      else nu.append(el('p', {class:'vacio', text:'No hay novedades. Cuando algo cambie en Moodle o el ERP, aparecerá aquí.'}));
-      $('btn-vistas').hidden = !d.nuevas.length;
-      const an = $('nov-anteriores'); an.replaceChildren();
-      d.anteriores.forEach(n => an.append(filaNovedad(n)));
-      $('card-nov-ant').hidden = !d.anteriores.length;
-      pintarInsignia(d.nuevas.length);
-    }catch(e){ $('nov-nuevas').replaceChildren(el('p', {class:'vacio', text:'No se pudo cargar: ' + e.message})); }
+      const r=await fetch('/api/novedades');
+      if(r.status===401){location='/login';return;}
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      novedadesActuales={nuevas:Array.isArray(d.nuevas)?d.nuevas:[],anteriores:Array.isArray(d.anteriores)?d.anteriores:[]};
+      renderNovedades();
+    }catch(e){$('nov-nuevas').replaceChildren(el('p',{class:'vacio',text:'No se pudo cargar: '+e.message}));}
   }
-  $('btn-vistas').addEventListener('click', async () => {
-    const b = $('btn-vistas'); b.disabled = true;
-    try{ await fetch('/api/novedades/vistas', {method:'POST'}); }catch(_){}
-    b.disabled = false;
-    await cargarNovedades();
+  $('btn-vistas').addEventListener('click',async()=>{
+    const b=$('btn-vistas');b.disabled=true;
+    try{
+      const r=await fetch('/api/novedades/vistas',{method:'POST'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      await cargarNovedades();
+    }catch(e){mostrarAviso('No se pudieron marcar como vistas: '+e.message,true);}
+    finally{b.disabled=false;}
   });
-
 
   // ---- Alertas (Inicio) ----
   const ALERTAS_VISIBLES = 3;          // la pantalla de inicio no debe saturarse: el resto va plegado
