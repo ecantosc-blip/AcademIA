@@ -651,3 +651,13 @@
 #v-plan #pan-hor > .card { border-radius:15px; margin-top:15px; }
 @media(max-width:950px) { #v-plan #f-plan { grid-template-columns:1fr; } #v-plan #p-disp { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 @media(max-width:600px) { #v-plan .plan-hero { min-height:160px; padding:22px 16px; } #v-plan .plan-hero .sub { font-size:.85rem; } #v-plan .pestanas { gap:5px; padding:5px; } #v-plan .pestanas [role="tab"] { padding:11px 7px; font-size:.85rem; } #v-plan .plan-chat-intro,#v-plan .plan-hor-intro { padding:16px; } #v-plan .pop-ajustes > .card { padding:13px; } #v-plan #f-plan .grupo { padding:12px; } #v-plan #p-disp { grid-template-columns:repeat(2,minmax(0,1fr)); } #v-plan .leyenda { gap:9px; padding:10px; font-size:.78rem; } }
+
+/* Plan refinement: original compact tabs, one chat header, shorter interactive schedule. */
+#v-plan .pestanas { display:flex; justify-content:flex-start; gap:4px; padding:0; margin:0 0 16px; border:0; border-bottom:1px solid var(--line); border-radius:0; background:transparent; }
+#v-plan .pestanas [role="tab"] { flex:0 0 auto; padding:12px 16px; border:0; border-bottom:3px solid transparent; border-radius:0; background:transparent; box-shadow:none; }
+#v-plan .pestanas [role="tab"][aria-selected="true"] { border:0; border-bottom:3px solid #ff7900; background:transparent; color:var(--ink); box-shadow:none; }
+#v-plan #pan-conv { width:min(100%,850px); margin:0 auto; border:0; border-radius:0; background:transparent; box-shadow:none; overflow:visible; }
+#v-plan #plan-chat-slot { width:100%; }
+#v-plan .cuadricula-wrap { max-height:650px; overflow:auto; }
+#v-plan .cuadricula .bq { overflow:hidden; }
+@media(max-width:600px) { #v-plan .pestanas { gap:4px; padding:0; } #v-plan .pestanas [role="tab"] { padding:12px 14px; } #v-plan .cuadricula-wrap { max-height:520px; } }
