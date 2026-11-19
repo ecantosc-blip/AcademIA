@@ -539,3 +539,35 @@
  #v-materias #materias .materia .totales { grid-column:1 / -1; }
 }
 @media(prefers-reduced-motion:reduce) { #v-materias #materias .materia { transition:none; } }
+
+/* Materias v3: contextual SVG icons and content-sized course list. */
+#v-materias .materias-current { min-height:0!important; align-self:start; }
+#v-materias #materias { min-height:0!important; }
+#v-materias .materias-section-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:17px; }
+#v-materias .materias-section-heading h2 { font-size:1.14rem; margin:0; padding-left:12px; border-left:4px solid #ff7900; }
+#v-materias .materias-contador { white-space:nowrap; background:#e9f3ff; color:#002e45; padding:7px 13px; border-radius:999px; font-size:.8rem; font-weight:700; }
+#v-materias #materias .materia { padding-left:108px; min-height:112px; }
+#v-materias #materias .materia::before,#v-materias #materias .materia::after { content:none!important; display:none!important; }
+#v-materias #materias .materia .materia-icono {
+ position:absolute; left:17px; top:50%; transform:translateY(-50%);
+ width:70px; height:70px; border-radius:16px;
+ display:flex; justify-content:center; align-items:center;
+ color:#168df2; background:#e6f3ff;
+}
+#v-materias #materias .materia .materia-icono svg { width:38px; height:38px; display:block; }
+#v-materias #materias .materia:nth-child(even) .materia-icono { color:#ff7900; background:#fff0e4; }
+#v-materias #materias .materia .nombre { font-size:1rem; }
+#v-materias .materias-layout { align-items:start; }
+#v-materias .materias-aside { align-self:start; }
+@media(max-width:1250px) {
+ #v-materias #materias .materia { padding-left:88px; }
+ #v-materias #materias .materia .materia-icono { width:55px; height:55px; left:12px; }
+ #v-materias #materias .materia .materia-icono svg { width:30px; height:30px; }
+}
+@media(max-width:680px) {
+ #v-materias #materias .materia { padding:16px 12px 15px 70px; }
+ #v-materias #materias .materia .materia-icono { left:10px; top:17px; transform:none; width:45px; height:45px; border-radius:11px; }
+ #v-materias #materias .materia .materia-icono svg { width:26px; height:26px; }
+ #v-materias .materias-section-heading h2 { font-size:1rem; }
+ #v-materias .materias-contador { padding:6px 9px; font-size:.72rem; }
+}
