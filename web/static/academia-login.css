@@ -1,0 +1,43 @@
+/* Premium authentication layout. Presentation only: token flow and form untouched. */
+body { background:var(--canvas); }
+.side { position:relative; isolation:isolate; overflow:hidden; background:#002e45; border-right:0; padding:clamp(32px,4.5vw,72px); }
+.side::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(180deg,rgba(0,25,43,.94) 0%,rgba(0,34,56,.89) 48%,rgba(0,29,47,.76) 100%),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-size:cover; background-position:center; }
+.side::after { content:""; position:absolute; width:340px; height:340px; border:1px solid rgba(255,255,255,.09); border-radius:50%; right:-180px; bottom:5%; pointer-events:none; }
+.side .marca { position:relative; }
+.side h1 { font-size:clamp(2.1rem,3.5vw,3.4rem); line-height:1.13; letter-spacing:-.045em; max-width:16ch; }
+.side .lead { font-size:1rem; line-height:1.75; color:#d8e5ed; }
+.side .contract { border-top-color:rgba(255,255,255,.24); }
+.side .contract div { border-bottom-color:rgba(255,255,255,.2); }
+.side .contract dd { color:#d3e0e8; }
+.side .foot,.side .oficial { color:#c3d4df; }
+.main { align-items:center; padding:clamp(24px,5vw,80px); background:var(--canvas); }
+.main .top { width:min(100%,580px); margin:0 0 16px; }
+.main form { width:min(100%,580px); max-width:580px; background:var(--surface); border:1px solid var(--line); border-radius:22px; padding:clamp(24px,3.3vw,46px); box-shadow:0 20px 55px rgba(0,30,45,.08); }
+.main h2 { font-size:clamp(1.4rem,2vw,1.85rem); letter-spacing:-.035em; line-height:1.3; }
+.main .sub { line-height:1.65; }
+.main .pasos { gap:22px; }
+.main .paso { gap:13px; }
+.main input[type=text],.main input[type=password] { font-size:.9rem; min-height:46px; transition:border-color .15s,box-shadow .15s; }
+.main input[type=text]:focus,.main input[type=password]:focus { outline:0; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-bg); }
+.main .enviar { color:#fff; background:#c65a13; min-height:50px; transition:background .15s,transform .15s; }
+.main .enviar:hover:not(:disabled) { background:#a94e17; filter:none; transform:translateY(-1px); }
+.main .theme { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; }
+.main .theme svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; }
+.main details.extra { background:var(--canvas); border-color:var(--line); }
+.main .num { background:var(--orange-bg); color:var(--orange-ink); }
+:root[data-theme="dark"] body { background:#090909; color:#f0f0f0; }
+:root[data-theme="dark"] .side { background:#0b0b0b; }
+:root[data-theme="dark"] .side::before { background-image:linear-gradient(180deg,rgba(0,0,0,.94),rgba(0,0,0,.84)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); }
+:root[data-theme="dark"] .main { background:#090909; }
+:root[data-theme="dark"] .main form { background:#171717; border-color:#353535; box-shadow:0 20px 55px rgba(0,0,0,.25); }
+:root[data-theme="dark"] .main input[type=text],:root[data-theme="dark"] .main input[type=password] { background:#252525; color:#f0f0f0; border-color:#555; }
+:root[data-theme="dark"] .main input::placeholder { color:#b0b0b0; }
+:root[data-theme="dark"] .main .theme { background:#252525; border-color:#444; color:#eee; }
+:root[data-theme="dark"] .main details.extra { background:#222; border-color:#444; }
+:root[data-theme="dark"] .main .enviar { background:#a97856; color:#111; }
+:root[data-theme="dark"] .main .enviar:hover:not(:disabled) { background:#c08a65; }
+:root[data-theme="dark"] .main .num { background:#352920; color:#e5b18b; }
+:root[data-theme="dark"] .main .error { background:#402b2c; border-color:#785454; color:#f2c7c4; }
+:root[data-theme="dark"] .main code { background:#292929; color:#e8e8e8; }
+:root[data-theme="dark"] .overlay { background:rgba(9,9,9,.94); }
+@media(max-width:900px) { .side { padding:26px 22px; } .side h1 { font-size:clamp(1.7rem,5vw,2.3rem); } .side .contract { display:none; } .main { padding:20px 16px 42px; } .main form { padding:24px 18px; } }
