@@ -811,8 +811,8 @@
         <button type="button" role="tab" id="tab-conv" aria-selected="true" aria-controls="pan-conv">Conversación</button>
         <button type="button" role="tab" id="tab-hor" aria-selected="false" aria-controls="pan-hor">Horario<span class="punto" id="punto-hor" hidden aria-label="Hay cambios"></span></button>
       </div>
-      <div id="pan-conv" role="tabpanel" aria-labelledby="tab-conv"><div class="plan-chat-intro"><h2>Conversación con el asistente</h2><p>Planifica tu semana a partir de tus datos académicos y disponibilidad.</p></div><div id="plan-chat-slot"></div></div>
-      <div id="pan-hor" role="tabpanel" aria-labelledby="tab-hor" hidden><div class="plan-hor-intro"><h2>Horario semanal</h2><p>Clases del ERP, rutinas y bloques de estudio organizados por tu planificador.</p></div>
+      <div id="pan-conv" role="tabpanel" aria-labelledby="tab-conv"><div id="plan-chat-slot"></div></div>
+      <div id="pan-hor" role="tabpanel" aria-labelledby="tab-hor" hidden>
         <div class="hor-cab">
           <p class="sub" id="hor-resumen"></p>
           <details class="pop" id="pop-calculo"><summary>ⓘ Cómo se calcula</summary><ul id="plan-sup" class="lista"></ul></details>
@@ -827,7 +827,7 @@
           <button type="button" class="btn-o" id="btn-libre">+ Agregar horas libres</button>
           <button type="button" class="btn-o" id="btn-soltar" hidden>Soltar bloques fijados</button>
         </div>
-        <p class="sub" id="hor-ayuda">Toca una celda vacía para agregar algo en ese horario. Arrastra un bloque de estudio para moverlo: queda fijado y el plan acomoda lo demás alrededor.</p>
+        <p class="sub" id="hor-ayuda">Toca una celda vacía para agregar tu rutina. Toca un bloque de rutina para editar su hora de inicio, fin o duración. Los bloques de estudio se pueden arrastrar para reubicarlos.</p>
         <div class="cuadricula-wrap"><div class="cuadricula" id="cuadricula"></div></div>
         <section class="card" id="detalle-bloque" hidden aria-live="polite"></section>
         <details class="pop" id="libres-det" hidden><summary id="libres-sum">Mis horas libres</summary><div id="libres-lista"></div></details>
@@ -1756,7 +1756,7 @@
   }
 
   // ---- Horario semanal (cuadrícula 07:00–24:00) ----
-  const H_INI = 7*60, H_FIN = 24*60, PPM = 0.8;
+  const H_INI = 7*60, H_FIN = 24*60, PPM = 0.55;
   const tmin = t => { const [h, m] = t.split(':').map(Number); return h*60 + m; };
   const hm = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
   let bloquesPlan = {};
