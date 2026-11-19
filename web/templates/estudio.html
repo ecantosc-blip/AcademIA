@@ -32,7 +32,7 @@
   .bar .quien{color:var(--muted); font-size:.92rem; margin-right:12px; text-align:right}
   .btn-sec{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.85rem}
 
-  .wrap{padding:0 clamp(16px,3vw,40px) 48px; max-width:1680px; margin:0 auto}
+  .wrap{padding:0 clamp(16px,3vw,40px) 48px; max-width:1680px; margin:0 auto; --wrap-x:clamp(16px,3vw,40px)}
 
   /* ---- Aviso ---- */
   .aviso{background:var(--warn-bg); color:var(--warn); border:1px solid var(--warn); border-radius:12px; padding:12px 16px; margin-bottom:16px; display:flex; gap:12px; justify-content:space-between; align-items:flex-start}
@@ -291,7 +291,7 @@
 
 /* Premium study workspace: isolated to this standalone template. */
 body { padding-left:210px; }
-.wrap { max-width:none; padding:0 clamp(16px,2vw,34px) 45px; }
+.wrap { max-width:none; padding:0 clamp(16px,2vw,34px) 45px; --wrap-x:clamp(16px,2vw,34px); }
 .cab-pag { position:relative; isolation:isolate; overflow:hidden; box-sizing:border-box; min-height:190px; display:flex; flex-direction:column; justify-content:center; padding:30px clamp(20px,3vw,42px); margin:18px 0; border-radius:18px; background:#002e45; color:#fff; }
 .cab-pag::before { content:""; position:absolute; z-index:-1; inset:0; background-image:linear-gradient(90deg,#001b30 0%,rgba(0,31,54,.97) 33%,rgba(0,42,69,.42) 73%,rgba(0,42,69,.08)),url('/static/Edificio%20UNEMI%20con%20Ondas%20Azules%20y%20Naranjas.png'); background-repeat:no-repeat; background-size:100% 100%,auto 100%; background-position:center,right center; }
 .cab-pag h1 { color:#fff; margin:0 0 10px; font-size:clamp(1.8rem,2.6vw,2.6rem); }
@@ -335,7 +335,7 @@ body { padding-left:220px; }
 .bar { min-height:57px; justify-content:flex-end; padding:9px 22px; }
 .bar .marca { display:none; }
 .bar .enlace { border-color:#376078; background:rgba(255,255,255,.07); }
-.wrap { padding:0 clamp(17px,2vw,36px) 45px; }
+.wrap { padding:0 clamp(17px,2vw,36px) 45px; --wrap-x:clamp(17px,2vw,36px); }
 .cab-pag { min-height:205px; margin:20px 0; box-shadow:0 12px 30px rgba(0,38,63,.11); }
 .cab-pag h1 { font-size:clamp(2rem,3vw,2.8rem); letter-spacing:-.025em; }
 .cab-pag p { font-size:.94rem; line-height:1.6; }
@@ -436,6 +436,23 @@ body { padding-left:220px; }
 :root[data-theme="dark"] .tutor form { background:#202020; border-color:#3d3d3d; }
 :root[data-theme="dark"] .icono { background:#252525; color:#eee; border-color:#484848; }
 
+/* Encabezado de borde a borde (mismo criterio aplicado en el panel principal,
+   18 nov 2026): el banner de "Espacio de estudio" llega hasta ambos bordes
+   del contenido y se une directo con la barra superior, sin el recuadro
+   redondeado con margen que tenía antes. --wrap-x ya se fija junto a cada
+   regla de .wrap de arriba, así que el hueco que se cancela aquí siempre
+   coincide con su padding real. */
+.bar { margin-bottom:0; }
+.cab-pag {
+  box-sizing:border-box;
+  width:calc(100% + 2 * var(--wrap-x, 0px));
+  margin-left:calc(-1 * var(--wrap-x, 0px));
+  margin-right:calc(-1 * var(--wrap-x, 0px));
+  margin-top:0;
+  border-radius:0;
+  box-shadow:none;
+}
+.cab-pag::before { border-radius:0; }
 
 </style>
 <script>
