@@ -101,6 +101,13 @@ def _origen_seguro():
     Los navegadores modernos envian Origin y/o Sec-Fetch-Site. Si ambos faltan,
     Referer permite comprobar el origen cuando esta disponible. No se confia en
     X-Forwarded-* salvo cuando ProxyFix esta expresamente habilitado.
+
+    Solo se compara el HOST (netloc), no el esquema (http/https): el esquema que
+    Flask ve depende de que el proxy mande X-Forwarded-Proto tal como ProxyFix
+    lo espera, y eso varia segun el proveedor de hosting (confirmado en Render:
+    el host llega correcto pero el esquema no). Lo que distingue un sitio de
+    otro para CSRF es el host, no el esquema, asi que exigir tambien el esquema
+    no suma seguridad real y si genera falsos rechazos entre proveedores.
     """
     if request.method not in ("POST", "PUT", "PATCH", "DELETE"):
         return True
@@ -112,9 +119,7 @@ def _origen_seguro():
     referencia = origen or request.headers.get("Referer")
     if referencia:
         partes = urlparse(referencia)
-        return (partes.scheme in ("http", "https")
-                and partes.scheme == request.scheme
-                and partes.netloc.lower() == request.host.lower())
+        return partes.scheme in ("http", "https") and partes.netloc.lower() == request.host.lower()
     return True
 
 

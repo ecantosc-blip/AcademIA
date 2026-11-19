@@ -35,6 +35,16 @@ def test_post_mismo_origen_no_se_rechaza(cliente):
     assert r.status_code != 403
 
 
+def test_post_mismo_host_con_esquema_distinto_no_se_rechaza(cliente):
+    """Detras de un proxy (ej. Render) el esquema que ve Flask puede no coincidir
+    con el que uso el navegador si el proveedor no manda X-Forwarded-Proto tal
+    como ProxyFix lo espera, aunque TRUST_PROXY este bien configurado. Solo el
+    host identifica el sitio para efectos de CSRF, asi que un esquema distinto
+    con el mismo host no debe rechazarse (bug real visto en produccion)."""
+    r = _post_login(cliente, Origin="https://localhost")
+    assert r.status_code != 403
+
+
 def test_post_referer_mismo_origen_no_se_rechaza(cliente):
     r = _post_login(cliente, Referer="http://localhost/login")
     assert r.status_code != 403
