@@ -366,3 +366,32 @@
  #v-inicio .kpi .gran { font-size:1.35rem; }
  #v-inicio .premium-ai-card img { width:34%; }
 }
+
+/* UNEMI photographic hero — activates automatically once the image is uploaded to /web/static. */
+#v-inicio .premium-hero { isolation:isolate; border-radius:0; }
+#v-inicio .premium-hero-art {
+ inset:0 0 0 40%; border-radius:0;
+ background-image:linear-gradient(90deg,var(--canvas) 0%,rgba(242,245,248,.88) 11%,rgba(242,245,248,.08) 45%,rgba(242,245,248,0) 100%),url('/static/unemi-banner-premium.png');
+ background-position:center,right center; background-repeat:no-repeat; background-size:cover,cover;
+}
+#v-inicio .premium-hero-unemi,#v-inicio .premium-hero-arc { display:none; }
+#v-inicio .premium-hero-copy { max-width:58%; }
+#v-inicio .premium-hero h1 { color:#002E45; }
+#v-inicio .premium-hero .sub { color:#344e64; }
+/* Depth: saturated UNEMI navy, stronger orange accents and layered surfaces. */
+.lateral { background:linear-gradient(165deg,#001b31 0%,#002e45 53%,#00172b 100%)!important; }
+#v-inicio .premium-ai-column .premium-ai-card {
+ background:radial-gradient(circle at 100% 15%,#116188 0%,#073e5c 39%,#001c34 100%);
+ border:1px solid rgba(255,255,255,.13);
+ box-shadow:0 13px 30px rgba(0,32,60,.18);
+}
+#v-inicio .premium-ai-action { box-shadow:0 6px 14px rgba(255,105,0,.2); }
+#v-inicio .kpi,#v-inicio .premium-task-column,#v-inicio .premium-event-column,#v-inicio .premium-access-column .modulo {
+ box-shadow:0 8px 24px rgba(0,31,57,.10),inset 0 1px rgba(255,255,255,.72);
+}
+#v-inicio .premium-tip-column .premium-tip { background:linear-gradient(115deg,#fff9f2,#ffead8); }
+#v-inicio .premium-card-heading h2::before { content:""; display:inline-block; width:7px; height:19px; background:#ff7900; border-radius:4px; vertical-align:-3px; margin-right:9px; }
+@media(max-width:680px) {
+ #v-inicio .premium-hero-copy { max-width:75%; }
+ #v-inicio .premium-hero-art { inset:0 0 0 40%; opacity:.55; }
+}
