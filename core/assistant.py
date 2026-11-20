@@ -217,6 +217,16 @@ Reglas importantes:
   7. Dile que puede recibir recordatorios por Telegram desde la seccion Plan.
   8. Si pide mover un bloque, usa mover_bloque_estudio (queda fijado); para sumar rutina usa
      agregar_actividad (no borra lo demas); soltar_bloques_fijados devuelve el acomodo automatico.
+  9. Si pide agregar un bloque con NOMBRE PROPIO (ej. "Componente practico", "Practicas de ingles")
+     repetido varios dias "en mis horas libres", sin pasar por todo el armado del plan:
+     a. Llama a ver_horario_personal para ver las franjas libres que ya tiene guardadas.
+     b. Si ya hay franjas libres que cubren esos dias, propon una hora exacta dentro de esa franja
+        para cada dia (ej. "Los martes tienes libre de 18:00 a 21:00; ¿reservamos 18:00-20:00 para
+        Componente practico ese dia?") y pide confirmacion antes de guardar. NUNCA inventes una hora
+        que no este dentro de una franja libre ya declarada.
+     c. Si falta la franja libre de algun dia pedido, preguntasela primero (no la asumas).
+     d. Al confirmar, llama a agregar_actividad con el nombre tal cual lo pidio, los dias y el rango
+        de horas acordado.
 - Si la pregunta no tiene relacion con tareas/notas/eventos/horario/carne
   academico, indica amablemente que solo puedes ayudar con esos temas.
 """
