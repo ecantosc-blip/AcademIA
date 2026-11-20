@@ -3,6 +3,7 @@ from datetime import datetime
 
 from core import agenda_personal as AP
 from core import planificador
+from core import preferencias as P
 from core.tiempo import ahora_iso
 from db.setup import get_connection
 
@@ -115,3 +116,41 @@ def test_sin_franjas_el_plan_sigue_igual_y_sin_horas(app_web):
     finally:
         c.close()
     assert p["con_horas"] is False and p["configurado"] is False
+
+
+def test_el_tope_diario_nunca_hace_perder_una_fecha_limite(app_web):
+    """El margen del 70% no se respeta a costa de una entrega: si una tarea de 150 min vence HOY y
+    solo hay 180 min libres hoy (70% serian apenas 126, no alcanzarian), se usa el tiempo libre
+    completo que haga falta en vez de dejarla en "no alcanza" por dejar margen."""
+    c = get_connection()
+    try:
+        P.guardar(c, EST, {"minutos_por_tarea": 150})
+        _tareas(c, [(1, "Tarea urgente", "2030-01-07T23:00:00")])     # vence hoy mismo
+        AP.guardar_franjas(c, EST, [{"dia": "lunes", "inicio": "08:00", "fin": "11:00"}])  # 3h; 70% = 2h06 (126 min)
+        p = planificador.generar(c, EST, ahora=AHORA)
+    finally:
+        c.close()
+    lunes = [b for b in p["dias"][0]["bloques"] if b["clave"].startswith("t:")]
+    assert sum(b["minutos"] for b in lunes) == 150     # supera el 70% (126 min): el limite de hoy manda
+    assert not p["no_alcanza"]
+
+
+def test_no_llena_un_dia_solo_porque_cabe_reparte_al_siguiente(app_web):
+    """Con 6 horas libres en un solo dia y 6 tareas de 1 hora, el plan no mete las 6 ese mismo dia
+    nada mas porque "caben": deja un margen (30% del dia) y reparte lo que sobra al dia siguiente,
+    aunque ninguna tenga la fecha encima. Si una fecha limite lo exigiera, si lo llenaria completo
+    (eso lo cubren los demas tests de esta clase: el tope nunca hace perder una entrega)."""
+    c = get_connection()
+    try:
+        _tareas(c, [(1, f"Tarea {i}", "2030-01-13T23:00:00") for i in range(1, 7)])
+        AP.guardar_franjas(c, EST, [{"dia": d, "inicio": "08:00", "fin": "14:00"}
+                                    for d in ("lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo")])
+        p = planificador.generar(c, EST, ahora=AHORA)
+    finally:
+        c.close()
+    lunes = [b for b in p["dias"][0]["bloques"] if b["clave"].startswith("t:")]
+    martes = [b for b in p["dias"][1]["bloques"] if b["clave"].startswith("t:")]
+    assert len(lunes) == 4, "4 tareas de 1h caben en el 70% de las 6h libres (4h12); la 5a ya no"
+    assert len(martes) == 2, "las 2 que no cupieron en el margen del lunes pasan al martes, no se pierden"
+    assert sum(b["minutos"] for b in lunes) <= 0.7 * 360
+    assert not p["no_alcanza"] and not p["sin_espacio"]      # nada se pierde: solo se reparte

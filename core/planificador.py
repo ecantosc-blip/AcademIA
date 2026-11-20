@@ -80,6 +80,8 @@ def _elementos(conn, est, ahora, prefs, dif, grupos):
 
 REFUERZO_MIN = 45
 REFUERZO_MAX_MATERIAS = 2
+TOPE_DIARIO_PORCENTAJE = 0.7   # no llena un dia de tiempo libre solo porque "cabe": deja margen,
+                                # salvo que una fecha limite obligue a usarlo todo (ver _asignar_item)
 RECOMENDACION = {
     "tarea": "Lee la consigna completa, divide el trabajo en partes y empieza por la más difícil. Haz una pausa de 5 minutos cada 25-50.",
     "evaluacion": "Repasa tus apuntes y resuelve ejercicios sin mirar la respuesta; al final explica el tema en voz alta como si se lo enseñaras a alguien.",
@@ -211,16 +213,35 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
                                "recomendacion": RECOMENDACION[tipo]})
 
     if configurado:
+        # Tope diario: por dia, lo nuevo que se planifica no pasa del TOPE_DIARIO_PORCENTAJE del tiempo
+        # libre de ESE dia (capacidad[d], calculado antes de restar nada). Si para una tarea puntual
+        # ese margen no alcanza antes de su fecha limite, para ESA tarea se ignora el tope (nunca se
+        # sacrifica una fecha limite por dejar margen). Sin horas reales (con_horas=False) no aplica.
+        cap_restante = {d: capacidad[d] * TOPE_DIARIO_PORCENTAJE for d in calendario} if con_horas else {}
+
+        def _libre_real(d):
+            return sum(f - i for i, f in ventanas[d])
+
         for e in en_plan:
             falta, lim = max(0, e["minutos"] - fijados.get(e["clave"], 0)), limite(e)
             if falta == 0:
                 continue
+            dias_elegibles = [d for d in calendario if lim is None or d <= lim]
+            usar_tope = con_horas and sum(min(cap_restante[d], _libre_real(d)) for d in dias_elegibles) >= falta
             for d in calendario:
                 if falta <= 0:
                     break
                 if lim is not None and d > lim:
                     break
-                trozos, falta = _asignar(ventanas[d], falta, con_horas)
+                tope = max(0.0, cap_restante[d]) if usar_tope else None
+                tomar = falta if tope is None else min(falta, tope)
+                if tope is not None and tomar < MIN_TROZO and tomar < falta:
+                    continue    # lo que queda de margen hoy es muy poco: se intenta en otro dia
+                trozos, sobra = _asignar(ventanas[d], tomar, con_horas)
+                tomado = tomar - sobra
+                if usar_tope:
+                    cap_restante[d] -= tomado
+                falta -= tomado
                 for ini, fin, toma in trozos:
                     bloques[d].append({"clave": e["clave"], "item": e["nombre"], "materia": e["materia"],
                                        "minutos": toma, "tipo": e["tipo"], "motivo": _motivo(e),
