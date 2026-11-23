@@ -655,7 +655,7 @@
             <h2 id="h-rend">Mi rendimiento académico</h2>
             <div class="kpis materias-metrics">
               <div class="kpi" style="cursor:default"><span class="et">Actividades completadas</span><span class="gran num" id="rend-entregadas">—</span><span class="det">Confirmadas por Moodle</span></div>
-              <div class="kpi" style="cursor:default"><span class="et">Promedio general</span><span class="gran num" id="rend-promedio">—</span><span class="det">Materias aprobadas</span></div>
+              <div class="kpi" style="cursor:default"><span class="et">Promedio general</span><span class="gran num" id="rend-promedio">—</span><span class="det">Ponderado por créditos, igual que el SGA</span></div>
             </div>
             <h3 class="sub-t">Materias con menor porcentaje en Moodle</h3>
             <div id="rend-atencion"><p class="vacio">Cargando…</p></div>
@@ -1559,7 +1559,7 @@
     $('k-clase-d').textContent = pc ? pc.clase.materia + (pc.clase.aula ? ' · ' + pc.clase.aula : '') : 'No hay clases próximas en tu horario.';
     const p = d.inicio ? d.inicio.promedio_general : null;
     $('k-prom-n').textContent = p == null ? '—' : num(p);
-    $('k-prom-d').textContent = p == null ? 'Aún sin materias aprobadas' : 'Promedio de materias aprobadas';
+    $('k-prom-d').textContent = p == null ? 'Aún sin materias aprobadas' : 'Ponderado por créditos, igual que el SGA';
     // Estado de los datos: ERP vencido, lectura fallida o todo al dia.
     const resto = vence == null ? null : vence - (Date.now() + desfase) / 1000;
     const fallo = d.bitacora.length && d.bitacora[0].estado !== 'exitosa';
@@ -1743,6 +1743,35 @@
     return e;
   }
 
+  // Reparte en carriles los bloques de un mismo dia que se solapan en el tiempo (ej. una clase
+  // y una evaluacion a la misma hora), para que queden uno al lado del otro en vez de superponerse
+  // y volverse ilegibles. No toca las franjas "Libre" (van de fondo, con pointer-events:none).
+  function _empacarColisiones(items){
+    const its = items.map(it => ({...it, a: Math.max(it.ini, H_INI), b: Math.min(it.fin, H_FIN)}))
+                      .sort((x, y) => x.a - y.a || x.b - y.b);
+    let activos = [], cluster = [];
+    const cerrarCluster = () => {
+      if(!cluster.length) return;
+      const total = Math.max(...cluster.map(it => it.col)) + 1;
+      if(total > 1) cluster.forEach(it => {
+        it.el.style.left = 'calc(3px + (100% - 6px) * ' + (it.col / total) + ')';
+        it.el.style.width = 'calc((100% - 6px) * ' + (1 / total) + ' - 3px)';
+        it.el.style.right = 'auto';
+      });
+      cluster = [];
+    };
+    its.forEach(it => {
+      activos = activos.filter(a => a.b > it.a);
+      if(!activos.length) cerrarCluster();
+      const usados = new Set(activos.map(a => a.col));
+      let c = 0; while(usados.has(c)) c++;
+      it.col = c;
+      activos.push(it);
+      cluster.push(it);
+    });
+    cerrarCluster();
+  }
+
   function pintarGrilla(d){
     const pl = d.plan, ag = d.agenda || {franjas:[], actividades:[], clases:[]};
     bloquesPlan = {};
@@ -1784,17 +1813,25 @@
       const col = el('div', {class:'col-dia', style:'height:' + ((H_FIN-H_INI)*PPM) + 'px'});
       col.dataset.di = di;
       ag.franjas.filter(f => f.dia === dia.dia).forEach(f => col.append(bloqueEl('b-libre', tmin(f.inicio), tmin(f.fin), 'Libre')));
-      ag.clases.filter(c => c.dia === dia.dia).forEach(c => col.append(bloqueEl('b-clase', tmin(c.inicio), tmin(c.fin), c.materia)));
+
+      // Todo lo demas compite por espacio en el mismo carril del dia: se arma la lista completa
+      // y se empaca antes de insertar, para que lo que se solapa en hora quede lado a lado.
+      const items = [];
+      ag.clases.filter(c => c.dia === dia.dia).forEach(c =>
+        items.push({ini:tmin(c.inicio), fin:tmin(c.fin), el:bloqueEl('b-clase', tmin(c.inicio), tmin(c.fin), c.materia)}));
       ag.actividades.filter(a => a.dia === dia.dia).forEach(a => {
         const id = 'a' + a.id; bloquesPlan[id] = {kind:'actividad', id:a.id, dia:a.dia, inicio:a.inicio, fin:a.fin, nombre:a.nombre};
-        col.append(bloqueEl('b-rutina', tmin(a.inicio), tmin(a.fin), a.nombre, id));
+        items.push({ini:tmin(a.inicio), fin:tmin(a.fin), el:bloqueEl('b-rutina', tmin(a.inicio), tmin(a.fin), a.nombre, id)});
       });
       dia.bloques.filter(b => b.inicio).forEach((b, bi) => {
         const id = di + '-' + bi; bloquesPlan[id] = Object.assign({kind:'estudio', fecha:dia.fecha, dia:dia.dia}, b);
         const e = bloqueEl(b.tipo === 'refuerzo' ? 'b-refuerzo' : 'b-estudio', tmin(b.inicio), tmin(b.fin), b.item, id);
         if(e && b.fijado) e.classList.add('fijado');
-        col.append(e);
+        items.push({ini:tmin(b.inicio), fin:tmin(b.fin), el:e});
       });
+      const validos = items.filter(it => it.el);
+      _empacarColisiones(validos);
+      validos.forEach(it => col.append(it.el));
       cu.append(col);
     });
     $('detalle-bloque').hidden = true;

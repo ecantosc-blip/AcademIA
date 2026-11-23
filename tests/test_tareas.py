@@ -164,6 +164,38 @@ def test_kpis_del_inicio_no_cuentan_sin_verificar_como_pendiente(datos):
     assert i["entregadas_total"] == 1, "solo 'Entregada' (tarea 4) está entregada para la estudiante 77"
 
 
+def test_promedio_general_se_pondera_por_creditos(bd_vacia):
+    """El "Promedio general" de Inicio y de "Mi rendimiento académico" debe coincidir con el
+    promedio oficial del SGA, que pondera por créditos (una materia de 6 créditos pesa más que
+    una de 2). Antes era un promedio simple (AVG sin más) y por eso no coincidía con el SGA."""
+    c = get_connection()
+    c.executescript("""
+        INSERT INTO estudiante(id,nombre) VALUES (77,'Ana');
+        INSERT INTO materia(id,nombre,moodle_course_id,creditos) VALUES (1,'A',1,6),(2,'B',2,2);
+        INSERT INTO matricula(estudiante_id,materia_id,estado,nota_final) VALUES
+          (77,1,'aprobada',80),(77,2,'aprobada',65);
+    """)
+    c.commit(); c.close()
+    from panel import construir_panel
+    i = construir_panel({"estudiante_id": 77, "nombre": "X"})["inicio"]
+    # ponderado: (80*6 + 65*2) / 8 = 76.25 -> 76.3 (redondeado a 1 decimal); el simple daria 72.5
+    assert i["promedio_general"] == 76.3
+
+
+def test_promedio_general_usa_el_simple_si_aun_no_hay_creditos_sincronizados(bd_vacia):
+    c = get_connection()
+    c.executescript("""
+        INSERT INTO estudiante(id,nombre) VALUES (77,'Ana');
+        INSERT INTO materia(id,nombre,moodle_course_id) VALUES (1,'A',1),(2,'B',2);
+        INSERT INTO matricula(estudiante_id,materia_id,estado,nota_final) VALUES
+          (77,1,'aprobada',80),(77,2,'aprobada',65);
+    """)
+    c.commit(); c.close()
+    from panel import construir_panel
+    i = construir_panel({"estudiante_id": 77, "nombre": "X"})["inicio"]
+    assert i["promedio_general"] == 72.5
+
+
 def test_el_espacio_de_estudio_protege_tambien_lo_sin_verificar(datos):
     """Para el filtro anti-trampas, una evaluacion con estado desconocido cuenta como activa."""
     from ayudas import ClienteIAFalso

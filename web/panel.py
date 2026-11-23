@@ -172,10 +172,22 @@ def construir_panel(sesion: dict) -> dict:
         limite7 = ahora_iso("seconds", days=7)
         vencen = len(en_ventana(grupos["pendientes"], ahora, limite7))
         sin_verificar_7d = len(en_ventana(grupos["sin_verificar"], ahora, limite7))
+        # Ponderado por creditos (igual que el promedio oficial del ERP): una materia de 6 creditos
+        # pesa mas que una de 2. Antes era un promedio simple (AVG sin mas) y por eso no coincidia
+        # con el "Promedio general" que muestra el SGA para el mismo estudiante.
         prom = conn.execute("""
-            SELECT ROUND(AVG(nota_final), 1) AS p FROM matricula
-            WHERE estudiante_id = ? AND estado = 'aprobada' AND nota_final IS NOT NULL
+            SELECT ROUND(SUM(mat.nota_final * m.creditos) * 1.0 / SUM(m.creditos), 1) AS p
+            FROM matricula mat JOIN materia m ON m.id = mat.materia_id
+            WHERE mat.estudiante_id = ? AND mat.estado = 'aprobada'
+              AND mat.nota_final IS NOT NULL AND m.creditos IS NOT NULL AND m.creditos > 0
         """, (est,)).fetchone()["p"]
+        if prom is None:
+            # Todavia no hay creditos sincronizados (p. ej. antes de la primera sincronizacion con
+            # el SGA): se usa el promedio simple como respaldo, en vez de no mostrar nada.
+            prom = conn.execute("""
+                SELECT ROUND(AVG(nota_final), 1) AS p FROM matricula
+                WHERE estudiante_id = ? AND estado = 'aprobada' AND nota_final IS NOT NULL
+            """, (est,)).fetchone()["p"]
         inicio = {"vencen_7d": vencen, "sin_verificar_7d": sin_verificar_7d,
                   "vencidas_sin_entregar": len(grupos["vencidas_sin_entregar"]), "promedio_general": prom,
                   # Actividades que Moodle confirma como entregadas, para "Mi rendimiento académico".
