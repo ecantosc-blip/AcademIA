@@ -32,7 +32,9 @@ from core.cambios import _fecha_humana
 from core.tareas import clasificar_tareas
 from core.tiempo import ahora_iso, iso_a_datetime
 
-DIAS_PLAN = 7
+DIAS_PLAN = 14   # 2 semanas: lo que vence despues de la primera semana ya entra al calculo real
+                 # (antes caia sin horario en "fuera del plan"); el frontend navega entre semanas
+                 # sobre estos mismos dias ya calculados, sin otra llamada al servidor.
 BLOQUE_MIN = 15
 MIN_TROZO = 30        # (solo en el plan con horas) al partir un elemento entre ventanas no se dejan trozos de menos de 30 min (salvo el ultimo)
 FACTOR = {1: 0.75, 2: 1.0, 3: 1.5}
@@ -217,7 +219,7 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
         # libre de ESE dia (capacidad[d], calculado antes de restar nada). Si para una tarea puntual
         # ese margen no alcanza antes de su fecha limite, para ESA tarea se ignora el tope (nunca se
         # sacrifica una fecha limite por dejar margen). Sin horas reales (con_horas=False) no aplica.
-        cap_restante = {d: capacidad[d] * TOPE_DIARIO_PORCENTAJE for d in calendario} if con_horas else {}
+        cap_restante = {d: int(capacidad[d] * TOPE_DIARIO_PORCENTAJE) for d in calendario} if con_horas else {}
 
         def _libre_real(d):
             return sum(f - i for i, f in ventanas[d])
@@ -233,7 +235,7 @@ def generar(conn, estudiante_id: int, ahora: str = None, dias: int = DIAS_PLAN) 
                     break
                 if lim is not None and d > lim:
                     break
-                tope = max(0.0, cap_restante[d]) if usar_tope else None
+                tope = max(0, cap_restante[d]) if usar_tope else None
                 tomar = falta if tope is None else min(falta, tope)
                 if tope is not None and tomar < MIN_TROZO and tomar < falta:
                     continue    # lo que queda de margen hoy es muy poco: se intenta en otro dia

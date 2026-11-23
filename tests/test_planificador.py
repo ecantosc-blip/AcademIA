@@ -151,7 +151,11 @@ def test_tarea_sin_fecha_usa_solo_lo_que_sobra(con):
     disp(con, lunes=240)
     p = plan(con)
     assert sum(m for _, i, m in bloques(p) if i == "Entrega de avance de tesis") == 60
-    disp(con, lunes=120)                                          # ya no sobra tiempo
+    # "lunes" ahora cae dos veces en los 14 dias del plan (dos semanas), asi que para seguir
+    # probando que de verdad "ya no sobra tiempo en todo el horizonte" hay que bajar el tope
+    # por debajo de lo que la propia tarea necesita (60 min): con 120 la segunda ocurrencia de
+    # lunes le sobraba entera y la tarea ya encontraba espacio ahi.
+    disp(con, lunes=50)
     p = plan(con)
     assert [x["item"] for x in p["sin_espacio"]] == ["Entrega de avance de tesis"]
     assert all(x["item"] != "Entrega de avance de tesis" for x in p["no_alcanza"])
@@ -179,6 +183,9 @@ def test_cada_estudiante_planifica_solo_lo_suyo(con):
     assert bloques(p) == [] and p["por_planificar"] == []
 
 
-def test_una_semana_completa_siempre_trae_siete_dias(con):
+def test_un_plan_completo_siempre_trae_catorce_dias(con):
+    """DIAS_PLAN=14: dos semanas completas, para que el horario pueda navegarse hacia adelante
+    sin tener que volver a pedirle nada al servidor."""
     p = plan(con)
-    assert [d["dia"] for d in p["dias"]] == ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
+    semana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
+    assert [d["dia"] for d in p["dias"]] == semana * 2

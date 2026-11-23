@@ -443,6 +443,8 @@
   .leyenda{display:flex; gap:14px; flex-wrap:wrap; font-size:.82rem; color:var(--muted); margin:6px 0 10px}
   .leyenda span{display:inline-flex; align-items:center; gap:6px}
   .lg{display:inline-block; width:14px; height:14px; border-radius:4px}
+  .hor-nav{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+  .hor-nav .sub{margin:0; font-weight:600}
   .cuadricula-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--surface); margin-bottom:14px}
   .cuadricula{display:grid; grid-template-columns:48px repeat(7, minmax(104px, 1fr)); min-width:820px}
   .cab-esq,.cab-dia{position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--line); padding:8px 6px; text-align:center; z-index:2}
@@ -791,6 +793,11 @@
           <button type="button" class="btn-o" id="btn-soltar" hidden>Soltar bloques fijados</button>
         </div>
         <p class="sub" id="hor-ayuda">Haz clic en una celda vacía para agregar tu rutina. Arrastra desayuno, almuerzo, gimnasio u otra actividad personal para cambiar su horario; también puedes hacer clic para editarla. Las clases del ERP no se pueden mover.</p>
+        <div class="hor-nav" id="hor-nav" hidden>
+          <button type="button" class="btn-o" id="btn-semana-prev">← Semana anterior</button>
+          <span class="sub" id="hor-nav-rango"></span>
+          <button type="button" class="btn-o" id="btn-semana-next">Semana siguiente →</button>
+        </div>
         <div class="cuadricula-wrap"><div class="cuadricula" id="cuadricula"></div></div>
         <section class="card" id="detalle-bloque" hidden aria-live="polite"></section>
         <details class="pop" id="libres-det" hidden><summary id="libres-sum">Mis horas libres</summary><div id="libres-lista"></div></details>
@@ -1685,6 +1692,7 @@
   const NOM_TIPO = {vence_pronto:'Una tarea vence pronto', vencida:'Una tarea venció sin entregarse', lectura_fallida:'Falló la lectura de Moodle o del ERP', asistencia_baja:'Mi asistencia baja de mi mínimo'};
   const mins = m => m >= 60 ? Math.floor(m/60) + ' h' + (m%60 ? ' ' + (m%60) + ' min' : '') : m + ' min';
   let planDatos = null;
+  let semanaOffset = 0;   // que tramo de 7 dias de pl.dias (hasta 14, 2 semanas) se muestra en la cuadricula
 
   function pintarConfigPlan(d){
     const pf = d.preferencias;
@@ -1740,23 +1748,39 @@
     bloquesPlan = {};
     const res = $('hor-resumen');
     if(!pl.configurado) res.textContent = 'Todavía no hay horas libres para estudiar. Agrega tus horas libres aquí o cuéntaselo al asistente (pestaña Conversación).';
-    else res.textContent = 'Necesitas ' + mins(pl.total_necesario_min) + ' y tienes ' + mins(pl.total_disponible_min) + ' libres esta semana.'
+    else res.textContent = 'Necesitas ' + mins(pl.total_necesario_min) + ' y tienes ' + mins(pl.total_disponible_min) + ' libres en estos ' + pl.dias.length + ' días.'
       + (pl.prioridad_moodle && pl.prioridad_moodle.length ? ' Prioridad por Moodle: ' + pl.prioridad_moodle.slice(0,2).map(x => x.materia + ' (' + x.porcentaje + ' %)').join(', ') + '.' : '');
 
     const av = $('hor-avisos'); av.replaceChildren();
     pl.no_alcanza.forEach(x => av.append(el('div', {class:'alerta-hor', role:'status'},
       el('b', {text:'No alcanza el tiempo: '}), (x.item) + ' — faltan ' + mins(x.faltan_min) + (x.fecha ? ' antes de ' + cuando(x.fecha).join(', ') : '') + '. Agrega horas libres o pídele ayuda al asistente.')));
 
+    // La cuadricula siempre muestra un tramo de 7 dias; pl.dias puede traer mas (14 = 2 semanas)
+    // y se navega entre tramos sin volver a pedirle nada al servidor.
+    const totalSemanas = Math.max(1, Math.ceil(pl.dias.length / 7));
+    if(semanaOffset >= totalSemanas) semanaOffset = totalSemanas - 1;
+    if(semanaOffset < 0) semanaOffset = 0;
+    const diasSemana = pl.dias.slice(semanaOffset*7, semanaOffset*7 + 7);
+    const nav = $('hor-nav');
+    nav.hidden = totalSemanas <= 1;
+    if(!nav.hidden && diasSemana.length){
+      const f1 = new Date(diasSemana[0].fecha + 'T00:00:00'), f2 = new Date(diasSemana[diasSemana.length-1].fecha + 'T00:00:00');
+      $('hor-nav-rango').textContent = f1.toLocaleDateString('es-EC',{day:'numeric',month:'short'}) + ' – ' + f2.toLocaleDateString('es-EC',{day:'numeric',month:'short'});
+      $('btn-semana-prev').disabled = semanaOffset === 0;
+      $('btn-semana-next').disabled = semanaOffset >= totalSemanas - 1;
+    }
+
     const cu = $('cuadricula'); cu.replaceChildren();
     cu.append(el('div', {class:'cab-esq'}));
-    pl.dias.forEach(dia => {
+    diasSemana.forEach(dia => {
       const f = new Date(dia.fecha + 'T00:00:00');
       cu.append(el('div', {class:'cab-dia'}, el('b', {text:(NOM_DIA[dia.dia] || dia.dia).slice(0,3)}), el('small', {text:f.toLocaleDateString('es-EC',{day:'numeric',month:'short'})})));
     });
     const eje = el('div', {class:'eje', style:'height:' + ((H_FIN-H_INI)*PPM) + 'px'});
     for(let h = H_INI/60; h < H_FIN/60; h++) eje.append(el('span', {style:'top:' + ((h*60-H_INI)*PPM) + 'px', text:hm(h*60)}));
     cu.append(eje);
-    pl.dias.forEach((dia, di) => {
+    diasSemana.forEach((dia, diLocal) => {
+      const di = semanaOffset*7 + diLocal;    // indice global dentro de pl.dias (hasta 14), no solo del tramo visible
       const col = el('div', {class:'col-dia', style:'height:' + ((H_FIN-H_INI)*PPM) + 'px'});
       col.dataset.di = di;
       ag.franjas.filter(f => f.dia === dia.dia).forEach(f => col.append(bloqueEl('b-libre', tmin(f.inicio), tmin(f.fin), 'Libre')));
@@ -1786,7 +1810,7 @@
     const otros = $('hor-otros'); otros.replaceChildren(); let n = 0;
     const seccion = (titulo, filas) => { if(!filas.length) return; n += filas.length; otros.append(el('h3', {text:titulo})); filas.forEach(f => otros.append(f)); };
     seccion('Sin espacio esta semana', pl.sin_espacio.map(x => filaItem(x.item + ' · ' + x.materia + ' — faltan ' + mins(x.faltan_min))));
-    seccion('Próximamente (fuera de los 7 días)', pl.fuera_del_plan.map(x => filaItem(x.item + (x.fecha ? ' — ' + cuando(x.fecha).join(', ') : ''))));
+    seccion('Próximamente (fuera de los ' + pl.dias.length + ' días)', pl.fuera_del_plan.map(x => filaItem(x.item + (x.fecha ? ' — ' + cuando(x.fecha).join(', ') : ''))));
     seccion('Sin verificar (no entran al plan; revísalas en Moodle)', pl.sin_verificar.map(x => filaItem(x.item + ' · ' + x.materia)));
     seccion('Quitados por ti', pl.quitados.map(x => filaItem(x.item, el('button', {type:'button', class:'btn-o', text:'Volver a incluir', 'data-incluir':x.clave}))));
     $('hor-otros-det').hidden = !n; $('hor-otros-sum').textContent = 'Otros pendientes (' + n + ')';
@@ -1913,6 +1937,8 @@
   $('rt-cancelar').addEventListener('click', () => $('dlg-rutina').close());
   $('btn-rutina').addEventListener('click', () => abrirRutina({tipo:'actividad', dias:[], inicio:'08:00', fin:'09:00'}));
   $('btn-libre').addEventListener('click', () => abrirRutina({tipo:'franja', dias:['lunes','martes','miercoles','jueves','viernes'], inicio:'16:00', fin:'18:00'}));
+  $('btn-semana-prev').addEventListener('click', () => { if(planDatos){ semanaOffset--; pintarGrilla(planDatos); } });
+  $('btn-semana-next').addEventListener('click', () => { if(planDatos){ semanaOffset++; pintarGrilla(planDatos); } });
   $('f-rutina').addEventListener('submit', async e => {
     e.preventDefault();
     const msg = $('rt-msg'); msg.textContent = '';
@@ -2039,7 +2065,7 @@
     }
   }
   function pintarTodoPlan(d, conConfig){
-    planDatos = d; if(conConfig) pintarConfigPlan(d); pintarGrilla(d); pintarTelegram(d);
+    planDatos = d; if(conConfig){ pintarConfigPlan(d); semanaOffset = 0; } pintarGrilla(d); pintarTelegram(d);
     // La agenda (compromisos propios) puede haber cambiado: se refleja ya en Centro de pendientes.
     if(d.agenda){ ultimoPlan = d.plan || ultimoPlan; ultimaAgenda = d.agenda; pintarPendientes(); }
   }

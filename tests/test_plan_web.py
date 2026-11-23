@@ -62,7 +62,7 @@ def test_guardar_preferencias_y_dificultad_regenera_el_plan(app_web):
     assert r.status_code == 200 and d["plan"]["configurado"] is True
     assert d["preferencias"]["minutos_por_tarea"] == 90
     assert {m["id"]: m["dificultad"] for m in d["materias"]}[1] == 3
-    assert d["plan"]["total_disponible_min"] == 120 * 5 + 120
+    assert d["plan"]["total_disponible_min"] == (120 * 5 + 120) * 2   # 14 dias = 2 semanas completas
 
 
 def test_un_valor_invalido_da_400_y_no_guarda_nada(app_web):
