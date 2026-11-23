@@ -452,25 +452,25 @@
   .cab-dia small{color:var(--muted)}
   .eje{position:relative}
   .eje span{position:absolute; right:6px; transform:translateY(-50%); font-size:.7rem; color:var(--muted)}
-  /* Las líneas de hora del fondo deben repetirse cada 33px (60min * PPM=0.55,
+  /* Las líneas de hora del fondo deben repetirse cada 45px (60min * PPM=0.75,
      ver bloqueEl() en el script), igual que las etiquetas de .eje y el top/
      height de cada .bq. Antes repetían cada 48px, un valor que no correspondía
      a ningún PPM usado aquí: las líneas quedaban cada vez más desfasadas de
      las horas reales a medida que avanzaba el día, y en los bloques cortos del
      principio (ej. Desayuno 07:00-07:30) la línea terminaba cruzando el texto. */
   .col-dia{position:relative; border-left:1px solid var(--line);
-    background-image:repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent 33px)}
-  .bq{position:absolute; left:3px; right:3px; min-height:18px; border-radius:6px; padding:2px 5px; overflow:hidden; font-size:.74rem; line-height:1.25; display:flex; flex-direction:column; border:1px solid transparent}
-  .bq b{font-weight:600; overflow:hidden; text-overflow:ellipsis}
-  .bq small{opacity:.85}
-  .bq.corto{padding:1px 5px; line-height:1.15; justify-content:center}
-  .bq.corto b{white-space:nowrap}
+    background-image:repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent 45px)}
+  .bq{position:absolute; left:3px; right:3px; min-height:18px; border-radius:7px; padding:3px 6px; overflow:hidden; font-size:.74rem; line-height:1.25; display:flex; flex-direction:column; border:1px solid transparent; box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .bq b{font-weight:600; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; white-space:normal; word-break:break-word}
+  .bq small{opacity:.85; flex-shrink:0}
+  .bq.corto{padding:1px 6px; line-height:1.15; justify-content:center}
+  .bq.corto b{-webkit-line-clamp:1; white-space:nowrap}
   .eje span:first-child{transform:none; margin-top:3px}
-  .b-libre{background:rgba(46,158,91,.10); border:1px dashed rgba(46,158,91,.55); z-index:0}
+  .b-libre{background:var(--ok-bg, rgba(46,158,91,.08)); border:1px solid rgba(46,158,91,.3); box-shadow:none; z-index:0}
   .b-clase{background:var(--brand); color:#fff; z-index:1}
   .b-rutina{background:var(--accent-bg); color:var(--ink); border-color:var(--accent); z-index:1}
   .b-estudio{background:var(--orange-bg); color:var(--ink); border-color:var(--orange); border-left:4px solid var(--orange); z-index:2; cursor:pointer}
-  .b-refuerzo{background:transparent; color:var(--ink); border:1px dashed var(--orange); border-left:4px solid var(--orange); z-index:2; cursor:pointer}
+  .b-refuerzo{background:var(--surface); color:var(--ink); border:1px dashed var(--orange); border-left:4px solid var(--orange); z-index:2; cursor:pointer}
   .bq[data-bq]:hover,.bq[data-bq]:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
   .leyenda .b-estudio{border-left-width:1px}
   .leyenda .b-refuerzo{border-left-width:1px}
@@ -1724,7 +1724,7 @@
   }
 
   // ---- Horario semanal (cuadrícula 07:00–24:00) ----
-  const H_INI = 7*60, H_FIN = 24*60, PPM = 0.55;
+  const H_INI = 7*60, H_FIN = 24*60, PPM = 0.75;   // mas alto que antes (0.55): bloques con mas aire para leer el texto
   const tmin = t => { const [h, m] = t.split(':').map(Number); return h*60 + m; };
   const hm = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
   let bloquesPlan = {};
@@ -1737,7 +1737,10 @@
     if((b-a) < 60) e.classList.add('corto');
     if(clase !== 'b-libre'){
       e.append(el('b', {text:titulo}));
-      if((b-a) >= 60) e.append(el('small', {text:hm(ini) + '–' + hm(fin)}));
+      // El rango de hora solo entra si de verdad hay sitio: con el titulo en 2 lineas,
+      // un bloque de 60 min apenas alcanza para el titulo. Antes se mostraba igual y la
+      // segunda linea del titulo quedaba cortada a media letra detras de la hora.
+      if((b-a) >= 90) e.append(el('small', {text:hm(ini) + '–' + hm(fin)}));
     }
     if(id){ e.dataset.bq = id; e.tabIndex = 0; e.setAttribute('role', 'button'); }
     return e;
